@@ -9,7 +9,9 @@ import { fontSans } from "@/config/fonts";
 import { Button } from "@heroui/button"; // Ensure Button is a named export
 import { Icon } from "@iconify/react"; // Ensure Icon is a named export
 import { motion } from "framer-motion"; // Ensure motion is a named export
-import { Wrapper } from "./wrapper";
+import { Main } from "./Main";
+import Header from "@/components/Header";
+import MobileTabs from "@/components/MobileTabs";
 
 export const metadata: Metadata = {
 	title: {
@@ -39,7 +41,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					fontSans.variable,
 				)}>
 				<Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
-					<Wrapper>{children}</Wrapper>
+					<div className="flex flex-col h-screen max-w-md mx-auto bg-background">
+						<Header />
+						<Main>{children}</Main>
+						<MobileTabs />
+					</div>
 				</Providers>
 			</body>
 		</html>

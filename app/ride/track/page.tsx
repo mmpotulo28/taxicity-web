@@ -1,13 +1,10 @@
-import React from "react";
+"use client";
+import React, { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button, Card, CardBody, Divider, Progress } from "@heroui/react";
 import { Icon } from "@iconify/react";
-
-interface RideTrackerProps {
-	taxiId: string;
-	pickupLocation: string;
-	onRideStart: () => void;
-}
+import { useRide } from "@/context/RideContext";
+import { useRouter } from "next/navigation";
 
 // Sample driver data
 const driverInfo = {
@@ -20,13 +17,15 @@ const driverInfo = {
 	eta: "5 min",
 };
 
-export const RideTracker: React.FC<RideTrackerProps> = ({ pickupLocation, onRideStart }) => {
-	const [progress, setProgress] = React.useState(0);
-	const [status, setStatus] = React.useState("Driver is on the way");
-	const [showQR, setShowQR] = React.useState(false);
+const RideTracker: FC = () => {
+	const { pickupLocation } = useRide();
+	const router = useRouter();
+	const [progress, setProgress] = useState(0);
+	const [status, setStatus] = useState("Driver is on the way");
+	const [showQR, setShowQR] = useState(false);
 
 	// Simulate taxi approaching
-	React.useEffect(() => {
+	useEffect(() => {
 		const interval = setInterval(() => {
 			setProgress((prev) => {
 				const newProgress = prev + 10;
@@ -46,6 +45,12 @@ export const RideTracker: React.FC<RideTrackerProps> = ({ pickupLocation, onRide
 
 		return () => clearInterval(interval);
 	}, []);
+
+	const onRideStart = () => {
+		setStatus("Enjoy your ride!");
+		setShowQR(false);
+		router.push("/ride/trip/details");
+	};
 
 	return (
 		<motion.div
@@ -195,3 +200,5 @@ export const RideTracker: React.FC<RideTrackerProps> = ({ pickupLocation, onRide
 		</motion.div>
 	);
 };
+
+export default RideTracker;

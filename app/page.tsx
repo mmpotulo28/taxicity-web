@@ -8,7 +8,7 @@ export default function Home() {
 	return (
 		<MapView
 			onRequestRide={() => {
-				router.push("/route");
+				router.push("/ride/route");
 			}}
 		/>
 	);

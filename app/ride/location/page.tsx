@@ -1,30 +1,26 @@
+"use client";
 import React from "react";
 import { motion } from "framer-motion";
 import { Button, Card, CardBody, Input, Divider, Chip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRide } from "@/context/RideContext";
+import { popularLocations } from "@/lib/data";
+import { useRouter } from "next/navigation";
 
-// Sample data for popular locations
-const popularLocations = [
-	"Bree Street Taxi Rank",
-	"Gandhi Square",
-	"Park Station",
-	"Westgate Taxi Rank",
-	"Noord Street Taxi Rank",
-];
-
-export const LocationPicker: React.FC = () => {
-	const { setPickupLocation, setDropoffLocation, selectedRoute, selectedRank } = useRide();
+const LocationPicker: React.FC = () => {
+	const router = useRouter();
+	const { setPickupLocation, setDropOffLocation, selectedRoute, selectedRank } = useRide();
 
 	const [pickup, setPickup] = React.useState("");
-	const [dropoff, setDropoff] = React.useState("");
+	const [dropOff, setDropOff] = React.useState("");
 
 	const handleSubmit = () => {
-		if (pickup && dropoff) {
+		if (pickup && dropOff) {
 			setPickupLocation(pickup);
-			setDropoffLocation(dropoff);
+			setDropOffLocation(dropOff);
 
 			// Navigate to taxi selection or confirmation page
+			router.push("/ride/taxi/list");
 		}
 	};
 
@@ -46,10 +42,10 @@ export const LocationPicker: React.FC = () => {
 					<CardBody className="p-3">
 						<div className="flex items-center gap-2 text-sm">
 							<Icon icon="lucide:route" className="text-primary" />
-							<span className="font-medium">{selectedRoute}</span>
+							<span className="font-medium">{selectedRoute?.name}</span>
 							<Divider orientation="vertical" className="h-4" />
 							<Icon icon="lucide:map-pin" className="text-danger text-sm" />
-							<span className="text-default-500">{selectedRank}</span>
+							<span className="text-default-500">{selectedRank?.name}</span>
 						</div>
 					</CardBody>
 				</Card>
@@ -73,8 +69,8 @@ export const LocationPicker: React.FC = () => {
 						<Input
 							label="Drop-off Location"
 							placeholder="Enter destination"
-							value={dropoff}
-							onValueChange={setDropoff}
+							value={dropOff}
+							onValueChange={setDropOff}
 							className="mb-2"
 						/>
 					</div>
@@ -85,14 +81,14 @@ export const LocationPicker: React.FC = () => {
 				<h3 className="text-sm font-medium mb-3">Popular Locations</h3>
 
 				<div className="flex flex-wrap gap-2 mb-6">
-					{popularLocations.map((location) => (
+					{popularLocations?.map((location) => (
 						<Chip
 							key={location}
 							variant="flat"
 							color="primary"
 							onClick={() => {
 								if (!pickup) setPickup(location);
-								else if (!dropoff) setDropoff(location);
+								else if (!dropOff) setDropOff(location);
 							}}>
 							{location}
 						</Chip>
@@ -116,7 +112,7 @@ export const LocationPicker: React.FC = () => {
 				<Button
 					color="primary"
 					className="w-full"
-					isDisabled={!pickup || !dropoff}
+					isDisabled={!pickup || !dropOff}
 					onPress={handleSubmit}
 					endContent={<Icon icon="lucide:arrow-right" />}>
 					Find Available Taxis
@@ -125,3 +121,5 @@ export const LocationPicker: React.FC = () => {
 		</motion.div>
 	);
 };
+
+export default LocationPicker;

@@ -1,20 +1,14 @@
+"use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { Button, Card, CardBody, Divider, Progress } from "@heroui/react";
+import { Alert, Button, Card, CardBody, Divider, Progress } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { useRide } from "@/context/RideContext";
+import { useRouter } from "next/navigation";
 
-interface TripDetailsProps {
-	pickupLocation: string;
-	dropoffLocation: string;
-	taxiId: string;
-	onRideComplete: () => void;
-}
-
-export const TripDetails: React.FC<TripDetailsProps> = ({
-	pickupLocation,
-	dropoffLocation,
-	onRideComplete,
-}) => {
+const TripDetails: React.FC = () => {
+	const { pickupLocation, dropOffLocation } = useRide();
+	const router = useRouter();
 	const [progress, setProgress] = React.useState(0);
 	const [remainingTime, setRemainingTime] = React.useState(15);
 	const [showPayment, setShowPayment] = React.useState(false);
@@ -40,6 +34,12 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
 
 		return () => clearInterval(interval);
 	}, []);
+
+	const onRideComplete = () => {
+		// Handle ride completion logic here
+		router.push("/ride/history");
+		alert("Trip completed! Thank you for riding with us.");
+	};
 
 	return (
 		<motion.div
@@ -89,7 +89,7 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
 								<div>
 									<div className="text-sm font-medium">Drop-off</div>
 									<div className="text-xs text-default-500">
-										{dropoffLocation}
+										{dropOffLocation}
 									</div>
 								</div>
 							</div>
@@ -125,18 +125,12 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
 									</div>
 								</div>
 
-								<div className="bg-default-50 p-3 rounded-medium mb-4">
-									<div className="flex items-start gap-3">
-										<Icon icon="lucide:info" className="text-primary mt-0.5" />
-										<div>
-											<h4 className="text-sm font-medium">Cash Payment</h4>
-											<p className="text-xs text-default-500 mt-1">
-												Please pay the driver directly with cash. Exact
-												change is appreciated.
-											</p>
-										</div>
-									</div>
-								</div>
+								<Alert
+									color="warning"
+									title="Cash Payment"
+									description="Please pay the driver directly with cash. Exact change is appreciated."
+									className="mb-4"
+								/>
 
 								<Button
 									color="primary"
@@ -262,3 +256,5 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
 		</motion.div>
 	);
 };
+
+export default TripDetails;
