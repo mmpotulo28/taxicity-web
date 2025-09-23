@@ -15,10 +15,10 @@ import {
 	SelectItem,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { useThemeContext } from "@/context/ThemeProvider";
+import { useTheme } from "next-themes";
 
 const Settings: React.FC = () => {
-	const { setTheme, theme } = useThemeContext();
+	const { setTheme, theme } = useTheme();
 	const [activeTab, setActiveTab] = useState("profile");
 	const [profileForm, setProfileForm] = useState({
 		name: "John Doe",

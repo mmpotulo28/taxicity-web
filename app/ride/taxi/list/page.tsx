@@ -23,8 +23,8 @@ const TaxiList: React.FC = () => {
 	const router = useRouter();
 
 	useEffect(() => {
+		if (typeof window === "undefined") return;
 		const timer = setTimeout(() => {
-			// Add mock coordinates to each taxi
 			setAvailableTaxis(
 				taxis.map((taxi, idx) => ({
 					...taxi,
@@ -39,6 +39,7 @@ const TaxiList: React.FC = () => {
 	}, []);
 
 	const handleRequestRide = () => {
+		if (typeof window === "undefined") return;
 		sessionStorage.setItem("taxicity_available_taxis", JSON.stringify(availableTaxis));
 		router.push("/ride/track");
 	};

@@ -9,7 +9,6 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 
 import { RideProvider } from "@/context/RideContext";
-import { CustomThemeProvider } from "@/context/ThemeProvider";
 
 export interface ProvidersProps {
 	children: React.ReactNode;
@@ -22,19 +21,19 @@ declare module "@react-types/shared" {
 	}
 }
 
-export function Providers({ children, themeProps }: ProvidersProps) {
+function Providers({ children, themeProps }: ProvidersProps) {
 	const router = useRouter();
 
 	return (
 		<HeroUIProvider navigate={router.push}>
 			<NextThemesProvider {...themeProps}>
-				<CustomThemeProvider>
-					<RideProvider>
-						<ToastProvider />
-						{children}
-					</RideProvider>
-				</CustomThemeProvider>
+				<RideProvider>
+					<ToastProvider />
+					{children}
+				</RideProvider>
 			</NextThemesProvider>
 		</HeroUIProvider>
 	);
 }
+
+export { Providers };
