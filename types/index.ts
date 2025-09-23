@@ -30,3 +30,18 @@ export interface iTaxi {
 	distance: string;
 	eta: string;
 }
+
+export interface iTrip {
+	id: string;
+	date: string;
+	time: string;
+	route: string;
+	pickup: string;
+	dropoff: string;
+	driver: string;
+	vehicle: string;
+	licensePlate: string;
+	fare: string;
+	status: "completed" | "cancelled" | "ongoing";
+	paymentMethod: "Cash" | "QR Code";
+}

@@ -5,51 +5,92 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+// Modern tab data structure
+const tabs = [
+	{
+		key: "home",
+		label: "Home",
+		icon: "lucide:home",
+		href: "/",
+	},
+	{ key: "route", label: "Route", icon: "lucide:route", href: "/ride/route" },
+	{
+		key: "trip-history",
+		label: "History",
+		icon: "lucide:clock",
+		href: "/ride/trip/history",
+	},
+	{
+		key: "support",
+		label: "Support",
+		icon: "lucide:message-square",
+		href: "/support",
+	},
+	{
+		key: "settings",
+		label: "Settings",
+		icon: "lucide:settings",
+		href: "/settings",
+	},
+];
+
 const MobileTabs = () => {
 	const pathname = usePathname();
-	// CHECK CURRENT PAGE LOGIC FROM URL
-	const [currentPage, setCurrentPage] = useState<"map" | "settings" | "trip-history" | "support">(
-		"map",
-	);
+	const [currentPage, setCurrentPage] = useState<
+		"home" | "settings" | "trip-history" | "support" | "route"
+	>("home");
 
 	useEffect(() => {
 		const handleRouteChange = (url: string) => {
-			if (url.includes("map")) setCurrentPage("map");
+			if (url === "/") setCurrentPage("home");
+			else if (url.includes("route")) setCurrentPage("route");
 			else if (url.includes("settings")) setCurrentPage("settings");
-			else if (url.includes("trip-history")) setCurrentPage("trip-history");
+			else if (url.includes("history")) setCurrentPage("trip-history");
 			else if (url.includes("support")) setCurrentPage("support");
 		};
-
-		// listen to route changes
 		handleRouteChange(pathname || "");
-
-		return () => {
-			// Cleanup listener on unmount
-		};
+		return () => {};
 	}, [pathname]);
 
 	return (
-		<footer className="flex justify-around items-center py-2 px-4 bg-white border-t border-default-200">
-			<Button
-				as={Link}
-				variant="light"
-				className={`flex flex-col items-center ${currentPage === "map" ? "text-primary" : ""}`}
-				href="/">
-				<Icon icon="lucide:map" className="text-xl" />
-				<span className="text-tiny mt-1">Map</span>
-			</Button>
-			<Button variant="light" className={`flex flex-col items-center `} href="/trip-history">
-				<Icon icon="lucide:clock" className="text-xl" />
-				<span className="text-tiny mt-1">History</span>
-			</Button>
-			<Button variant="light" className={`flex flex-col items-center `} href="/support">
-				<Icon icon="lucide:message-square" className="text-xl" />
-				<span className="text-tiny mt-1">Support</span>
-			</Button>
-			<Button variant="light" className={`flex flex-col items-center `} href="/settings">
-				<Icon icon="lucide:settings" className="text-xl" />
-				<span className="text-tiny mt-1">Settings</span>
-			</Button>
+		<footer className="z-50 bg-background border-t border-default-200 shadow-lg h-16">
+			<nav className="flex justify-around items-center">
+				{tabs.map((tab) => {
+					const isActive = currentPage === tab.key;
+					return (
+						<Button
+							radius="none"
+							as={Link}
+							key={tab.key}
+							href={tab.href}
+							variant="light"
+							className={`flex flex-col items-center w-full transition-all duration-200 px-3 py-2 h-16
+								${isActive ? "bg-primary/10 text-primary font-semibold shadow-md" : "text-default-700"}
+								hover:bg-primary/5 active:scale-95`}
+							style={{
+								position: "relative",
+								minWidth: 64,
+							}}>
+							<Icon
+								fontSize={24}
+								icon={tab.icon}
+								className="text-2xl h-4 w-4 text-default-700"
+							/>
+
+							<span className={`text-xs ${isActive ? "font-bold" : "font-normal"}`}>
+								{tab.label}
+							</span>
+
+							{isActive && (
+								<span
+									className="absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full bg-primary"
+									style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)" }}
+								/>
+							)}
+						</Button>
+					);
+				})}
+			</nav>
 		</footer>
 	);
 };

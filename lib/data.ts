@@ -1,4 +1,4 @@
-import { iRank, iRoute, iTaxi } from "@/types";
+import { iRank, iRoute, iTaxi, iTrip } from "@/types";
 
 // Sample data for routes and ranks
 export const routes: iRoute[] = [
@@ -109,4 +109,78 @@ export const popularLocations = [
 	"Westgate Taxi Rank",
 	"Noord Street Taxi Rank",
 	"Newtown Taxi Rank",
+];
+
+// Sample trip history data
+export const tripHistory: iTrip[] = [
+	{
+		id: "trip-001",
+		date: "2023-06-15",
+		time: "14:30",
+		route: "CBD to Soweto",
+		pickup: "Bree Street Taxi Rank",
+		dropoff: "Soweto Mall",
+		driver: "Sipho Mabena",
+		vehicle: "Toyota Quantum - White",
+		licensePlate: "GP 123-456",
+		fare: "R25.40",
+		status: "completed",
+		paymentMethod: "Cash",
+	},
+	{
+		id: "trip-002",
+		date: "2023-06-10",
+		time: "09:15",
+		route: "Sandton to Alexandra",
+		pickup: "Sandton City",
+		dropoff: "Alexandra Taxi Rank",
+		driver: "Thabo Ndlovu",
+		vehicle: "Toyota HiAce - Silver",
+		licensePlate: "GP 789-012",
+		fare: "R18.50",
+		status: "completed",
+		paymentMethod: "QR Code",
+	},
+	{
+		id: "trip-003",
+		date: "2023-06-05",
+		time: "17:45",
+		route: "Pretoria to Johannesburg",
+		pickup: "Pretoria Station",
+		dropoff: "Park Station",
+		driver: "Mandla Khumalo",
+		vehicle: "Nissan Impendulo - White",
+		licensePlate: "GP 345-678",
+		fare: "R35.00",
+		status: "completed",
+		paymentMethod: "Cash",
+	},
+	{
+		id: "trip-004",
+		date: "2023-05-28",
+		time: "11:20",
+		route: "Randburg to Midrand",
+		pickup: "Randburg Mall",
+		dropoff: "Midrand Gautrain Station",
+		driver: "Bongani Zulu",
+		vehicle: "Toyota Quantum - Silver",
+		licensePlate: "GP 901-234",
+		fare: "R30.00",
+		status: "completed",
+		paymentMethod: "Cash",
+	},
+	{
+		id: "trip-005",
+		date: "2023-05-20",
+		time: "08:00",
+		route: "Roodepoort to Krugersdorp",
+		pickup: "Roodepoort CBD",
+		dropoff: "Krugersdorp Taxi Rank",
+		driver: "Themba Nkosi",
+		vehicle: "Toyota HiAce - White",
+		licensePlate: "GP 567-890",
+		fare: "R22.50",
+		status: "completed",
+		paymentMethod: "QR Code",
+	},
 ];

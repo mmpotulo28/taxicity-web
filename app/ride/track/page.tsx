@@ -6,23 +6,19 @@ import { Icon } from "@iconify/react";
 import { useRide } from "@/context/RideContext";
 import { useRouter } from "next/navigation";
 
-// Sample driver data
-const driverInfo = {
-	id: "1",
-	name: "Sipho Mabena",
-	vehicle: "Toyota Quantum - White",
-	licensePlate: "GP 123-456",
-	rating: 4.8,
-	phone: "071 234 5678",
-	eta: "5 min",
-};
-
 const RideTracker: FC = () => {
-	const { pickupLocation } = useRide();
+	const { pickupLocation, selectedTaxi, startTrip, tripStarted } = useRide();
 	const router = useRouter();
 	const [progress, setProgress] = useState(0);
 	const [status, setStatus] = useState("Driver is on the way");
 	const [showQR, setShowQR] = useState(false);
+
+	// Redirect if required state is missing
+	useEffect(() => {
+		if (!selectedTaxi || !pickupLocation) {
+			router.replace("/ride/route");
+		}
+	}, [selectedTaxi, pickupLocation, router]);
 
 	// Simulate taxi approaching
 	useEffect(() => {
@@ -34,7 +30,7 @@ const RideTracker: FC = () => {
 					setStatus("Driver is arriving soon");
 				}
 
-				if (newProgress === 100) {
+				if (newProgress >= 100) {
 					setStatus("Driver has arrived");
 					clearInterval(interval);
 				}
@@ -47,10 +43,29 @@ const RideTracker: FC = () => {
 	}, []);
 
 	const onRideStart = () => {
-		setStatus("Enjoy your ride!");
-		setShowQR(false);
-		router.push("/ride/trip/details");
+		const success = startTrip();
+		if (success) {
+			setStatus("Enjoy your ride!");
+			setShowQR(false);
+			router.push("/ride/trip/details");
+		}
 	};
+
+	// If no taxi selected, show message
+	if (!selectedTaxi) {
+		return (
+			<motion.div
+				className="h-full flex flex-col items-center justify-center"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.3 }}>
+				<Icon icon="lucide:alert-triangle" className="text-4xl text-danger mb-2" />
+				<p className="text-default-500 text-center">
+					No taxi selected. Please select a taxi to continue.
+				</p>
+			</motion.div>
+		);
+	}
 
 	return (
 		<motion.div
@@ -77,10 +92,10 @@ const RideTracker: FC = () => {
 							</div>
 
 							<div className="flex-1">
-								<h3 className="font-medium">{driverInfo.name}</h3>
+								<h3 className="font-medium">{selectedTaxi.driverName}</h3>
 								<div className="flex items-center text-xs text-default-500 mt-1">
 									<Icon icon="lucide:star" className="text-warning mr-1" />
-									<span>{driverInfo.rating}</span>
+									<span>{selectedTaxi.rating}</span>
 								</div>
 							</div>
 
@@ -107,11 +122,11 @@ const RideTracker: FC = () => {
 						<div className="grid grid-cols-2 gap-2 text-sm">
 							<div>
 								<div className="text-default-500">Vehicle</div>
-								<div>{driverInfo.vehicle}</div>
+								<div>{selectedTaxi.vehicleInfo}</div>
 							</div>
 							<div>
 								<div className="text-default-500">License Plate</div>
-								<div>{driverInfo.licensePlate}</div>
+								<div>{selectedTaxi.licensePlate}</div>
 							</div>
 						</div>
 					</CardBody>
