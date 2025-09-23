@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
 	Button,
@@ -14,7 +15,7 @@ import {
 import { Icon } from "@iconify/react";
 
 const Register: React.FC = () => {
-	const [formData, setFormData] = React.useState({
+	const [formData, setFormData] = useState({
 		fullName: "",
 		email: "",
 		phone: "",
@@ -22,8 +23,8 @@ const Register: React.FC = () => {
 		confirmPassword: "",
 		agreeTerms: false,
 	});
-	const [isLoading, setIsLoading] = React.useState(false);
-	const [errors, setErrors] = React.useState<{
+	const [isLoading, setIsLoading] = useState(false);
+	const [errors, setErrors] = useState<{
 		fullName?: string;
 		email?: string;
 		phone?: string;

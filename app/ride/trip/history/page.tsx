@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Input, Tabs, Tab, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
@@ -10,12 +10,12 @@ import { iTrip } from "@/types";
 import TripModal from "@/components/TripModal";
 
 const TripHistory: React.FC = () => {
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [selectedTrip, setSelectedTrip] = React.useState<iTrip | null>(null);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [selectedTrip, setSelectedTrip] = useState<iTrip | null>(null);
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 	const { tripHistory } = useRide();
 
-	const filteredTrips = React.useMemo(() => {
+	const filteredTrips = useMemo(() => {
 		if (!searchQuery) return tripHistory;
 
 		const query = searchQuery.toLowerCase();

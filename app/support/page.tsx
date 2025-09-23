@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
 	Accordion,
@@ -15,8 +16,8 @@ import {
 import { Icon } from "@iconify/react";
 
 const Support: React.FC = () => {
-	const [activeTab, setActiveTab] = React.useState("faq");
-	const [contactForm, setContactForm] = React.useState({
+	const [activeTab, setActiveTab] = useState("faq");
+	const [contactForm, setContactForm] = useState({
 		name: "",
 		email: "",
 		subject: "",

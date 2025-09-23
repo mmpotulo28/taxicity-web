@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Alert, Button, Card, CardBody, Divider, Progress } from "@heroui/react";
 import { Icon } from "@iconify/react";
@@ -11,10 +11,10 @@ import TripCard from "@/components/TripCard";
 const TripDetails: React.FC = () => {
 	const { trip, tripStarted, startTrip, endTrip } = useRide();
 	const router = useRouter();
-	const [progress, setProgress] = React.useState(0);
-	const [remainingTime, setRemainingTime] = React.useState(15);
-	const [showPayment, setShowPayment] = React.useState(false);
-	const [showQR, setShowQR] = React.useState(!tripStarted);
+	const [progress, setProgress] = useState(0);
+	const [remainingTime, setRemainingTime] = useState(15);
+	const [showPayment, setShowPayment] = useState(false);
+	const [showQR, setShowQR] = useState(!tripStarted);
 
 	// Redirect if trip not started
 	useEffect(() => {

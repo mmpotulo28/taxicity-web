@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
 	Button,
@@ -14,13 +15,13 @@ import {
 import { Icon } from "@iconify/react";
 
 const Login: React.FC = () => {
-	const [formData, setFormData] = React.useState({
+	const [formData, setFormData] = useState({
 		email: "",
 		password: "",
 		rememberMe: false,
 	});
-	const [isLoading, setIsLoading] = React.useState(false);
-	const [errors, setErrors] = React.useState<{
+	const [isLoading, setIsLoading] = useState(false);
+	const [errors, setErrors] = useState<{
 		email?: string;
 		password?: string;
 	}>({});

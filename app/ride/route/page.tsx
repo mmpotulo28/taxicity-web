@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Input, Tabs, Tab, Select, SelectItem } from "@heroui/react";
 import { Icon } from "@iconify/react";
@@ -18,11 +18,11 @@ const getFareMin = (fare?: string) => {
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const RouteSelector: React.FC = () => {
-	const [searchQuery, setSearchQuery] = React.useState("");
-	const [selectedLetter, setSelectedLetter] = React.useState<string | null>(null);
-	const [sortBy, setSortBy] = React.useState<"name" | "fare" | "status">("name");
+	const [searchQuery, setSearchQuery] = useState("");
+	const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+	const [sortBy, setSortBy] = useState<"name" | "fare" | "status">("name");
 
-	const filteredRoutes = React.useMemo(() => {
+	const filteredRoutes = useMemo(() => {
 		let filtered = routes;
 
 		if (searchQuery) {

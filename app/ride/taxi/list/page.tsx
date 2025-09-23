@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button, Card, CardBody, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { taxis } from "@/lib/data";
 import TaxiMap from "@/components/TaxiMap";
 import { useRide } from "@/context/RideContext";
+import { iTaxi } from "@/types";
 
 const mockTaxiCoords = [
 	{ lat: -26.2041, lng: 28.0473 }, // Johannesburg
@@ -17,8 +18,8 @@ const mockTaxiCoords = [
 
 const TaxiList: React.FC = () => {
 	const { pickupLocation, dropOffLocation } = useRide();
-	const [loading, setLoading] = React.useState(true);
-	const [availableTaxis, setAvailableTaxis] = React.useState<any[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [availableTaxis, setAvailableTaxis] = useState<iTaxi[]>([]);
 	const router = useRouter();
 
 	useEffect(() => {
@@ -49,7 +50,7 @@ const TaxiList: React.FC = () => {
 			initial={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}>
 			<div className="fixed inset-0 h-full w-full z-0">
-				<TaxiMap taxis={availableTaxis} />
+				<TaxiMap taxis={availableTaxis as any} />
 			</div>
 
 			<div className="p-1 bg-[rgba(0,0,0,0.3)] shadow-sm z-1 backdrop-blur-sm">
