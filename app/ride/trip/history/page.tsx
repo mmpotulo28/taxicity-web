@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Input, Tabs, Tab, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
+
 import { useRide } from "@/context/RideContext";
 import TripCard from "@/components/TripCard";
 import { iTrip } from "@/types";
@@ -18,6 +19,7 @@ const TripHistory: React.FC = () => {
 		if (!searchQuery) return tripHistory;
 
 		const query = searchQuery.toLowerCase();
+
 		return tripHistory.filter(
 			(trip) =>
 				trip.route.toLowerCase().includes(query) ||
@@ -35,18 +37,18 @@ const TripHistory: React.FC = () => {
 
 	return (
 		<motion.div
+			animate={{ opacity: 1 }}
 			className="h-full flex flex-col"
 			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
 			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-4">Trip History</h2>
 				<Input
+					className="mb-2"
 					placeholder="Search trips"
+					startContent={<Icon className="text-default-400" icon="lucide:search" />}
 					value={searchQuery}
 					onValueChange={setSearchQuery}
-					startContent={<Icon icon="lucide:search" className="text-default-400" />}
-					className="mb-2"
 				/>
 
 				<Tabs aria-label="Trip options" color="primary" variant="underlined">
@@ -70,15 +72,17 @@ const TripHistory: React.FC = () => {
 				) : (
 					<div className="text-center py-8">
 						<Icon
-							icon="lucide:search-x"
 							className="text-4xl text-default-300 mx-auto mb-2"
+							icon="lucide:search-x"
 						/>
-						<p className="text-default-500">No trips found matching "{searchQuery}"</p>
+						<p className="text-default-500">
+							No trips found matching &quot;{searchQuery}&quot;
+						</p>
 					</div>
 				)}
 			</div>
 
-			<TripModal trip={selectedTrip} isOpen={isOpen} onOpenChange={onOpenChange} />
+			<TripModal isOpen={isOpen} trip={selectedTrip} onOpenChange={onOpenChange} />
 		</motion.div>
 	);
 };

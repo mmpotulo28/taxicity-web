@@ -3,8 +3,9 @@ import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Alert, Button, Card, CardBody, Divider, Progress } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { useRide } from "@/context/RideContext";
 import { useRouter } from "next/navigation";
+
+import { useRide } from "@/context/RideContext";
 import TripCard from "@/components/TripCard";
 
 const TripDetails: React.FC = () => {
@@ -25,6 +26,7 @@ const TripDetails: React.FC = () => {
 	// Start trip after user confirms
 	const handleConfirmRideStarted = () => {
 		const success = startTrip();
+
 		if (success) {
 			setShowQR(false);
 			setProgress(0);
@@ -39,18 +41,23 @@ const TripDetails: React.FC = () => {
 		const interval = setInterval(() => {
 			setProgress((prev) => {
 				const newProgress = prev + 5;
+
 				if (newProgress >= 100) {
 					clearInterval(interval);
 					setShowPayment(true);
+
 					return 100;
 				}
+
 				return newProgress;
 			});
 			setRemainingTime((prev) => {
 				const newTime = prev - 0.75;
+
 				return Math.max(newTime, 0);
 			});
 		}, 1000);
+
 		return () => clearInterval(interval);
 	}, [tripStarted]);
 
@@ -64,11 +71,11 @@ const TripDetails: React.FC = () => {
 	if (!trip) {
 		return (
 			<motion.div
+				animate={{ opacity: 1 }}
 				className="h-full flex flex-col items-center justify-center"
 				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
 				transition={{ duration: 0.3 }}>
-				<Icon icon="lucide:alert-triangle" className="text-4xl text-danger mb-2" />
+				<Icon className="text-4xl text-danger mb-2" icon="lucide:alert-triangle" />
 				<p className="text-default-500 text-center">
 					No trip found. Please start a ride from the home page.
 				</p>
@@ -78,9 +85,9 @@ const TripDetails: React.FC = () => {
 
 	return (
 		<motion.div
+			animate={{ opacity: 1 }}
 			className="h-full flex flex-col"
 			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
 			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-2">Your Trip</h2>
@@ -95,10 +102,10 @@ const TripDetails: React.FC = () => {
 				{tripStarted && !showPayment && (
 					<>
 						<Progress
-							value={progress}
-							color="primary"
-							className="mb-2"
 							aria-label="Trip progress"
+							className="mb-2"
+							color="primary"
+							value={progress}
 						/>
 						<div className="flex justify-between text-xs text-default-500 mb-4">
 							<span>In progress</span>
@@ -113,9 +120,9 @@ const TripDetails: React.FC = () => {
 			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden space-y-4">
 				{showQR && (
 					<motion.div
+						animate={{ opacity: 1, scale: 1 }}
 						className="flex flex-col items-center"
 						initial={{ opacity: 0, scale: 0.9 }}
-						animate={{ opacity: 1, scale: 1 }}
 						transition={{ duration: 0.3 }}>
 						<div className="bg-background p-4 rounded-lg shadow-md mb-4">
 							<div
@@ -126,11 +133,11 @@ const TripDetails: React.FC = () => {
 							/>
 						</div>
 						<p className="text-center text-sm text-default-500 mb-4">
-							Scan the driver's QR code to confirm you are taking this taxi.
+							Scan the driver&apos;s QR code to confirm you are taking this taxi.
 						</p>
 						<Button
-							color="primary"
 							className="w-full"
+							color="primary"
 							onPress={handleConfirmRideStarted}>
 							Confirm Trip Started
 						</Button>
@@ -139,9 +146,9 @@ const TripDetails: React.FC = () => {
 
 				{tripStarted && showPayment ? (
 					<motion.div
+						animate={{ opacity: 1 }}
 						className="space-y-4"
 						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
 						transition={{ duration: 0.5 }}>
 						<Card className="shadow-sm">
 							<CardBody className="p-4">
@@ -154,14 +161,14 @@ const TripDetails: React.FC = () => {
 									<Divider className="my-2" />
 								</div>
 								<Alert
-									color="warning"
-									title="Cash Payment"
-									description="Please pay the driver directly with cash. Exact change is appreciated."
 									className="mb-4"
+									color="warning"
+									description="Please pay the driver directly with cash. Exact change is appreciated."
+									title="Cash Payment"
 								/>
 								<Button
-									color="primary"
 									className="w-full mb-2"
+									color="primary"
 									onPress={onRideComplete}>
 									Complete Trip
 								</Button>
@@ -175,17 +182,17 @@ const TripDetails: React.FC = () => {
 										<Button
 											key={star}
 											isIconOnly
-											variant="light"
-											className="text-warning">
-											<Icon icon="lucide:star" className="text-2xl" />
+											className="text-warning"
+											variant="light">
+											<Icon className="text-2xl" icon="lucide:star" />
 										</Button>
 									))}
 								</div>
 								<Button
-									variant="light"
-									color="primary"
 									className="w-full"
-									startContent={<Icon icon="lucide:message-square" />}>
+									color="primary"
+									startContent={<Icon icon="lucide:message-square" />}
+									variant="light">
 									Leave Feedback
 								</Button>
 							</CardBody>
@@ -199,26 +206,26 @@ const TripDetails: React.FC = () => {
 									<div className="flex items-center gap-3 mb-3">
 										<div className="w-10 h-10 bg-default-100 rounded-full flex items-center justify-center">
 											<Icon
-												icon="lucide:user"
 												className="text-xl text-default-400"
+												icon="lucide:user"
 											/>
 										</div>
 										<div>
 											<h3 className="font-medium">{trip.driver}</h3>
 											<div className="flex items-center text-xs text-default-500">
 												<Icon
-													icon="lucide:star"
 													className="text-warning mr-1"
+													icon="lucide:star"
 												/>
 												<span>4.8</span>
 											</div>
 										</div>
 										<Button
 											isIconOnly
-											variant="flat"
-											color="primary"
+											aria-label="Call driver"
 											className="ml-auto"
-											aria-label="Call driver">
+											color="primary"
+											variant="flat">
 											<Icon icon="lucide:phone" />
 										</Button>
 									</div>
@@ -236,7 +243,7 @@ const TripDetails: React.FC = () => {
 							</Card>
 							<div className="bg-default-50 p-3 rounded-medium">
 								<div className="flex items-start gap-3">
-									<Icon icon="lucide:info" className="text-primary mt-0.5" />
+									<Icon className="text-primary mt-0.5" icon="lucide:info" />
 									<div>
 										<h4 className="text-sm font-medium">Trip Information</h4>
 										<ul className="text-xs text-default-500 mt-1 space-y-1">
@@ -253,10 +260,10 @@ const TripDetails: React.FC = () => {
 								</div>
 							</div>
 							<Button
-								color="danger"
-								variant="light"
 								className="w-full"
-								startContent={<Icon icon="lucide:alert-triangle" />}>
+								color="danger"
+								startContent={<Icon icon="lucide:alert-triangle" />}
+								variant="light">
 								Emergency Assistance
 							</Button>
 						</div>

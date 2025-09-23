@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Input, Tabs, Tab, Select, SelectItem } from "@heroui/react";
 import { Icon } from "@iconify/react";
+
 import { ranks, routes } from "@/lib/data";
 import RouteCard from "@/components/RouteCard";
 
@@ -10,6 +11,7 @@ import RouteCard from "@/components/RouteCard";
 const getFareMin = (fare?: string) => {
 	if (!fare) return 0;
 	const match = fare.match(/R(\d+(\.\d+)?)/);
+
 	return match ? parseFloat(match[1]) : 0;
 };
 
@@ -53,18 +55,18 @@ const RouteSelector: React.FC = () => {
 
 	return (
 		<motion.div
+			animate={{ opacity: 1 }}
 			className="h-full flex flex-col"
 			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
 			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-4">Select Your Route</h2>
 				<Input
+					className="mb-2"
 					placeholder="Search routes or ranks"
+					startContent={<Icon className="text-default-400" icon="lucide:search" />}
 					value={searchQuery}
 					onValueChange={setSearchQuery}
-					startContent={<Icon icon="lucide:search" className="text-default-400" />}
-					className="mb-2"
 				/>
 
 				{/* Alphabet Filter */}
@@ -77,10 +79,10 @@ const RouteSelector: React.FC = () => {
 									? "bg-primary text-white"
 									: "bg-default-100 text-default-500 hover:bg-primary/10"
 							}`}
+							type="button"
 							onClick={() =>
 								setSelectedLetter(selectedLetter === letter ? null : letter)
-							}
-							type="button">
+							}>
 							{letter}
 						</button>
 					))}
@@ -91,10 +93,10 @@ const RouteSelector: React.FC = () => {
 					<div className="flex items-center gap-2 ">
 						<span className="text-xs text-default-500">Sort by:</span>
 						<Select
-							size="sm"
+							className="w-32"
 							selectedKeys={[sortBy]}
-							onSelectionChange={(keys) => setSortBy(Array.from(keys)[0] as any)}
-							className="w-32">
+							size="sm"
+							onSelectionChange={(keys) => setSortBy(Array.from(keys)[0] as any)}>
 							<SelectItem key="name">Name</SelectItem>
 							<SelectItem key="fare">Fare</SelectItem>
 							<SelectItem key="status">Status</SelectItem>
@@ -112,18 +114,20 @@ const RouteSelector: React.FC = () => {
 				<div className="space-y-6">
 					{filteredRoutes.map((route) => {
 						const rank = ranks.find((r) => r.id === route.rankId);
+
 						if (!rank) return null; // Skip if no matching rank found
-						return <RouteCard key={route.id} route={route} rank={rank} />;
+
+						return <RouteCard key={route.id} rank={rank} route={route} />;
 					})}
 
 					{filteredRoutes.length === 0 && (
 						<div className="text-center py-8">
 							<Icon
-								icon="lucide:search-x"
 								className="text-4xl text-default-300 mx-auto mb-2"
+								icon="lucide:search-x"
 							/>
 							<p className="text-default-500">
-								No routes found matching "{searchQuery}"
+								No routes found matching &quot;{searchQuery}&quot;
 							</p>
 						</div>
 					)}

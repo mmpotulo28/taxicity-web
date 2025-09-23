@@ -1,10 +1,11 @@
 "use client";
 import React, { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Button, Card, CardBody, Divider, Progress, Spinner } from "@heroui/react";
+import { Button, Card, CardBody, Progress, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { useRide } from "@/context/RideContext";
 import { useRouter } from "next/navigation";
+
+import { useRide } from "@/context/RideContext";
 import TaxiCard from "@/components/TaxiCard";
 import { iTaxi } from "@/types";
 
@@ -20,6 +21,7 @@ const RideTracker: FC = () => {
 	// Load available taxis from sessionStorage
 	useEffect(() => {
 		const stored = sessionStorage.getItem("taxicity_available_taxis");
+
 		if (stored) {
 			setAvailableTaxis(JSON.parse(stored));
 		}
@@ -35,14 +37,17 @@ const RideTracker: FC = () => {
 		const interval = setInterval(() => {
 			setProgress((prev) => {
 				const newProgress = prev + 25;
+
 				if (newProgress >= 100) {
 					clearInterval(interval);
 					setStatus("A taxi has arrived!");
 					setArrivedTaxi(availableTaxis[0]);
 					setStep("arrived");
+
 					return 100;
 				}
 				setStatus("Taxis are on the way...");
+
 				return Math.min(newProgress, 100);
 			});
 		}, 1200);
@@ -59,6 +64,7 @@ const RideTracker: FC = () => {
 
 	const onRideStart = () => {
 		const success = startTrip();
+
 		if (success) {
 			router.push("/ride/trip/details");
 		}
@@ -66,9 +72,9 @@ const RideTracker: FC = () => {
 
 	return (
 		<motion.div
+			animate={{ opacity: 1 }}
 			className="h-full flex flex-col"
 			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
 			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-2">Track Your Taxi</h2>
@@ -76,10 +82,10 @@ const RideTracker: FC = () => {
 					<>
 						<p className="text-default-500 text-sm mb-4">{status}</p>
 						<Progress
-							value={progress}
-							color="primary"
-							className="mb-4"
 							aria-label="Taxi arrival progress"
+							className="mb-4"
+							color="primary"
+							value={progress}
 						/>
 						<Card className="mb-4">
 							<CardBody className="p-3">
@@ -98,8 +104,8 @@ const RideTracker: FC = () => {
 										{availableTaxis.map((taxi) => (
 											<TaxiCard
 												key={taxi.id}
-												taxi={taxi}
 												showSelect={false}
+												taxi={taxi}
 											/>
 										))}
 									</div>
@@ -108,13 +114,13 @@ const RideTracker: FC = () => {
 						</Card>
 						<div className="bg-default-50 p-3 rounded-medium">
 							<div className="flex items-start gap-3">
-								<Icon icon="lucide:info" className="text-primary mt-0.5" />
+								<Icon className="text-primary mt-0.5" icon="lucide:info" />
 								<div>
 									<h4 className="text-sm font-medium">How it works</h4>
 									<ul className="text-xs text-default-500 mt-1 list-disc pl-4 space-y-1">
 										<li>Wait for a taxi to arrive</li>
-										<li>You'll be notified when a taxi is ready</li>
-										<li>Scan the arrived taxi's QR code to confirm</li>
+										<li>You&apos;ll be notified when a taxi is ready</li>
+										<li>Scan the arrived taxi&apos;s QR code to confirm</li>
 									</ul>
 								</div>
 							</div>
@@ -129,14 +135,14 @@ const RideTracker: FC = () => {
 								<h3 className="font-medium mb-2 text-primary">
 									Your taxi has arrived!
 								</h3>
-								<TaxiCard taxi={arrivedTaxi} showSelect={false} />
+								<TaxiCard showSelect={false} taxi={arrivedTaxi} />
 								<div className="mt-4 flex flex-col items-center">
 									<Button
-										color="primary"
 										className="w-full"
+										color="primary"
 										startContent={<Icon icon="lucide:qr-code" />}
 										onPress={handleScanQR}>
-										Scan Driver's QR Code
+										Scan Driver&apos;s QR Code
 									</Button>
 									<p className="text-xs text-default-500 mt-2 text-center">
 										Please scan the QR code provided by the driver to confirm
@@ -161,11 +167,11 @@ const RideTracker: FC = () => {
 									/>
 								</div>
 								<p className="text-center text-sm text-default-500 mb-4">
-									You have scanned the taxi's QR code.
+									You have scanned the taxi&apos;s QR code.
 									<br />
 									Confirm to start your trip.
 								</p>
-								<Button color="primary" className="w-full" onPress={onRideStart}>
+								<Button className="w-full" color="primary" onPress={onRideStart}>
 									Confirm Trip Started
 								</Button>
 							</CardBody>

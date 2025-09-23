@@ -43,9 +43,9 @@ export const Support: React.FC = () => {
 
 	return (
 		<motion.div
+			animate={{ opacity: 1 }}
 			className="h-full flex flex-col"
 			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
 			<div className="p-4 bg-white shadow-sm">
 				<h2 className="text-lg font-semibold mb-4">Support Center</h2>
@@ -53,8 +53,8 @@ export const Support: React.FC = () => {
 				<Tabs
 					aria-label="Support options"
 					color="primary"
-					variant="underlined"
 					selectedKey={activeTab}
+					variant="underlined"
 					onSelectionChange={(key) => setActiveTab(key as string)}>
 					<Tab key="faq" title="FAQ" />
 					<Tab key="contact" title="Contact Us" />
@@ -86,9 +86,9 @@ export const Support: React.FC = () => {
 								<p className="text-sm text-default-600">
 									TaxiCity supports cash payments, which is the traditional
 									payment method for South African taxis. For added security and
-									convenience, you can also scan the driver's QR code to confirm
-									your ride and payment. The fare is calculated based on the route
-									and distance.
+									convenience, you can also scan the driver&apos;s QR code to
+									confirm confirm confirm your ride and payment. The fare is
+									calculated route and distance.
 								</p>
 							</AccordionItem>
 
@@ -97,10 +97,10 @@ export const Support: React.FC = () => {
 								aria-label="What if my driver doesn't arrive?"
 								title="What if my driver doesn't arrive?">
 								<p className="text-sm text-default-600">
-									If your driver doesn't arrive within the estimated time, you can
-									cancel the ride without any penalty and request a new one. You
-									can also contact our support team for assistance by using the
-									"Contact Us" tab in the Support Center.
+									If your driver doesn&apos;t arrive within the estimated time,
+									you can cancel the ride without any penalty and request a new
+									one. You can also contact our support team for assistance by
+									using the &quot;Contact Us&quot; tab in the Support Center.
 								</p>
 							</AccordionItem>
 
@@ -110,9 +110,10 @@ export const Support: React.FC = () => {
 								title="How do I report an issue with my ride?">
 								<p className="text-sm text-default-600">
 									You can report issues through the app by going to your Trip
-									History, selecting the specific trip, and using the "Report
-									Issue" option. Alternatively, you can contact our support team
-									directly through the "Contact Us" section in the Support Center.
+									History, selecting the specific trip, and using the &quot;Report
+									Issue&quot; option. Alternatively, you can contact our support
+									team directly through the &quot;Contact Us&quot; section in
+									Center.
 								</p>
 							</AccordionItem>
 
@@ -122,16 +123,16 @@ export const Support: React.FC = () => {
 								title="Is TaxiCity available in all South African cities?">
 								<p className="text-sm text-default-600">
 									TaxiCity is currently available in major South African cities
-									including Johannesburg, Pretoria, Cape Town, and Durban. We're
-									continuously expanding to more areas. Check the app for
-									available routes and ranks in your area.
+									including Johannesburg, Pretoria, Cape Town, and Durban.
+									We&apos;re continuously expanding to more areas. Check the app
+									for available routes and ranks in your area.
 								</p>
 							</AccordionItem>
 						</Accordion>
 
 						<div className="bg-default-50 p-4 rounded-medium">
 							<div className="flex items-start gap-3">
-								<Icon icon="lucide:phone" className="text-primary mt-1" />
+								<Icon className="text-primary mt-1" icon="lucide:phone" />
 								<div>
 									<h4 className="font-medium">Emergency Contact</h4>
 									<p className="text-sm text-default-500 mt-1">
@@ -174,21 +175,21 @@ export const Support: React.FC = () => {
 
 								<Textarea
 									label="Message"
+									minRows={4}
 									placeholder="Please describe your issue or question in detail"
 									value={contactForm.message}
 									onValueChange={(value) => handleFormChange("message", value)}
-									minRows={4}
 								/>
 
 								<Button
-									color="primary"
 									className="w-full"
-									onPress={handleSubmitForm}
+									color="primary"
 									isDisabled={
 										!contactForm.name ||
 										!contactForm.email ||
 										!contactForm.message
-									}>
+									}
+									onPress={handleSubmitForm}>
 									Submit
 								</Button>
 							</div>
@@ -197,7 +198,7 @@ export const Support: React.FC = () => {
 
 							<div className="space-y-3">
 								<div className="flex items-center gap-2">
-									<Icon icon="lucide:phone" className="text-primary" />
+									<Icon className="text-primary" icon="lucide:phone" />
 									<div>
 										<p className="text-sm font-medium">Call Support</p>
 										<p className="text-xs text-default-500">
@@ -207,7 +208,7 @@ export const Support: React.FC = () => {
 								</div>
 
 								<div className="flex items-center gap-2">
-									<Icon icon="lucide:mail" className="text-primary" />
+									<Icon className="text-primary" icon="lucide:mail" />
 									<div>
 										<p className="text-sm font-medium">Email Support</p>
 										<p className="text-xs text-default-500">
@@ -217,7 +218,7 @@ export const Support: React.FC = () => {
 								</div>
 
 								<div className="flex items-center gap-2">
-									<Icon icon="lucide:clock" className="text-primary" />
+									<Icon className="text-primary" icon="lucide:clock" />
 									<div>
 										<p className="text-sm font-medium">Operating Hours</p>
 										<p className="text-xs text-default-500">
@@ -236,7 +237,7 @@ export const Support: React.FC = () => {
 							<CardBody className="p-4">
 								<div className="flex items-center gap-3">
 									<div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-										<Icon icon="lucide:user" className="text-primary" />
+										<Icon className="text-primary" icon="lucide:user" />
 									</div>
 									<div>
 										<h3 className="font-medium">Account & Profile</h3>
@@ -246,9 +247,9 @@ export const Support: React.FC = () => {
 									</div>
 									<Button
 										isIconOnly
-										variant="light"
+										aria-label="View account help topics"
 										className="ml-auto"
-										aria-label="View account help topics">
+										variant="light">
 										<Icon icon="lucide:chevron-right" />
 									</Button>
 								</div>
@@ -259,7 +260,7 @@ export const Support: React.FC = () => {
 							<CardBody className="p-4">
 								<div className="flex items-center gap-3">
 									<div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-										<Icon icon="lucide:taxi" className="text-primary" />
+										<Icon className="text-primary" icon="lucide:taxi" />
 									</div>
 									<div>
 										<h3 className="font-medium">Booking & Rides</h3>
@@ -269,9 +270,9 @@ export const Support: React.FC = () => {
 									</div>
 									<Button
 										isIconOnly
-										variant="light"
+										aria-label="View booking help topics"
 										className="ml-auto"
-										aria-label="View booking help topics">
+										variant="light">
 										<Icon icon="lucide:chevron-right" />
 									</Button>
 								</div>
@@ -282,7 +283,7 @@ export const Support: React.FC = () => {
 							<CardBody className="p-4">
 								<div className="flex items-center gap-3">
 									<div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-										<Icon icon="lucide:credit-card" className="text-primary" />
+										<Icon className="text-primary" icon="lucide:credit-card" />
 									</div>
 									<div>
 										<h3 className="font-medium">Payments & Billing</h3>
@@ -292,9 +293,9 @@ export const Support: React.FC = () => {
 									</div>
 									<Button
 										isIconOnly
-										variant="light"
+										aria-label="View payment help topics"
 										className="ml-auto"
-										aria-label="View payment help topics">
+										variant="light">
 										<Icon icon="lucide:chevron-right" />
 									</Button>
 								</div>
@@ -305,7 +306,7 @@ export const Support: React.FC = () => {
 							<CardBody className="p-4">
 								<div className="flex items-center gap-3">
 									<div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-										<Icon icon="lucide:shield" className="text-primary" />
+										<Icon className="text-primary" icon="lucide:shield" />
 									</div>
 									<div>
 										<h3 className="font-medium">Safety & Security</h3>
@@ -316,9 +317,9 @@ export const Support: React.FC = () => {
 									</div>
 									<Button
 										isIconOnly
-										variant="light"
+										aria-label="View safety help topics"
 										className="ml-auto"
-										aria-label="View safety help topics">
+										variant="light">
 										<Icon icon="lucide:chevron-right" />
 									</Button>
 								</div>
@@ -329,7 +330,7 @@ export const Support: React.FC = () => {
 							<CardBody className="p-4">
 								<div className="flex items-center gap-3">
 									<div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-										<Icon icon="lucide:map" className="text-primary" />
+										<Icon className="text-primary" icon="lucide:map" />
 									</div>
 									<div>
 										<h3 className="font-medium">Routes & Ranks</h3>
@@ -339,9 +340,9 @@ export const Support: React.FC = () => {
 									</div>
 									<Button
 										isIconOnly
-										variant="light"
+										aria-label="View routes help topics"
 										className="ml-auto"
-										aria-label="View routes help topics">
+										variant="light">
 										<Icon icon="lucide:chevron-right" />
 									</Button>
 								</div>

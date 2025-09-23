@@ -19,7 +19,7 @@ interface LoginProps {
 	onBack: () => void;
 }
 
-export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack }) => {
+const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack }) => {
 	const [formData, setFormData] = React.useState({
 		email: "",
 		password: "",
@@ -65,6 +65,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack
 		}
 
 		setErrors(newErrors);
+
 		return Object.keys(newErrors).length === 0;
 	};
 
@@ -84,22 +85,22 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack
 		<div className="min-h-screen flex flex-col bg-background">
 			{/* Header */}
 			<header className="flex items-center justify-between p-4">
-				<Button isIconOnly variant="light" aria-label="Back" onPress={onBack}>
-					<Icon icon="lucide:arrow-left" className="text-xl" />
+				<Button isIconOnly aria-label="Back" variant="light" onPress={onBack}>
+					<Icon className="text-xl" icon="lucide:arrow-left" />
 				</Button>
 			</header>
 
 			{/* Login Form */}
 			<div className="flex-1 flex items-center justify-center p-4">
 				<motion.div
+					animate={{ opacity: 1, y: 0 }}
 					className="w-full max-w-md"
 					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.4 }}>
 					<Card className="shadow-md">
 						<CardHeader className="flex flex-col items-center gap-2 pb-0">
 							<div className="flex items-center gap-2">
-								<Icon icon="lucide:taxi" className="text-primary text-2xl" />
+								<Icon className="text-primary text-2xl" icon="lucide:taxi" />
 								<h1 className="text-xl font-semibold">TaxiCity</h1>
 							</div>
 							<h2 className="text-lg font-medium">Welcome Back</h2>
@@ -110,29 +111,29 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack
 
 						<CardBody className="py-5 px-6 space-y-4">
 							<Input
+								errorMessage={errors.email}
+								isInvalid={!!errors.email}
 								label="Email"
 								placeholder="Enter your email"
+								startContent={
+									<Icon className="text-default-400" icon="lucide:mail" />
+								}
 								type="email"
 								value={formData.email}
 								onValueChange={(value) => handleChange("email", value)}
-								startContent={
-									<Icon icon="lucide:mail" className="text-default-400" />
-								}
-								isInvalid={!!errors.email}
-								errorMessage={errors.email}
 							/>
 
 							<Input
+								errorMessage={errors.password}
+								isInvalid={!!errors.password}
 								label="Password"
 								placeholder="Enter your password"
+								startContent={
+									<Icon className="text-default-400" icon="lucide:lock" />
+								}
 								type="password"
 								value={formData.password}
 								onValueChange={(value) => handleChange("password", value)}
-								startContent={
-									<Icon icon="lucide:lock" className="text-default-400" />
-								}
-								isInvalid={!!errors.password}
-								errorMessage={errors.password}
 							/>
 
 							<div className="flex justify-between items-center">
@@ -148,10 +149,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack
 							</div>
 
 							<Button
-								color="primary"
 								className="w-full"
-								onPress={handleSubmit}
-								isLoading={isLoading}>
+								color="primary"
+								isLoading={isLoading}
+								onPress={handleSubmit}>
 								Sign In
 							</Button>
 
@@ -166,17 +167,17 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack
 
 							<div className="grid grid-cols-2 gap-3">
 								<Button
-									variant="bordered"
 									startContent={
-										<Icon icon="logos:google-icon" className="text-lg" />
-									}>
+										<Icon className="text-lg" icon="logos:google-icon" />
+									}
+									variant="bordered">
 									Google
 								</Button>
 								<Button
-									variant="bordered"
 									startContent={
-										<Icon icon="logos:facebook" className="text-lg" />
-									}>
+										<Icon className="text-lg" icon="logos:facebook" />
+									}
+									variant="bordered">
 									Facebook
 								</Button>
 							</div>
@@ -184,7 +185,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack
 
 						<CardFooter className="justify-center pt-0">
 							<p className="text-sm text-default-500">
-								Don't have an account?{" "}
+								Don&apos;t have an account?{" "}
 								<Link href="#" onPress={onRegister}>
 									Sign up
 								</Link>
@@ -196,3 +197,5 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack
 		</div>
 	);
 };
+
+export default Login;

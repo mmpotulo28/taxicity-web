@@ -3,10 +3,11 @@ import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button, Card, CardBody, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { useRouter } from "next/navigation";
+
 import { taxis } from "@/lib/data";
 import TaxiMap from "@/components/TaxiMap";
 import { useRide } from "@/context/RideContext";
-import { useRouter } from "next/navigation";
 
 const mockTaxiCoords = [
 	{ lat: -26.2041, lng: 28.0473 }, // Johannesburg
@@ -43,9 +44,9 @@ const TaxiList: React.FC = () => {
 
 	return (
 		<motion.div
+			animate={{ opacity: 1 }}
 			className="h-full flex flex-col"
 			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
 			<div className="fixed inset-0 h-full w-full z-0">
 				<TaxiMap taxis={availableTaxis} />
@@ -53,8 +54,8 @@ const TaxiList: React.FC = () => {
 
 			<div className="p-1 bg-[rgba(0,0,0,0.3)] shadow-sm z-1 backdrop-blur-sm">
 				<div className="flex items-center gap-2 mb-4">
-					<Button isIconOnly variant="light" size="sm" aria-label="Back">
-						<Icon icon="lucide:arrow-left" className="h-6 w-6" />
+					<Button isIconOnly aria-label="Back" size="sm" variant="light">
+						<Icon className="h-6 w-6" icon="lucide:arrow-left" />
 					</Button>
 					<h2 className="text-lg font-semibold">Available Taxis</h2>
 				</div>
@@ -83,10 +84,10 @@ const TaxiList: React.FC = () => {
 							</div>
 
 							<Button
-								size="sm"
-								variant="light"
 								isIconOnly
-								aria-label="Edit locations">
+								aria-label="Edit locations"
+								size="sm"
+								variant="light">
 								<Icon icon="lucide:edit" />
 							</Button>
 						</div>
@@ -103,23 +104,23 @@ const TaxiList: React.FC = () => {
 				) : (
 					<div className="space-y-4">
 						<Button
-							color="secondary"
-							variant="solid"
-							size="lg"
 							className="fixed bottom-18 left-5 px-4 animate-bounce"
-							onPress={handleRequestRide}
-							endContent={<Icon icon="lucide:bus" className="h-5 w-5 " />}>
+							color="secondary"
+							endContent={<Icon className="h-5 w-5 " icon="lucide:bus" />}
+							size="lg"
+							variant="solid"
+							onPress={handleRequestRide}>
 							Request
 						</Button>
 
 						<div className="bg-default-50 p-3 rounded-medium mt-6">
 							<div className="flex items-start gap-3">
-								<Icon icon="lucide:info" className="text-primary mt-0.5" />
+								<Icon className="text-primary mt-0.5" icon="lucide:info" />
 								<div>
 									<h4 className="text-sm font-medium">Payment Options</h4>
 									<p className="text-xs text-default-500 mt-1">
 										Cash payment is accepted on all taxis. You will confirm your
-										taxi by scanning the driver's QR code once they arrive.
+										taxi by scanning the driver&apos;s QR code once they arrive.
 									</p>
 								</div>
 							</div>
