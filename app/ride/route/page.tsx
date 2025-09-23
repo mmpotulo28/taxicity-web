@@ -1,23 +1,55 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { Input, Tabs, Tab } from "@heroui/react";
+import { Input, Tabs, Tab, Select, SelectItem } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { ranks, routes } from "@/lib/data";
 import RouteCard from "@/components/RouteCard";
 
+// Helper to extract fare min for sorting
+const getFareMin = (fare?: string) => {
+	if (!fare) return 0;
+	const match = fare.match(/R(\d+(\.\d+)?)/);
+	return match ? parseFloat(match[1]) : 0;
+};
+
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
 const RouteSelector: React.FC = () => {
 	const [searchQuery, setSearchQuery] = React.useState("");
+	const [selectedLetter, setSelectedLetter] = React.useState<string | null>(null);
+	const [sortBy, setSortBy] = React.useState<"name" | "fare" | "status">("name");
 
 	const filteredRoutes = React.useMemo(() => {
-		if (!searchQuery) return routes;
+		let filtered = routes;
 
-		return routes.filter(
-			(route) =>
-				route.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				route.rankId.toLowerCase().includes(searchQuery.toLowerCase()),
-		);
-	}, [searchQuery]);
+		if (searchQuery) {
+			filtered = filtered.filter(
+				(route) =>
+					route.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					route.rankId.toLowerCase().includes(searchQuery.toLowerCase()),
+			);
+		}
+
+		if (selectedLetter) {
+			filtered = filtered.filter((route) =>
+				route.name.toUpperCase().startsWith(selectedLetter),
+			);
+		}
+
+		// Sorting
+		if (sortBy === "name") {
+			filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+		} else if (sortBy === "fare") {
+			filtered = [...filtered].sort(
+				(a, b) => getFareMin(a.estimatedFare) - getFareMin(b.estimatedFare),
+			);
+		} else if (sortBy === "status") {
+			filtered = [...filtered].sort((a, b) => a.status.localeCompare(b.status));
+		}
+
+		return filtered;
+	}, [searchQuery, selectedLetter, sortBy]);
 
 	return (
 		<motion.div
@@ -35,10 +67,45 @@ const RouteSelector: React.FC = () => {
 					className="mb-2"
 				/>
 
-				<Tabs aria-label="Route options" color="primary" variant="underlined">
-					<Tab key="routes" title="Routes" />
-					<Tab key="ranks" title="Ranks" />
-				</Tabs>
+				{/* Alphabet Filter */}
+				<div className="flex flex-wrap gap-1 mb-3">
+					{alphabet.map((letter) => (
+						<button
+							key={letter}
+							className={`w-7 h-7 rounded text-xs font-bold transition ${
+								selectedLetter === letter
+									? "bg-primary text-white"
+									: "bg-default-100 text-default-500 hover:bg-primary/10"
+							}`}
+							onClick={() =>
+								setSelectedLetter(selectedLetter === letter ? null : letter)
+							}
+							type="button">
+							{letter}
+						</button>
+					))}
+				</div>
+
+				<div className="flex items-center justify-between">
+					{/* Sorting */}
+					<div className="flex items-center gap-2 ">
+						<span className="text-xs text-default-500">Sort by:</span>
+						<Select
+							size="sm"
+							selectedKeys={[sortBy]}
+							onSelectionChange={(keys) => setSortBy(Array.from(keys)[0] as any)}
+							className="w-32">
+							<SelectItem key="name">Name</SelectItem>
+							<SelectItem key="fare">Fare</SelectItem>
+							<SelectItem key="status">Status</SelectItem>
+						</Select>
+					</div>
+
+					<Tabs aria-label="Route options" color="primary" variant="underlined">
+						<Tab key="routes" title="Routes" />
+						<Tab key="ranks" title="Ranks" />
+					</Tabs>
+				</div>
 			</div>
 
 			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">
