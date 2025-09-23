@@ -15,8 +15,10 @@ import {
 	SelectItem,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { useThemeContext } from "@/context/ThemeProvider";
 
 const Settings: React.FC = () => {
+	const { setTheme, theme } = useThemeContext();
 	const [activeTab, setActiveTab] = useState("profile");
 	const [profileForm, setProfileForm] = useState({
 		name: "John Doe",
@@ -30,6 +32,15 @@ const Settings: React.FC = () => {
 		darkMode: false,
 		language: "english",
 	});
+
+	const toggleDarkMode = () => {
+		const newTheme = theme === "dark" ? "light" : "dark";
+		setTheme(newTheme);
+		setPreferences((prev) => ({
+			...prev,
+			darkMode: !prev.darkMode,
+		}));
+	};
 
 	const handleProfileChange = (field: string, value: string) => {
 		setProfileForm((prev) => ({
@@ -206,9 +217,7 @@ const Settings: React.FC = () => {
 										<Switch
 											color="primary"
 											isSelected={preferences.darkMode}
-											onValueChange={(value) =>
-												handleToggleChange("darkMode", value)
-											}
+											onValueChange={toggleDarkMode}
 										/>
 									</div>
 								</div>

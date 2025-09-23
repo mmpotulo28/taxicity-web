@@ -5,7 +5,7 @@ interface ThemeProviderProps {
 	children: React.ReactNode;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+export const CustomThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 	const { theme, setTheme } = useTheme();
 
 	// Apply theme class to html element

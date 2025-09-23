@@ -48,7 +48,7 @@ const Support: React.FC = () => {
 			className="h-full flex flex-col"
 			initial={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-white shadow-sm">
+			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-4">Support Center</h2>
 
 				<Tabs
@@ -65,7 +65,7 @@ const Support: React.FC = () => {
 
 			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">
 				{activeTab === "faq" && (
-					<div className="space-y-4">
+					<div className="flex flex-1 flex-col	gap-4 justify-between h-full">
 						<Accordion variant="splitted">
 							<AccordionItem
 								key="1"
