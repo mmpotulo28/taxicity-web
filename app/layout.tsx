@@ -40,9 +40,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					"min-h-screen text-foreground bg-background font-sans antialiased",
 					fontSans.variable,
 				)}>
-				<Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
-					<div className="flex flex-col h-screen max-w-md mx-auto bg-background">
-						<Header />
+				<Providers
+					themeProps={{
+						attribute: "class",
+						defaultTheme: "dark",
+						themes: ["light", "dark"],
+					}}>
+					<div className="flex flex-col h-screen max-w-md mx-auto text-foreground bg-background">
+						{/* <Header /> */}
 						<Main>{children}</Main>
 						<MobileTabs />
 					</div>

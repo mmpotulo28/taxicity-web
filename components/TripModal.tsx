@@ -2,7 +2,9 @@ import { iTrip } from "@/types";
 import { Button } from "@heroui/button";
 import { Divider } from "@heroui/divider";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/modal";
+import { addToast } from "@heroui/toast";
 import { Icon } from "@iconify/react";
+import { useRouter } from "next/navigation";
 
 export interface TripModalProps {
 	isOpen: boolean;
@@ -11,6 +13,19 @@ export interface TripModalProps {
 }
 
 const TripModal: React.FC<TripModalProps> = ({ isOpen, onOpenChange, trip }) => {
+	const router = useRouter();
+	const onBookSimilar = () => {
+		onOpenChange(false);
+
+		addToast({
+			title: "Book Similar Trip",
+			description: "This feature is coming soon!",
+			color: "primary",
+		});
+
+		// Logic to book a similar trip
+		router.push("/ride/route");
+	};
 	return (
 		<Modal isOpen={isOpen} onOpenChange={onOpenChange}>
 			<ModalContent>
@@ -105,7 +120,7 @@ const TripModal: React.FC<TripModalProps> = ({ isOpen, onOpenChange, trip }) => 
 							</Button>
 							<Button
 								color="primary"
-								onPress={onClose}
+								onPress={onBookSimilar}
 								startContent={<Icon icon="lucide:repeat" />}>
 								Book Similar Trip
 							</Button>

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +16,7 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-export const Settings: React.FC = () => {
+const Settings: React.FC = () => {
 	const [activeTab, setActiveTab] = React.useState("profile");
 	const [profileForm, setProfileForm] = React.useState({
 		name: "John Doe",
@@ -62,7 +63,7 @@ export const Settings: React.FC = () => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-white shadow-sm">
+			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-4">Settings</h2>
 
 				<Tabs
@@ -351,3 +352,5 @@ export const Settings: React.FC = () => {
 		</motion.div>
 	);
 };
+
+export default Settings;

@@ -30,7 +30,7 @@ const LocationPicker: React.FC = () => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-white shadow-sm">
+			<div className="p-4 bg-background shadow-sm">
 				<div className="flex items-center gap-2 mb-4">
 					<Button isIconOnly variant="light" size="sm" aria-label="Back">
 						<Icon icon="lucide:arrow-left" />

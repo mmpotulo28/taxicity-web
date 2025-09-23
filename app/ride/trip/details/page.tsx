@@ -82,7 +82,7 @@ const TripDetails: React.FC = () => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-white shadow-sm">
+			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-2">Your Trip</h2>
 				<p className="text-default-500 text-sm mb-4">
 					{showPayment
@@ -117,7 +117,7 @@ const TripDetails: React.FC = () => {
 						initial={{ opacity: 0, scale: 0.9 }}
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ duration: 0.3 }}>
-						<div className="bg-white p-4 rounded-lg shadow-md mb-4">
+						<div className="bg-background p-4 rounded-lg shadow-md mb-4">
 							<div
 								className="w-64 h-64 bg-cover bg-center"
 								style={{

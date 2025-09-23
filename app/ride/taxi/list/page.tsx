@@ -4,20 +4,32 @@ import { motion } from "framer-motion";
 import { Button, Card, CardBody, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { taxis } from "@/lib/data";
-import TaxiCard from "@/components/TaxiCard";
+import TaxiMap from "@/components/TaxiMap";
 import { useRide } from "@/context/RideContext";
 import { useRouter } from "next/navigation";
+
+const mockTaxiCoords = [
+	{ lat: -26.2041, lng: 28.0473 }, // Johannesburg
+	{ lat: -26.2023, lng: 28.0456 },
+	{ lat: -26.2055, lng: 28.05 },
+];
 
 const TaxiList: React.FC = () => {
 	const { pickupLocation, dropOffLocation } = useRide();
 	const [loading, setLoading] = React.useState(true);
-	const [availableTaxis, setAvailableTaxis] = React.useState<typeof taxis>([]);
+	const [availableTaxis, setAvailableTaxis] = React.useState<any[]>([]);
 	const router = useRouter();
 
-	// Simulate loading and fetching taxis
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			setAvailableTaxis(taxis);
+			// Add mock coordinates to each taxi
+			setAvailableTaxis(
+				taxis.map((taxi, idx) => ({
+					...taxi,
+					lat: mockTaxiCoords[idx % mockTaxiCoords.length].lat,
+					lng: mockTaxiCoords[idx % mockTaxiCoords.length].lng,
+				})),
+			);
 			setLoading(false);
 		}, 2000);
 
@@ -25,8 +37,6 @@ const TaxiList: React.FC = () => {
 	}, []);
 
 	const handleRequestRide = () => {
-		// Simulate sending request to all taxis
-		// Pass availableTaxis to track page via sessionStorage
 		sessionStorage.setItem("taxicity_available_taxis", JSON.stringify(availableTaxis));
 		router.push("/ride/track");
 	};
@@ -37,10 +47,14 @@ const TaxiList: React.FC = () => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-white shadow-sm">
+			<div className="fixed inset-0 h-full w-full z-0">
+				<TaxiMap taxis={availableTaxis} />
+			</div>
+
+			<div className="p-1 bg-[rgba(0,0,0,0.3)] shadow-sm z-1 backdrop-blur-sm">
 				<div className="flex items-center gap-2 mb-4">
 					<Button isIconOnly variant="light" size="sm" aria-label="Back">
-						<Icon icon="lucide:arrow-left" />
+						<Icon icon="lucide:arrow-left" className="h-6 w-6" />
 					</Button>
 					<h2 className="text-lg font-semibold">Available Taxis</h2>
 				</div>
@@ -88,19 +102,11 @@ const TaxiList: React.FC = () => {
 					</div>
 				) : (
 					<div className="space-y-4">
-						<p className="text-sm text-default-500 mb-2">
-							{availableTaxis.length} taxis available near your location
-						</p>
-
-						{availableTaxis.map((taxi) => (
-							<TaxiCard key={taxi.id} taxi={taxi} showSelect={false} />
-						))}
-
 						<Button
 							color="secondary"
 							variant="solid"
 							size="lg"
-							className="fixed bottom-18 right-5 px-4 animate-bounce"
+							className="fixed bottom-18 left-5 px-4 animate-bounce"
 							onPress={handleRequestRide}
 							endContent={<Icon icon="lucide:bus" className="h-5 w-5 " />}>
 							Request

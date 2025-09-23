@@ -25,7 +25,7 @@ const RouteSelector: React.FC = () => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-white shadow-sm">
+			<div className="p-4 bg-background shadow-sm">
 				<h2 className="text-lg font-semibold mb-4">Select Your Route</h2>
 				<Input
 					placeholder="Search routes or ranks"

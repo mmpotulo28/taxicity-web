@@ -12,7 +12,7 @@ interface TripCardProps {
 
 const TripCard: React.FC<TripCardProps> = ({ trip, onSelect }) => {
 	return (
-		<Card className="shadow-sm w-full" isPressable onPress={onSelect}>
+		<Card className="shadow-sm w-full">
 			<CardBody className="p-4">
 				<div className="flex justify-between items-start">
 					<div>
