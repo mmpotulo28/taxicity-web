@@ -13,13 +13,7 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-interface LoginProps {
-	onLoginSuccess: () => void;
-	onRegister: () => void;
-	onBack: () => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack }) => {
+const Login: React.FC = () => {
 	const [formData, setFormData] = React.useState({
 		email: "",
 		password: "",
@@ -30,6 +24,21 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onRegister, onBack }) => 
 		email?: string;
 		password?: string;
 	}>({});
+
+	const onLoginSuccess = () => {
+		// Handle successful login (e.g., redirect to dashboard)
+		console.log("Login successful");
+	};
+
+	const onRegister = () => {
+		// Handle navigation to register page
+		console.log("Navigate to register page");
+	};
+
+	const onBack = () => {
+		// Handle back navigation
+		console.log("Navigate back");
+	};
 
 	const handleChange = (field: string, value: string | boolean) => {
 		setFormData((prev) => ({
