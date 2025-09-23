@@ -6,11 +6,13 @@ import { Icon } from "@iconify/react";
 import { taxis } from "@/lib/data";
 import TaxiCard from "@/components/TaxiCard";
 import { useRide } from "@/context/RideContext";
+import { useRouter } from "next/navigation";
 
 const TaxiList: React.FC = () => {
 	const { pickupLocation, dropOffLocation } = useRide();
 	const [loading, setLoading] = React.useState(true);
 	const [availableTaxis, setAvailableTaxis] = React.useState<typeof taxis>([]);
+	const router = useRouter();
 
 	// Simulate loading and fetching taxis
 	useEffect(() => {
@@ -21,6 +23,13 @@ const TaxiList: React.FC = () => {
 
 		return () => clearTimeout(timer);
 	}, []);
+
+	const handleRequestRide = () => {
+		// Simulate sending request to all taxis
+		// Pass availableTaxis to track page via sessionStorage
+		sessionStorage.setItem("taxicity_available_taxis", JSON.stringify(availableTaxis));
+		router.push("/ride/track");
+	};
 
 	return (
 		<motion.div
@@ -84,8 +93,18 @@ const TaxiList: React.FC = () => {
 						</p>
 
 						{availableTaxis.map((taxi) => (
-							<TaxiCard key={taxi.id} taxi={taxi} />
+							<TaxiCard key={taxi.id} taxi={taxi} showSelect={false} />
 						))}
+
+						<Button
+							color="secondary"
+							variant="solid"
+							size="lg"
+							className="fixed bottom-18 right-5 px-4 animate-bounce"
+							onPress={handleRequestRide}
+							endContent={<Icon icon="lucide:bus" className="h-5 w-5 " />}>
+							Request
+						</Button>
 
 						<div className="bg-default-50 p-3 rounded-medium mt-6">
 							<div className="flex items-start gap-3">
@@ -93,8 +112,8 @@ const TaxiList: React.FC = () => {
 								<div>
 									<h4 className="text-sm font-medium">Payment Options</h4>
 									<p className="text-xs text-default-500 mt-1">
-										Cash payment is accepted on all taxis. For added security,
-										you can also scan the driver's QR code to confirm your ride.
+										Cash payment is accepted on all taxis. You will confirm your
+										taxi by scanning the driver's QR code once they arrive.
 									</p>
 								</div>
 							</div>

@@ -22,7 +22,7 @@ const TripDetails: React.FC = () => {
 		}
 	}, [trip, router]);
 
-	// Start trip after QR code is scanned
+	// Start trip after user confirms
 	const handleConfirmRideStarted = () => {
 		const success = startTrip();
 		if (success) {
@@ -88,7 +88,7 @@ const TripDetails: React.FC = () => {
 					{showPayment
 						? "You've arrived at your destination"
 						: !tripStarted
-							? "Scan QR code to start your trip"
+							? "Confirm your trip has started after scanning the driver's QR code."
 							: "On the way to your destination"}
 				</p>
 
@@ -126,13 +126,13 @@ const TripDetails: React.FC = () => {
 							/>
 						</div>
 						<p className="text-center text-sm text-default-500 mb-4">
-							Scan this QR code when you meet your driver to confirm your ride
+							Scan the driver's QR code to confirm you are taking this taxi.
 						</p>
 						<Button
 							color="primary"
 							className="w-full"
 							onPress={handleConfirmRideStarted}>
-							Confirm Ride Started
+							Confirm Trip Started
 						</Button>
 					</motion.div>
 				)}
@@ -148,14 +148,10 @@ const TripDetails: React.FC = () => {
 								<h3 className="text-lg font-semibold mb-2">Payment</h3>
 								<div className="space-y-2 mb-4">
 									<div className="flex justify-between">
-										<span className="text-default-500">Base fare</span>
+										<span className="text-default-500">Total fare</span>
 										<span>{trip.fare}</span>
 									</div>
 									<Divider className="my-2" />
-									<div className="flex justify-between font-medium">
-										<span>Total</span>
-										<span>{trip.fare}</span>
-									</div>
 								</div>
 								<Alert
 									color="warning"
@@ -168,13 +164,6 @@ const TripDetails: React.FC = () => {
 									className="w-full mb-2"
 									onPress={onRideComplete}>
 									Complete Trip
-								</Button>
-								<Button
-									variant="flat"
-									color="primary"
-									className="w-full"
-									startContent={<Icon icon="lucide:qr-code" />}>
-									Show Payment QR Code
 								</Button>
 							</CardBody>
 						</Card>
@@ -257,7 +246,7 @@ const TripDetails: React.FC = () => {
 											</li>
 											<li>
 												<span className="font-medium">Payment method:</span>{" "}
-												{trip.paymentMethod}
+												Cash
 											</li>
 										</ul>
 									</div>

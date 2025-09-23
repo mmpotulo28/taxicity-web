@@ -8,9 +8,10 @@ import { useRouter } from "next/navigation";
 
 interface TaxiCardProps {
 	taxi: iTaxi;
+	showSelect?: boolean;
 }
 
-const TaxiCard: React.FC<TaxiCardProps> = ({ taxi }) => {
+const TaxiCard: React.FC<TaxiCardProps> = ({ taxi, showSelect = true }) => {
 	const { setSelectedTaxi } = useRide();
 	const router = useRouter();
 
@@ -59,12 +60,13 @@ const TaxiCard: React.FC<TaxiCardProps> = ({ taxi }) => {
 				<div className="flex justify-between items-center">
 					<div className="flex items-center text-xs text-default-500">
 						<Icon icon="lucide:credit-card" className="mr-1" />
-						<span>Cash & QR payment</span>
+						<span>Cash payment</span>
 					</div>
-
-					<Button color="primary" size="sm" onPress={onSelectTaxi}>
-						Select Taxi
-					</Button>
+					{showSelect && (
+						<Button color="primary" size="sm" onPress={onSelectTaxi}>
+							Select Taxi
+						</Button>
+					)}
 				</div>
 			</CardBody>
 		</Card>
