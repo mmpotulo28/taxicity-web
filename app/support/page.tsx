@@ -14,7 +14,7 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-export const Support: React.FC = () => {
+const Support: React.FC = () => {
 	const [activeTab, setActiveTab] = React.useState("faq");
 	const [contactForm, setContactForm] = React.useState({
 		name: "",
@@ -354,3 +354,5 @@ export const Support: React.FC = () => {
 		</motion.div>
 	);
 };
+
+export default Support;
