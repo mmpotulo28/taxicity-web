@@ -56,6 +56,7 @@
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.27",
     "@react-google-maps/api": "^2.20.7",
+    "@sentry/nextjs": "^10.17.0",
     "clsx": "2.1.1",
     "framer-motion": "^11.18.2",
     "intl-messageformat": "10.7.16",
