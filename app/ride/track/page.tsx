@@ -15,6 +15,7 @@ const TrackRide: React.FC = () => {
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 	const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
 	const [isDriverArrived, setIsDriverArrived] = useState(false);
+	const [isDestinationArrived, setIsDestinationArrived] = useState(false);
 
 	// If no active trip, redirect to home
 	useEffect(() => {
@@ -53,11 +54,39 @@ const TrackRide: React.FC = () => {
 		}
 	}, [activeTrip]);
 
+	// Simulated destination arrival after driver has arrived
 	useEffect(() => {
 		if (isDriverArrived) {
+			// Simulate the destination arrival countdown
+			const initialMinutes = Math.floor(Math.random() * 5) + 2; // 2-6 minutes
+
+			setEstimatedTime(`${initialMinutes} min`);
+
+			const countdown = setInterval(() => {
+				setEstimatedTime((prev) => {
+					const currentMin = parseInt(prev?.split(" ")[0] || "0");
+
+					if (currentMin <= 1) {
+						clearInterval(countdown);
+						setIsDestinationArrived(true);
+
+						return "Arrived";
+					}
+
+					return `${currentMin - 1} min`;
+				});
+			}, 60000); // Update every minute
+
+			// Cleanup
+			return () => clearInterval(countdown);
+		}
+	}, [activeTrip]);
+
+	useEffect(() => {
+		if (isDestinationArrived) {
 			router.push("/ride/trip/details");
 		}
-	}, [isDriverArrived, router]);
+	}, [isDestinationArrived, router]);
 
 	// Handle ride cancellation
 	const handleCancelRide = () => {
