@@ -1,79 +1,98 @@
+import React from "react";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
-import { Divider } from "@heroui/divider";
+import { Badge, Chip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { iTaxi } from "@/types";
 import { useRide } from "@/context/RideContext";
+import { iTaxi } from "@/types";
 
 interface TaxiCardProps {
-  taxi: iTaxi;
-  showSelect?: boolean;
+	taxi: iTaxi;
 }
 
-const TaxiCard: React.FC<TaxiCardProps> = ({ taxi, showSelect = true }) => {
-  const { setSelectedTaxi } = useRide();
-  const router = useRouter();
+const TaxiCard: React.FC<TaxiCardProps> = ({ taxi }) => {
+	const router = useRouter();
+	const { setSelectedTaxi, requestRide } = useRide();
 
-  const onSelectTaxi = () => {
-    setSelectedTaxi(taxi);
-    router.push("/ride/track");
-  };
+	const handleSelectTaxi = () => {
+		setSelectedTaxi(taxi);
+		requestRide();
+		router.push("/ride/track");
+	};
 
-  return (
-    <Card className="shadow-sm">
-      <CardBody className="p-4">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-default-100 rounded-full flex items-center justify-center">
-              <Icon className="text-2xl text-default-400" icon="lucide:user" />
-            </div>
+	// Generate star rating display
+	const renderRating = () => {
+		const fullStars = Math.floor(taxi.rating);
+		const hasHalfStar = taxi.rating % 1 >= 0.5;
 
-            <div>
-              <h3 className="font-medium">{taxi.driverName}</h3>
-              <div className="flex items-center text-xs text-default-500 mt-1">
-                <Icon className="text-warning mr-1" icon="lucide:star" />
-                <span>{taxi.rating}</span>
-              </div>
-            </div>
-          </div>
+		return (
+			<div className="flex items-center">
+				{[...Array(fullStars)].map((_, i) => (
+					<Icon key={`star-${i}`} className="text-yellow-500" icon="lucide:star" />
+				))}
 
-          <div className="text-right">
-            <div className="text-xs font-medium text-primary">
-              {taxi.distance}
-            </div>
-            <div className="text-xs text-default-500 mt-1">ETA: {taxi.eta}</div>
-          </div>
-        </div>
+				{hasHalfStar && <Icon className="text-yellow-500" icon="lucide:star-half" />}
 
-        <div className="mt-3 text-sm">
-          <div className="flex items-center gap-2">
-            <Icon className="text-default-500" icon="lucide:taxi" />
-            <span>{taxi.vehicleInfo}</span>
-          </div>
-          <div className="flex items-center gap-2 mt-1">
-            <Icon className="text-default-500" icon="lucide:tag" />
-            <span>{taxi.licensePlate}</span>
-          </div>
-        </div>
+				{[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
+					<Icon key={`empty-star-${i}`} className="text-default-300" icon="lucide:star" />
+				))}
 
-        <Divider className="my-3" />
+				<span className="ml-1 text-xs">{taxi.rating.toFixed(1)}</span>
+			</div>
+		);
+	};
 
-        <div className="flex justify-between items-center">
-          <div className="flex items-center text-xs text-default-500">
-            <Icon className="mr-1" icon="lucide:credit-card" />
-            <span>Cash payment</span>
-          </div>
-          {showSelect && (
-            <Button color="primary" size="sm" onPress={onSelectTaxi}>
-              Select Taxi
-            </Button>
-          )}
-        </div>
-      </CardBody>
-    </Card>
-  );
+	return (
+		<Card className="shadow-sm w-full">
+			<CardBody className="p-4">
+				<div className="flex justify-between items-start">
+					<div className="flex items-center gap-3">
+						<div className="w-12 h-12 bg-default-100 rounded-full flex items-center justify-center">
+							<Icon className="text-2xl text-default-400" icon="lucide:taxi" />
+						</div>
+
+						<div>
+							<h3 className="font-medium">{taxi.driver}</h3>
+							<p className="text-xs text-default-500">{taxi.model}</p>
+							<div className="mt-1">{renderRating()}</div>
+						</div>
+					</div>
+
+					<Chip color="success" variant="flat">
+						Available
+					</Chip>
+				</div>
+
+				<div className="grid grid-cols-2 gap-2 mt-4 text-xs text-default-500">
+					<div className="flex items-center gap-1">
+						<Icon icon="lucide:users" />
+						<span>Capacity: {taxi.capacity}</span>
+					</div>
+
+					<div className="flex items-center gap-1">
+						<Icon icon="lucide:tag" />
+						<span>{taxi.registrationNumber}</span>
+					</div>
+				</div>
+
+				<div className="flex justify-between items-center mt-4">
+					<div className="flex items-center gap-1 text-xs text-primary">
+						<Icon icon="lucide:phone" />
+						<span>{taxi.phone}</span>
+					</div>
+
+					<Button
+						color="primary"
+						endContent={<Icon icon="lucide:check" />}
+						onPress={handleSelectTaxi}>
+						Select Taxi
+					</Button>
+				</div>
+			</CardBody>
+		</Card>
+	);
 };
 
 export default TaxiCard;

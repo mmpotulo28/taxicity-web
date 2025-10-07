@@ -1,86 +1,28 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Alert, Button, Card, CardBody, Divider, Progress } from "@heroui/react";
+import { Button, Card, CardBody, Divider, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
 import { useRide } from "@/context/RideContext";
-import TripCard from "@/components/TripCard";
+import { MapView } from "@/components/map-view";
+import TripModal from "@/components/TripModal";
 
 const TripDetails: React.FC = () => {
-	const { trip, tripStarted, startTrip, endTrip } = useRide();
 	const router = useRouter();
-	const [progress, setProgress] = useState(0);
-	const [remainingTime, setRemainingTime] = useState(15);
-	const [showPayment, setShowPayment] = useState(false);
-	const [showQR, setShowQR] = useState(!tripStarted);
+	const { activeTrip } = useRide();
+	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-	// Redirect if trip not started
+	// If no active trip, redirect to home
 	useEffect(() => {
-		if (!trip) {
-			router.replace("/ride/route");
+		if (!activeTrip) {
+			router.push("/");
 		}
-	}, [trip, router]);
+	}, [activeTrip, router]);
 
-	// Start trip after user confirms
-	const handleConfirmRideStarted = () => {
-		const success = startTrip();
-
-		if (success) {
-			setShowQR(false);
-			setProgress(0);
-			setRemainingTime(15);
-			setShowPayment(false);
-		}
-	};
-
-	// Simulate trip progress only after trip is started
-	useEffect(() => {
-		if (!tripStarted) return;
-		const interval = setInterval(() => {
-			setProgress((prev) => {
-				const newProgress = prev + 5;
-
-				if (newProgress >= 100) {
-					clearInterval(interval);
-					setShowPayment(true);
-
-					return 100;
-				}
-
-				return newProgress;
-			});
-			setRemainingTime((prev) => {
-				const newTime = prev - 0.75;
-
-				return Math.max(newTime, 0);
-			});
-		}, 1000);
-
-		return () => clearInterval(interval);
-	}, [tripStarted]);
-
-	const onRideComplete = () => {
-		endTrip();
-		router.push("/ride/trip/history");
-		alert("Trip completed! Thank you for riding with us.");
-	};
-
-	// If no trip object, show a message
-	if (!trip) {
-		return (
-			<motion.div
-				animate={{ opacity: 1 }}
-				className="h-full flex flex-col items-center justify-center"
-				initial={{ opacity: 0 }}
-				transition={{ duration: 0.3 }}>
-				<Icon className="text-4xl text-danger mb-2" icon="lucide:alert-triangle" />
-				<p className="text-default-500 text-center">
-					No trip found. Please start a ride from the home page.
-				</p>
-			</motion.div>
-		);
+	if (!activeTrip) {
+		return null; // Will redirect in the useEffect
 	}
 
 	return (
@@ -90,186 +32,148 @@ const TripDetails: React.FC = () => {
 			initial={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}>
 			<div className="p-4 bg-background shadow-sm">
-				<h2 className="text-lg font-semibold mb-2">Your Trip</h2>
-				<p className="text-default-500 text-sm mb-4">
-					{showPayment
-						? "You've arrived at your destination"
-						: !tripStarted
-							? "Confirm your trip has started after scanning the driver's QR code."
-							: "On the way to your destination"}
-				</p>
-
-				{tripStarted && !showPayment && (
-					<>
-						<Progress
-							aria-label="Trip progress"
-							className="mb-2"
-							color="primary"
-							value={progress}
-						/>
-						<div className="flex justify-between text-xs text-default-500 mb-4">
-							<span>In progress</span>
-							<span>{remainingTime.toFixed(0)} min remaining</span>
-						</div>
-					</>
-				)}
-
-				<TripCard key={trip.id} trip={trip} onSelect={() => {}} />
+				<h2 className="text-lg font-semibold mb-2">Trip Completed</h2>
+				<p className="text-sm text-default-500">Thank you for riding with TaxiCity</p>
 			</div>
 
-			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden space-y-4">
-				{showQR && (
-					<motion.div
-						animate={{ opacity: 1, scale: 1 }}
-						className="flex flex-col items-center"
-						initial={{ opacity: 0, scale: 0.9 }}
-						transition={{ duration: 0.3 }}>
-						<div className="bg-background p-4 rounded-lg shadow-md mb-4">
-							<div
-								className="w-64 h-64 bg-cover bg-center"
-								style={{
-									backgroundImage: `url(https://img.heroui.chat/image/ai?w=300&h=300&u=qr-code)`,
-								}}
-							/>
-						</div>
-						<p className="text-center text-sm text-default-500 mb-4">
-							Scan the driver&apos;s QR code to confirm you are taking this taxi.
-						</p>
-						<Button
-							className="w-full"
-							color="primary"
-							onPress={handleConfirmRideStarted}>
-							Confirm Trip Started
-						</Button>
-					</motion.div>
-				)}
+			{/* Map showing the completed route */}
+			<div className="w-full h-40 mb-2">
+				<MapView showTaxis={false} />
+			</div>
 
-				{tripStarted && showPayment ? (
-					<motion.div
-						animate={{ opacity: 1 }}
-						className="space-y-4"
-						initial={{ opacity: 0 }}
-						transition={{ duration: 0.5 }}>
-						<Card className="shadow-sm">
-							<CardBody className="p-4">
-								<h3 className="text-lg font-semibold mb-2">Payment</h3>
-								<div className="space-y-2 mb-4">
-									<div className="flex justify-between">
-										<span className="text-default-500">Total fare</span>
-										<span>{trip.fare}</span>
+			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">
+				{/* Trip Summary Card */}
+				<Card className="mb-4">
+					<CardBody className="p-4">
+						<div className="flex items-center justify-between mb-3">
+							<div>
+								<h3 className="font-medium">{activeTrip.route}</h3>
+								<p className="text-xs text-default-500">
+									{activeTrip.date} • {activeTrip.time}
+								</p>
+							</div>
+							<div className="bg-success-100 text-success-600 text-xs px-2 py-0.5 rounded-full">
+								Completed
+							</div>
+						</div>
+
+						<div className="flex items-start gap-3">
+							<div className="flex flex-col items-center">
+								<div className="w-3 h-3 rounded-full bg-primary" />
+								<div className="w-0.5 h-10 bg-default-200" />
+								<div className="w-3 h-3 rounded-full bg-danger" />
+							</div>
+
+							<div className="flex-1">
+								<div className="mb-3">
+									<div className="text-sm font-medium">Pickup</div>
+									<div className="text-xs text-default-500">
+										{activeTrip.pickup}
 									</div>
-									<Divider className="my-2" />
 								</div>
-								<Alert
-									className="mb-4"
-									color="warning"
-									description="Please pay the driver directly with cash. Exact change is appreciated."
-									title="Cash Payment"
-								/>
-								<Button
-									className="w-full mb-2"
-									color="primary"
-									onPress={onRideComplete}>
-									Complete Trip
-								</Button>
-							</CardBody>
-						</Card>
-						<Card>
-							<CardBody className="p-4">
-								<h3 className="font-medium mb-3">Rate your trip</h3>
-								<div className="flex justify-center gap-2 mb-4">
-									{[1, 2, 3, 4, 5].map((star) => (
-										<Button
-											key={star}
-											isIconOnly
-											className="text-warning"
-											variant="light">
-											<Icon className="text-2xl" icon="lucide:star" />
-										</Button>
-									))}
-								</div>
-								<Button
-									className="w-full"
-									color="primary"
-									startContent={<Icon icon="lucide:message-square" />}
-									variant="light">
-									Leave Feedback
-								</Button>
-							</CardBody>
-						</Card>
-					</motion.div>
-				) : (
-					tripStarted && (
-						<div className="space-y-4">
-							<Card>
-								<CardBody className="p-4">
-									<div className="flex items-center gap-3 mb-3">
-										<div className="w-10 h-10 bg-default-100 rounded-full flex items-center justify-center">
-											<Icon
-												className="text-xl text-default-400"
-												icon="lucide:user"
-											/>
-										</div>
-										<div>
-											<h3 className="font-medium">{trip.driver}</h3>
-											<div className="flex items-center text-xs text-default-500">
-												<Icon
-													className="text-warning mr-1"
-													icon="lucide:star"
-												/>
-												<span>4.8</span>
-											</div>
-										</div>
-										<Button
-											isIconOnly
-											aria-label="Call driver"
-											className="ml-auto"
-											color="primary"
-											variant="flat">
-											<Icon icon="lucide:phone" />
-										</Button>
-									</div>
-									<div className="grid grid-cols-2 gap-2 text-sm">
-										<div>
-											<div className="text-default-500">Vehicle</div>
-											<div>{trip.vehicle}</div>
-										</div>
-										<div>
-											<div className="text-default-500">License Plate</div>
-											<div>{trip.licensePlate}</div>
-										</div>
-									</div>
-								</CardBody>
-							</Card>
-							<div className="bg-default-50 p-3 rounded-medium">
-								<div className="flex items-start gap-3">
-									<Icon className="text-primary mt-0.5" icon="lucide:info" />
-									<div>
-										<h4 className="text-sm font-medium">Trip Information</h4>
-										<ul className="text-xs text-default-500 mt-1 space-y-1">
-											<li>
-												<span className="font-medium">Estimated fare:</span>{" "}
-												{trip.fare}
-											</li>
-											<li>
-												<span className="font-medium">Payment method:</span>{" "}
-												Cash
-											</li>
-										</ul>
+
+								<div>
+									<div className="text-sm font-medium">Drop-off</div>
+									<div className="text-xs text-default-500">
+										{activeTrip.dropoff}
 									</div>
 								</div>
 							</div>
-							<Button
-								className="w-full"
-								color="danger"
-								startContent={<Icon icon="lucide:alert-triangle" />}
-								variant="light">
-								Emergency Assistance
-							</Button>
 						</div>
-					)
-				)}
+					</CardBody>
+				</Card>
+
+				{/* Payment Details Card */}
+				<Card className="mb-4">
+					<CardBody className="p-4">
+						<h3 className="text-sm font-semibold mb-2">Payment Details</h3>
+						<div className="space-y-2">
+							<div className="flex justify-between">
+								<span className="text-default-500">Base Fare</span>
+								<span>{activeTrip.fare}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-default-500">Service Fee</span>
+								<span>R2.00</span>
+							</div>
+							<Divider className="my-2" />
+							<div className="flex justify-between font-semibold">
+								<span>Total</span>
+								<span>
+									R{(parseFloat(activeTrip.fare.replace("R", "")) + 2).toFixed(2)}
+								</span>
+							</div>
+							<div className="flex justify-between text-xs mt-1">
+								<span className="text-default-500">Payment Method</span>
+								<span>{activeTrip.paymentMethod}</span>
+							</div>
+						</div>
+					</CardBody>
+				</Card>
+
+				{/* Driver Details Card */}
+				<Card className="mb-4">
+					<CardBody className="p-4">
+						<h3 className="text-sm font-semibold mb-2">Driver & Vehicle</h3>
+						<div className="flex items-center gap-3 mb-2">
+							<div className="w-10 h-10 bg-default-100 rounded-full flex items-center justify-center">
+								<Icon className="text-xl text-default-400" icon="lucide:user" />
+							</div>
+							<div>
+								<p className="font-medium">{activeTrip.driver}</p>
+								<p className="text-xs text-default-500">{activeTrip.vehicle}</p>
+							</div>
+						</div>
+						<p className="text-xs text-default-500">
+							License Plate: {activeTrip.licensePlate}
+						</p>
+					</CardBody>
+				</Card>
+
+				{/* Rate Experience */}
+				<Card>
+					<CardBody className="p-4">
+						<h3 className="text-sm font-semibold mb-2">Rate Your Experience</h3>
+						<div className="flex justify-center mb-3">
+							{[1, 2, 3, 4, 5].map((star) => (
+								<Icon
+									key={star}
+									className="text-2xl text-default-300 hover:text-yellow-500 cursor-pointer"
+									icon="lucide:star"
+								/>
+							))}
+						</div>
+						<Button
+							className="w-full"
+							color="primary"
+							variant="flat"
+							onPress={() => router.push("/")}>
+							Submit Rating
+						</Button>
+					</CardBody>
+				</Card>
+
+				{/* Actions */}
+				<div className="flex gap-2 mt-4">
+					<Button
+						className="flex-1"
+						color="primary"
+						startContent={<Icon icon="lucide:home" />}
+						variant="light"
+						onPress={() => router.push("/")}>
+						Go Home
+					</Button>
+					<Button
+						className="flex-1"
+						color="primary"
+						startContent={<Icon icon="lucide:repeat" />}
+						onPress={() => router.push("/ride/route")}>
+						Book Again
+					</Button>
+				</div>
 			</div>
+
+			<TripModal isOpen={isOpen} trip={activeTrip} onOpenChange={onOpenChange} />
 		</motion.div>
 	);
 };

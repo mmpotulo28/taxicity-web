@@ -1,147 +1,162 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-import { iRank, iRoute, iTaxi, iTrip } from "@/types";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { iTrip, iRoute, iRank, iTaxi } from "@/types";
+import {
+	trips as mockTrips,
+	routes as mockRoutes,
+	ranks as mockRanks,
+	taxis as mockTaxis,
+} from "@/lib/data";
 
-type RideContextType = {
-	selectedRoute: iRoute | null;
-	setSelectedRoute: (route: iRoute | null) => void;
-	selectedRank: iRank | null;
-	setSelectedRank: (rank: iRank | null) => void;
-	pickupLocation: string | null;
-	setPickupLocation: (location: string | null) => void;
-	dropOffLocation: string | null;
-	setDropOffLocation: (location: string | null) => void;
-	selectedTaxi: iTaxi | null;
-	setSelectedTaxi: (taxi: iTaxi | null) => void;
-	trip: iTrip | null;
-	tripStarted: boolean;
-	startTrip: () => boolean;
-	endTrip: () => void;
+interface RideContextType {
 	tripHistory: iTrip[];
-};
+	routes: iRoute[];
+	ranks: iRank[];
+	taxis: iTaxi[];
+	activeTrip: iTrip | null;
+	selectedRoute: iRoute | null;
+	selectedTaxi: iTaxi | null;
+	pickupLocation: string;
+	dropoffLocation: string;
+
+	// Actions
+	setActiveTrip: (trip: iTrip | null) => void;
+	setSelectedRoute: (route: iRoute | null) => void;
+	setSelectedTaxi: (taxi: iTaxi | null) => void;
+	setPickupLocation: (location: string) => void;
+	setDropoffLocation: (location: string) => void;
+	requestRide: () => void;
+	cancelRide: () => void;
+}
 
 const RideContext = createContext<RideContextType | undefined>(undefined);
 
-const TRIP_STORAGE_KEY = "taxicity_trip";
-const HISTORY_STORAGE_KEY = "taxicity_trip_history";
-
-export const RideProvider = ({ children }: { children: ReactNode }) => {
-	const [selectedRoute, setSelectedRoute] = useState<iRoute | null>(null);
-	const [selectedRank, setSelectedRank] = useState<iRank | null>(null);
-	const [pickupLocation, setPickupLocation] = useState<string | null>(null);
-	const [dropOffLocation, setDropOffLocation] = useState<string | null>(null);
-	const [selectedTaxi, setSelectedTaxi] = useState<iTaxi | null>(null);
-	const [trip, setTrip] = useState<iTrip | null>(null);
-	const [tripStarted, setTripStarted] = useState(false);
+export function RideProvider({ children }: { children: React.ReactNode }) {
+	// State
 	const [tripHistory, setTripHistory] = useState<iTrip[]>([]);
+	const [routes, setRoutes] = useState<iRoute[]>([]);
+	const [ranks, setRanks] = useState<iRank[]>([]);
+	const [taxis, setTaxis] = useState<iTaxi[]>([]);
+	const [activeTrip, setActiveTrip] = useState<iTrip | null>(null);
+	const [selectedRoute, setSelectedRoute] = useState<iRoute | null>(null);
+	const [selectedTaxi, setSelectedTaxi] = useState<iTaxi | null>(null);
+	const [pickupLocation, setPickupLocation] = useState<string>("");
+	const [dropoffLocation, setDropoffLocation] = useState<string>("");
 
-	// Load trip and history from localStorage on mount
-	// useEffect(() => {
-	// 	if (typeof window === "undefined") return;
+	// Load mock data on mount
+	useEffect(() => {
+		setTripHistory(mockTrips);
+		setRoutes(mockRoutes);
+		setRanks(mockRanks);
+		setTaxis(mockTaxis);
+	}, []);
 
-	// 	const storedTrip =
-	// 		typeof window !== "undefined" ? localStorage.getItem(TRIP_STORAGE_KEY) : null;
-
-	// 	if (storedTrip) {
-	// 		setTrip(JSON.parse(storedTrip));
-	// 		setTripStarted(true);
-	// 	}
-	// 	const storedHistory =
-	// 		typeof window !== "undefined" ? localStorage.getItem(HISTORY_STORAGE_KEY) : null;
-	// 	if (storedHistory) {
-	// 		setTripHistory(JSON.parse(storedHistory));
-	// 	}
-	// }, []);
-
-	// Persist trip to localStorage
-	// useEffect(() => {
-	// 	if (typeof window === "undefined") return;
-	// 	if (trip) {
-	// 		localStorage.setItem(TRIP_STORAGE_KEY, JSON.stringify(trip));
-	// 	} else {
-	// 		localStorage.removeItem(TRIP_STORAGE_KEY);
-	// 	}
-	// }, [trip]);
-
-	// Persist trip history to localStorage
-	// useEffect(() => {
-	// 	if (typeof window === "undefined") return;
-	// 	localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(tripHistory));
-	// }, [tripHistory]);
-
-	const startTrip = () => {
-		if (!selectedRoute || !selectedTaxi || !pickupLocation || !dropOffLocation) {
-			alert("Please select route, taxi, and locations before starting the trip.");
-
-			return false;
+	// Request a new ride
+	const requestRide = () => {
+		if (!selectedRoute || !pickupLocation || !dropoffLocation) {
+			console.error("Cannot request ride: missing required information");
+			return;
 		}
-		const now = new Date();
-		const id = "trip-" + now.getTime();
-		const date = now.toISOString().slice(0, 10);
-		const time = now.toTimeString().slice(0, 5);
 
+		// Find an available taxi for the selected route
+		const availableTaxi = taxis.find(
+			(taxi) => taxi.status === "available" && taxi.routes.includes(selectedRoute.id),
+		);
+
+		if (!availableTaxi) {
+			console.error("No available taxis for this route");
+			return;
+		}
+
+		// Get rank information
+		const rank = ranks.find((r) => r.id === selectedRoute.rankId);
+
+		if (!rank) {
+			console.error("Invalid rank information");
+			return;
+		}
+
+		// Create a new trip
 		const newTrip: iTrip = {
-			id,
-			date,
-			time,
+			id: `trip${Date.now()}`,
 			route: selectedRoute.name,
-			pickup: pickupLocation,
-			dropoff: dropOffLocation,
-			driver: selectedTaxi.driverName,
-			vehicle: selectedTaxi.vehicleInfo,
-			licensePlate: selectedTaxi.licensePlate,
-			fare: selectedRoute.estimatedFare || "R0.00",
-			status: "ongoing",
+			date: new Date().toISOString().split("T")[0],
+			time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+			pickup: pickupLocation || rank.name,
+			dropoff: dropoffLocation,
+			fare: selectedRoute.estimatedFare.split(" - ")[0], // Take the lower fare estimate
+			status: "in-progress",
+			driver: availableTaxi.driver,
+			vehicle: availableTaxi.model,
+			licensePlate: availableTaxi.registrationNumber,
 			paymentMethod: "Cash",
 		};
 
-		setTrip(newTrip);
-		setTripStarted(true);
+		// Update the active trip and add to history
+		setActiveTrip(newTrip);
+		setTripHistory((prev) => [newTrip, ...prev]);
+		setSelectedTaxi(availableTaxi);
 
-		return true;
+		// Update taxi status
+		setTaxis((prev) =>
+			prev.map((taxi) =>
+				taxi.id === availableTaxi.id ? { ...taxi, status: "on-trip" } : taxi,
+			),
+		);
 	};
 
-	const endTrip = () => {
-		if (trip) {
-			const completedTrip = { ...trip, status: "completed" as const };
+	// Cancel the current active ride
+	const cancelRide = () => {
+		if (!activeTrip || !selectedTaxi) return;
 
-			setTripHistory((prev) => [completedTrip, ...prev]);
-		}
-		setTrip(null);
-		setTripStarted(false);
+		// Update the trip status
+		const updatedTrip = { ...activeTrip, status: "cancelled" as const };
+
+		setTripHistory((prev) =>
+			prev.map((trip) => (trip.id === activeTrip.id ? updatedTrip : trip)),
+		);
+
+		// Reset active trip
+		setActiveTrip(null);
+
+		// Update taxi status back to available
+		setTaxis((prev) =>
+			prev.map((taxi) =>
+				taxi.id === selectedTaxi.id ? { ...taxi, status: "available" } : taxi,
+			),
+		);
+
+		setSelectedTaxi(null);
 	};
 
-	return (
-		<RideContext.Provider
-			value={{
-				selectedRoute,
-				setSelectedRoute,
-				selectedRank,
-				setSelectedRank,
-				pickupLocation,
-				setPickupLocation,
-				dropOffLocation,
-				setDropOffLocation,
-				selectedTaxi,
-				setSelectedTaxi,
-				trip,
-				tripStarted,
-				startTrip,
-				endTrip,
-				tripHistory,
-			}}>
-			{children}
-		</RideContext.Provider>
-	);
-};
+	const value = {
+		tripHistory,
+		routes,
+		ranks,
+		taxis,
+		activeTrip,
+		selectedRoute,
+		selectedTaxi,
+		pickupLocation,
+		dropoffLocation,
 
-export const useRide = () => {
+		setActiveTrip,
+		setSelectedRoute,
+		setSelectedTaxi,
+		setPickupLocation,
+		setDropoffLocation,
+		requestRide,
+		cancelRide,
+	};
+
+	return <RideContext.Provider value={value}>{children}</RideContext.Provider>;
+}
+
+export function useRide() {
 	const context = useContext(RideContext);
-
-	if (!context) {
+	if (context === undefined) {
 		throw new Error("useRide must be used within a RideProvider");
 	}
-
 	return context;
-};
+}

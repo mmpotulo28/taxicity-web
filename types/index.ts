@@ -1,47 +1,59 @@
 import { SVGProps } from "react";
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
-  size?: number;
+	size?: number;
 };
 
 export interface iRoute {
-  id: string;
-  name: string;
-  rankId: string;
-  estimatedTime?: string;
-  estimatedFare?: string;
-  status: string;
+	id: string;
+	name: string;
+	rankId: string;
+	description?: string;
+	estimatedFare: string;
+	estimatedDuration: string;
+	distance: string;
+	status: "active" | "busy" | "delayed";
 }
 
 export interface iRank {
-  id: string;
-  name: string;
-  city: string;
-  province: string;
-  town: string;
+	id: string;
+	name: string;
+	location: string;
+	coordinates: {
+		lat: number;
+		lng: number;
+	};
+	capacity: number;
+	operatingHours: string;
 }
 
 export interface iTaxi {
-  id: string;
-  driverName: string;
-  vehicleInfo: string;
-  licensePlate: string;
-  rating: number;
-  distance: string;
-  eta: string;
+	id: string;
+	registrationNumber: string;
+	driver: string;
+	phone: string;
+	capacity: number;
+	model: string;
+	status: "available" | "on-trip" | "offline";
+	routes: string[];
+	rating: number;
+	location?: {
+		lat: number;
+		lng: number;
+	};
 }
 
 export interface iTrip {
-  id: string;
-  date: string;
-  time: string;
-  route: string;
-  pickup: string;
-  dropoff: string;
-  driver: string;
-  vehicle: string;
-  licensePlate: string;
-  fare: string;
-  status: "completed" | "cancelled" | "ongoing";
-  paymentMethod: "Cash" | "QR Code";
+	id: string;
+	route: string;
+	date: string;
+	time: string;
+	pickup: string;
+	dropoff: string;
+	fare: string;
+	status: "completed" | "cancelled" | "in-progress";
+	driver: string;
+	vehicle: string;
+	licensePlate: string;
+	paymentMethod: string;
 }

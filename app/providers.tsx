@@ -9,6 +9,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 
 import { RideProvider } from "@/context/RideContext";
+import { MapProvider } from "@/context/MapContext";
 
 export interface ProvidersProps {
 	children: React.ReactNode;
@@ -28,8 +29,10 @@ function Providers({ children, themeProps }: ProvidersProps) {
 		<HeroUIProvider navigate={router.push}>
 			<NextThemesProvider {...themeProps}>
 				<RideProvider>
-					<ToastProvider />
-					{children}
+					<MapProvider>
+						<ToastProvider />
+						{children}
+					</MapProvider>
 				</RideProvider>
 			</NextThemesProvider>
 		</HeroUIProvider>

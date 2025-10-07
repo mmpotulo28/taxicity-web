@@ -1,126 +1,100 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button, Card, CardBody, Input, Divider, Chip } from "@heroui/react";
+import { Button, Card, CardBody } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
 import { useRide } from "@/context/RideContext";
-import { popularLocations } from "@/lib/data";
+import { MapView } from "@/components/map-view";
+import LocationSelector from "@/components/LocationSelector";
 
-const LocationPicker: React.FC = () => {
+const LocationPage: React.FC = () => {
 	const router = useRouter();
-	const { setPickupLocation, setDropOffLocation, selectedRoute, selectedRank } = useRide();
+	const {
+		selectedRoute,
+		pickupLocation,
+		dropoffLocation,
+		setPickupLocation,
+		setDropoffLocation,
+	} = useRide();
 
-	const [pickup, setPickup] = useState("");
-	const [dropOff, setDropOff] = useState("");
+	const [isFormValid, setIsFormValid] = useState(false);
 
-	const handleSubmit = () => {
-		if (pickup && dropOff) {
-			setPickupLocation(pickup);
-			setDropOffLocation(dropOff);
+	// If no route is selected, redirect to route selection
+	useEffect(() => {
+		if (!selectedRoute) {
+			router.push("/ride/route");
+		}
+	}, [selectedRoute, router]);
 
-			// Navigate to taxi selection or confirmation page
+	// Form validation
+	useEffect(() => {
+		setIsFormValid(!!pickupLocation && !!dropoffLocation);
+	}, [pickupLocation, dropoffLocation]);
+
+	const handleContinue = () => {
+		if (isFormValid) {
 			router.push("/ride/taxi/list");
 		}
 	};
 
 	return (
-		<motion.div
-			animate={{ opacity: 1 }}
-			className="h-full flex flex-col"
-			initial={{ opacity: 0 }}
-			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-background shadow-sm">
-				<div className="flex items-center gap-2 mb-4">
-					<Button isIconOnly aria-label="Back" size="sm" variant="light">
-						<Icon icon="lucide:arrow-left" />
+		<div className="relative h-full">
+			{/* Fullscreen map as background */}
+			<MapView fullscreen={true} zIndex={0} />
+
+			{/* Overlay content */}
+			<div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col pointer-events-none">
+				{/* Top header */}
+				<div className="bg-background backdrop-blur-sm p-4 pointer-events-auto">
+					<h2 className="text-lg font-semibold mb-4">Select Your Locations</h2>
+
+					{selectedRoute && (
+						<Card className="mb-4 bg-default-50">
+							<CardBody className="p-3">
+								<div className="flex items-center gap-2">
+									<Icon className="text-primary" icon="lucide:route" />
+									<div>
+										<h3 className="font-medium text-sm">
+											{selectedRoute.name}
+										</h3>
+										<p className="text-xs text-default-500">
+											{selectedRoute.estimatedDuration} •{" "}
+											{selectedRoute.distance}
+										</p>
+									</div>
+								</div>
+							</CardBody>
+						</Card>
+					)}
+				</div>
+
+				{/* Middle space for map interaction */}
+				<div className="flex-1" />
+
+				{/* Bottom controls */}
+				<div className="p-4 space-y-3 pointer-events-auto">
+					{/* Pickup location selector */}
+					<LocationSelector type="pickup" onSelect={setPickupLocation} />
+
+					{/* Dropoff location selector */}
+					<LocationSelector type="dropoff" onSelect={setDropoffLocation} />
+
+					{/* Continue button */}
+					<Button
+						className="w-full mt-2 opacity-100"
+						color="primary"
+						endContent={<Icon icon="lucide:arrow-right" />}
+						isDisabled={!isFormValid}
+						size="lg"
+						onPress={handleContinue}>
+						Continue
 					</Button>
-					<h2 className="text-lg font-semibold">Set Your Locations</h2>
-				</div>
-
-				<Card className="mb-4">
-					<CardBody className="p-3">
-						<div className="flex items-center gap-2 text-sm">
-							<Icon className="text-primary" icon="lucide:route" />
-							<span className="font-medium">{selectedRoute?.name}</span>
-							<Divider className="h-4" orientation="vertical" />
-							<Icon className="text-danger text-sm" icon="lucide:map-pin" />
-							<span className="text-default-500">{selectedRank?.name}</span>
-						</div>
-					</CardBody>
-				</Card>
-
-				<div className="relative">
-					<div className="absolute left-3 top-0 bottom-0 flex flex-col items-center">
-						<div className="w-3 h-3 rounded-full bg-primary mt-5" />
-						<div className="w-0.5 h-10 bg-default-200" />
-						<div className="w-3 h-3 rounded-full bg-danger mb-5" />
-					</div>
-
-					<div className="space-y-4 pl-8">
-						<Input
-							className="mb-2"
-							label="Pickup Location"
-							placeholder="Enter pickup point"
-							value={pickup}
-							onValueChange={setPickup}
-						/>
-
-						<Input
-							className="mb-2"
-							label="Drop-off Location"
-							placeholder="Enter destination"
-							value={dropOff}
-							onValueChange={setDropOff}
-						/>
-					</div>
 				</div>
 			</div>
-
-			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">
-				<h3 className="text-sm font-medium mb-3">Popular Locations</h3>
-
-				<div className="flex flex-wrap gap-2 mb-6">
-					{popularLocations?.map((location) => (
-						<Chip
-							key={location}
-							color="primary"
-							variant="flat"
-							onClick={() => {
-								if (!pickup) setPickup(location);
-								else if (!dropOff) setDropOff(location);
-							}}>
-							{location}
-						</Chip>
-					))}
-				</div>
-
-				<div className="bg-default-50 p-3 rounded-medium mb-4">
-					<div className="flex items-start gap-3">
-						<Icon className="text-primary mt-0.5" icon="lucide:info" />
-						<div>
-							<h4 className="text-sm font-medium">About this route</h4>
-							<p className="text-xs text-default-500 mt-1">
-								This route operates from 5:00 AM to 8:00 PM daily. Taxis typically
-								depart every 15-20 minutes when full. Cash payment is accepted on
-								board.
-							</p>
-						</div>
-					</div>
-				</div>
-
-				<Button
-					className="w-full"
-					color="primary"
-					endContent={<Icon icon="lucide:arrow-right" />}
-					isDisabled={!pickup || !dropOff}
-					onPress={handleSubmit}>
-					Find Available Taxis
-				</Button>
-			</div>
-		</motion.div>
+		</div>
 	);
 };
 
-export default LocationPicker;
+export default LocationPage;
