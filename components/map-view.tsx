@@ -3,6 +3,7 @@ import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
 
 import { useRide } from "@/context/RideContext";
 import { useMap } from "@/context/MapContext";
+import { getTaxiIcon } from "@/lib/helpers";
 
 interface MapViewProps {
 	fullscreen?: boolean;
@@ -56,6 +57,7 @@ export const MapView: React.FC<MapViewProps> = ({
 						lat: position.coords.latitude,
 						lng: position.coords.longitude,
 					};
+
 					setUserLocation(location);
 				},
 				() => {
@@ -69,12 +71,14 @@ export const MapView: React.FC<MapViewProps> = ({
 	const calculateMapCenter = useCallback(() => {
 		if (centerOnRank && selectedRoute) {
 			const rank = ranks.find((r) => r.id === selectedRoute.rankId);
+
 			if (rank) return rank.coordinates;
 		}
 
 		if (effectiveSelectionMode === "pickup" && pickupMarker) return pickupMarker;
 		if (effectiveSelectionMode === "dropoff" && dropoffMarker) return dropoffMarker;
 		if (userLocation) return userLocation;
+
 		return defaultCenter;
 	}, [
 		centerOnRank,
@@ -182,13 +186,7 @@ export const MapView: React.FC<MapViewProps> = ({
 						.map((taxi) => (
 							<Marker
 								key={taxi.id}
-								icon={{
-									url:
-										taxi.status === "available"
-											? 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2322c55e" width="24" height="24"><path d="M5 4h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 2v10h14V6H5zm2 1h10v2H7V7zm0 4h3v5H7v-5zm5 0h5v5h-5v-5z"/></svg>'
-											: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f59e0b" width="24" height="24"><path d="M5 4h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 2v10h14V6H5zm2 1h10v2H7V7zm0 4h3v5H7v-5zm5 0h5v5h-5v-5z"/></svg>',
-									scaledSize: new google.maps.Size(24, 24),
-								}}
+								icon={getTaxiIcon()}
 								position={taxi.location!}
 								title={`${taxi.driver} - ${taxi.model}`}
 							/>

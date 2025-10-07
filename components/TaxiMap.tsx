@@ -5,6 +5,7 @@ import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from "@react-google-map
 import TaxiCard from "./TaxiCard";
 
 import { iTaxi } from "@/types";
+import { getTaxiIcon } from "@/lib/helpers";
 
 const containerStyle = {
 	width: "100%",
@@ -30,17 +31,6 @@ const TaxiMap: React.FC<TaxiMapProps> = ({ taxis, center }) => {
 		id: "google-map-script",
 		googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
 	});
-
-	const getTaxiIcon = useCallback(() => {
-		if (typeof window !== "undefined" && window.google && window.google.maps) {
-			return {
-				url: "/images/taxi-3d-transparent.png",
-				scaledSize: new window.google.maps.Size(80, 80),
-			};
-		}
-
-		return undefined;
-	}, []);
 
 	if (!isLoaded) {
 		return (

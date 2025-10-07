@@ -82,12 +82,6 @@ const TrackRide: React.FC = () => {
 		}
 	}, [activeTrip]);
 
-	useEffect(() => {
-		if (isDestinationArrived) {
-			router.push("/ride/trip/details");
-		}
-	}, [isDestinationArrived, router]);
-
 	// Handle ride cancellation
 	const handleCancelRide = () => {
 		cancelRide();
