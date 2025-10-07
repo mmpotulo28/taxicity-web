@@ -122,9 +122,8 @@ export const MapView: React.FC<MapViewProps> = ({
 
 		return (
 			<GoogleMap
-				mapContainerStyle={mapContainerStyle}
-				zoom={14}
 				center={mapCenter}
+				mapContainerStyle={mapContainerStyle}
 				options={{
 					disableDefaultUI: false,
 					zoomControl: true,
@@ -140,16 +139,17 @@ export const MapView: React.FC<MapViewProps> = ({
 						},
 					],
 				}}
+				zoom={14}
 				onClick={modalMap ? handleMapClick : undefined}
 				onLoad={handleMapLoad}>
 				{/* User location marker */}
 				{userLocation && (
 					<Marker
-						position={userLocation}
 						icon={{
 							url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234f46e5" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/></svg>',
 							scaledSize: new google.maps.Size(24, 24),
 						}}
+						position={userLocation}
 					/>
 				)}
 

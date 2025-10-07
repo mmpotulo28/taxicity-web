@@ -29,6 +29,7 @@ const MapSelectionModal: React.FC<MapSelectionModalProps> = ({
 			const timer = setTimeout(() => {
 				setSelectionMode(type);
 			}, 200);
+
 			return () => clearTimeout(timer);
 		} else {
 			setSelectionMode(null);
@@ -41,6 +42,7 @@ const MapSelectionModal: React.FC<MapSelectionModalProps> = ({
 
 		if (marker) {
 			const address = await getAddressFromLatLng(marker);
+
 			onSelect(address);
 			onClose();
 		}
@@ -51,14 +53,14 @@ const MapSelectionModal: React.FC<MapSelectionModalProps> = ({
 
 	return (
 		<Modal
+			className="z-50"
 			isOpen={isOpen}
+			scrollBehavior="inside"
+			size="3xl"
 			onClose={() => {
 				setSelectionMode(null);
 				onClose();
-			}}
-			size="3xl"
-			scrollBehavior="inside"
-			className="z-50">
+			}}>
 			<ModalContent>
 				{(onClose) => (
 					<>
@@ -68,11 +70,11 @@ const MapSelectionModal: React.FC<MapSelectionModalProps> = ({
 						<ModalBody className="p-0 overflow-hidden relative">
 							<div className="w-full h-[400px] relative">
 								<MapView
-									showTaxis={false}
 									fullscreen={false}
+									height="400px"
 									modalMap={true}
 									selectionModeOverride={type}
-									height="400px"
+									showTaxis={false}
 								/>
 
 								{/* Instructions overlay */}
@@ -98,8 +100,8 @@ const MapSelectionModal: React.FC<MapSelectionModalProps> = ({
 							</Button>
 							<Button
 								color={type === "pickup" ? "primary" : "danger"}
-								isDisabled={!selectedMarker}
 								endContent={<Icon icon="lucide:check" />}
+								isDisabled={!selectedMarker}
 								onPress={handleConfirm}>
 								Confirm Location
 							</Button>

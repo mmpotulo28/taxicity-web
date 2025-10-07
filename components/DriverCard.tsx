@@ -1,8 +1,9 @@
-import { iTaxi } from "@/types";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Icon } from "@iconify/react";
+
+import { iTaxi } from "@/types";
 
 const DriverCard: React.FC<{ taxi: iTaxi; handleCancelRide: () => void }> = ({
 	taxi,

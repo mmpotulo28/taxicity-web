@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect } from "react";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";

@@ -102,6 +102,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 				if (rankToUse) {
 					const address = await getAddressFromLatLng(rankToUse.coordinates);
 					const fullAddress = `${rankToUse.name} - ${address}`;
+
 					setInputValue(fullAddress);
 					onSelect(fullAddress);
 
@@ -208,30 +209,30 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 			<div className="flex gap-2">
 				<Button
 					className="flex-1"
-					size="sm"
-					variant="flat"
 					color={type === "pickup" ? "primary" : "danger"}
+					size="sm"
 					startContent={<Icon icon="lucide:navigation" />}
+					variant="flat"
 					onPress={useCurrentLocation}>
 					Current Location
 				</Button>
 
 				<Button
 					className="flex-1"
-					size="sm"
-					variant="flat"
 					color={type === "pickup" ? "primary" : "danger"}
+					isDisabled={!selectedRoute}
+					size="sm"
 					startContent={<Icon icon="lucide:home" />}
-					onPress={useRankLocation}
-					isDisabled={!selectedRoute}>
+					variant="flat"
+					onPress={useRankLocation}>
 					Use {type === "pickup" ? "Origin" : "Destination"} Rank
 				</Button>
 			</div>
 
 			<MapSelectionModal
 				isOpen={isOpen}
-				onClose={onClose}
 				type={type}
+				onClose={onClose}
 				onSelect={handleMapSelection}
 			/>
 		</div>

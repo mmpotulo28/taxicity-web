@@ -35,6 +35,7 @@ const Settings: React.FC = () => {
 
 	const toggleDarkMode = () => {
 		const newTheme = theme === "dark" ? "light" : "dark";
+
 		setTheme(newTheme);
 		setPreferences((prev) => ({
 			...prev,

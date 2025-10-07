@@ -1,12 +1,11 @@
 "use client";
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button, Card, CardBody, Divider, useDisclosure } from "@heroui/react";
+import { Button, Card, CardBody, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
 import { useRide } from "@/context/RideContext";
-import { MapView } from "@/components/map-view";
 import TripModal from "@/components/TripModal";
 import DriverCard from "@/components/DriverCard";
 import TripCard from "@/components/TripCard";

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { addToast } from "@heroui/toast";
+
 import { iTrip, iRoute, iRank, iTaxi } from "@/types";
 import {
 	trips as mockTrips,
@@ -8,7 +10,6 @@ import {
 	ranks as mockRanks,
 	taxis as mockTaxis,
 } from "@/lib/data";
-import { addToast } from "@heroui/toast";
 
 interface RideContextType {
 	tripHistory: iTrip[];
@@ -93,6 +94,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 
 		if (!rank) {
 			console.error("Invalid rank information");
+
 			return;
 		}
 
@@ -172,8 +174,10 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 
 export function useRide() {
 	const context = useContext(RideContext);
+
 	if (context === undefined) {
 		throw new Error("useRide must be used within a RideProvider");
 	}
+
 	return context;
 }
