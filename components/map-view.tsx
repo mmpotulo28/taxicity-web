@@ -9,17 +9,10 @@ interface MapViewProps {
 	showTaxis?: boolean;
 	centerOnRank?: boolean;
 	zIndex?: number;
+	height?: string;
+	modalMap?: boolean;
+	selectionModeOverride?: "pickup" | "dropoff" | null;
 }
-
-const mapContainerStyle = {
-	position: "absolute" as const,
-	top: 0,
-	left: 0,
-	right: 0,
-	bottom: 0,
-	width: "100%",
-	height: "100%",
-};
 
 const defaultCenter = {
 	lat: -26.2041, // Johannesburg
@@ -30,6 +23,10 @@ export const MapView: React.FC<MapViewProps> = ({
 	showTaxis = true,
 	centerOnRank = false,
 	zIndex = -1,
+	height = "200px",
+	fullscreen = true,
+	modalMap = false,
+	selectionModeOverride = null,
 }) => {
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -47,6 +44,8 @@ export const MapView: React.FC<MapViewProps> = ({
 		setIsMapLoaded,
 		selectionMode,
 	} = useMap();
+
+	const effectiveSelectionMode = selectionModeOverride || selectionMode;
 
 	// Get user's current location
 	useEffect(() => {
@@ -73,31 +72,45 @@ export const MapView: React.FC<MapViewProps> = ({
 			if (rank) return rank.coordinates;
 		}
 
-		if (pickupMarker) return pickupMarker;
+		if (effectiveSelectionMode === "pickup" && pickupMarker) return pickupMarker;
+		if (effectiveSelectionMode === "dropoff" && dropoffMarker) return dropoffMarker;
 		if (userLocation) return userLocation;
 		return defaultCenter;
-	}, [centerOnRank, selectedRoute, ranks, pickupMarker, userLocation]);
+	}, [
+		centerOnRank,
+		selectedRoute,
+		ranks,
+		pickupMarker,
+		dropoffMarker,
+		userLocation,
+		effectiveSelectionMode,
+	]);
 
 	// Handle map load
 	const handleMapLoad = useCallback(
 		(map: google.maps.Map) => {
-			// Fix: Correctly type the map reference
 			mapRef.current = map as any;
 			setIsMapLoaded(true);
 		},
 		[mapRef, setIsMapLoaded],
 	);
 
-	const getTaxiIcon = useCallback(() => {
-		if (typeof window !== "undefined" && window.google && window.google.maps) {
-			return {
-				url: "/images/taxi-3d-transparent.png",
-				scaledSize: new window.google.maps.Size(80, 80),
+	const mapContainerStyle = fullscreen
+		? {
+				position: "absolute" as const,
+				top: 0,
+				left: 0,
+				right: 0,
+				bottom: 0,
+				width: "100%",
+				height: "100%",
+				zIndex: zIndex,
+			}
+		: {
+				width: "100%",
+				height: height,
+				position: "relative" as const,
 			};
-		}
-
-		return undefined;
-	}, []);
 
 	// Render map
 	const renderMap = useCallback(() => {
@@ -105,10 +118,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
 		return (
 			<GoogleMap
-				mapContainerStyle={{
-					...mapContainerStyle,
-					zIndex: zIndex,
-				}}
+				mapContainerStyle={mapContainerStyle}
 				zoom={14}
 				center={mapCenter}
 				options={{
@@ -117,6 +127,7 @@ export const MapView: React.FC<MapViewProps> = ({
 					mapTypeControl: false,
 					fullscreenControl: false,
 					streetViewControl: false,
+					clickableIcons: false,
 					styles: [
 						{
 							featureType: "poi",
@@ -125,7 +136,7 @@ export const MapView: React.FC<MapViewProps> = ({
 						},
 					],
 				}}
-				onClick={handleMapClick}
+				onClick={modalMap ? handleMapClick : undefined}
 				onLoad={handleMapLoad}>
 				{/* User location marker */}
 				{userLocation && (
@@ -171,7 +182,13 @@ export const MapView: React.FC<MapViewProps> = ({
 						.map((taxi) => (
 							<Marker
 								key={taxi.id}
-								icon={getTaxiIcon()}
+								icon={{
+									url:
+										taxi.status === "available"
+											? 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2322c55e" width="24" height="24"><path d="M5 4h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 2v10h14V6H5zm2 1h10v2H7V7zm0 4h3v5H7v-5zm5 0h5v5h-5v-5z"/></svg>'
+											: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f59e0b" width="24" height="24"><path d="M5 4h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 2v10h14V6H5zm2 1h10v2H7V7zm0 4h3v5H7v-5zm5 0h5v5h-5v-5z"/></svg>',
+									scaledSize: new google.maps.Size(24, 24),
+								}}
 								position={taxi.location!}
 								title={`${taxi.driver} - ${taxi.model}`}
 							/>
@@ -189,39 +206,20 @@ export const MapView: React.FC<MapViewProps> = ({
 						title={rank.name}
 					/>
 				))}
-
-				{/* Selection Mode Indicator */}
-				{/* {selectionMode && (
-					<div
-						style={{
-							position: "absolute",
-							bottom: "20px",
-							left: "50%",
-							transform: "translateX(-50%)",
-							backgroundColor: selectionMode === "pickup" ? "#22c55e" : "#ef4444",
-							color: "white",
-							padding: "8px 16px",
-							borderRadius: "20px",
-							fontWeight: "bold",
-							boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
-						}}>
-						Tap to select {selectionMode === "pickup" ? "pickup" : "drop-off"} location
-					</div>
-				)} */}
 			</GoogleMap>
 		);
 	}, [
 		calculateMapCenter,
+		mapContainerStyle,
 		handleMapClick,
 		handleMapLoad,
 		pickupMarker,
 		dropoffMarker,
 		ranks,
-		selectionMode,
 		showTaxis,
 		taxis,
 		userLocation,
-		zIndex,
+		modalMap,
 	]);
 
 	if (loadError) return <div className="text-danger">Failed to load maps</div>;

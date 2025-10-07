@@ -1,6 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
 import { Icon } from "@iconify/react";
+import { Chip } from "@heroui/chip";
+import { useDisclosure } from "@heroui/modal";
+
+import MapSelectionModal from "./MapSelectionModal";
 
 import { useMap } from "@/context/MapContext";
 import { useRide } from "@/context/RideContext";
@@ -8,65 +13,133 @@ import { useRide } from "@/context/RideContext";
 interface LocationSelectorProps {
 	type: "pickup" | "dropoff";
 	onSelect: (address: string) => void;
+	value: string;
 }
 
-const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect }) => {
-	const {
-		setSelectionMode,
-		selectionMode,
-		pickupMarker,
-		dropoffMarker,
-		getAddressFromLatLng,
-		userLocation,
-	} = useMap();
+// Popular locations for quick selection
+const POPULAR_LOCATIONS = {
+	pickup: ["Johannesburg CBD", "Sandton City", "Rosebank Mall", "Soweto", "Park Station"],
+	dropoff: ["Pretoria Central", "Mall of Africa", "East Rand Mall", "Fourways Mall", "Midrand"],
+};
+
+const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, value }) => {
+	const { isOpen, onOpen, onClose } = useDisclosure();
+	const { userLocation, getAddressFromLatLng, setPickupMarker, setDropoffMarker } = useMap();
 
 	const { ranks, selectedRoute } = useRide();
 
-	// When a marker is set, get the address and call onSelect
+	// Use local input state to handle the input field
+	const [inputValue, setInputValue] = useState(value);
+
+	// Sync input value with parent state
 	useEffect(() => {
-		const updateAddress = async () => {
-			if (type === "pickup" && pickupMarker) {
-				const address = await getAddressFromLatLng(pickupMarker);
-				onSelect(address);
-			} else if (type === "dropoff" && dropoffMarker) {
-				const address = await getAddressFromLatLng(dropoffMarker);
-				onSelect(address);
+		setInputValue(value);
+	}, [value]);
+
+	// Handler for popular location selection
+	const handlePopularLocation = (location: string) => {
+		setInputValue(location);
+		onSelect(location);
+	};
+
+	// Handler for rank selection
+	const handleRankSelection = async (rankId: string) => {
+		const selectedRank = ranks.find((r) => r.id === rankId);
+
+		if (selectedRank) {
+			const address = await getAddressFromLatLng(selectedRank.coordinates);
+			const fullAddress = `${selectedRank.name} - ${address}`;
+
+			setInputValue(fullAddress);
+			onSelect(fullAddress);
+
+			if (type === "pickup") {
+				setPickupMarker(selectedRank.coordinates);
+			} else {
+				setDropoffMarker(selectedRank.coordinates);
 			}
-		};
+		}
+	};
 
-		updateAddress();
-	}, [type, pickupMarker, dropoffMarker, getAddressFromLatLng, onSelect]);
-
-	// Helper to use current location as pickup
+	// Handler for current location
 	const useCurrentLocation = async () => {
-		if (!userLocation) return;
-
-		if (type === "pickup") {
+		if (userLocation) {
 			const address = await getAddressFromLatLng(userLocation);
+
+			setInputValue(address);
 			onSelect(address);
+
+			if (type === "pickup") {
+				setPickupMarker(userLocation);
+			} else {
+				setDropoffMarker(userLocation);
+			}
 		}
 	};
 
-	// Helper to use rank location
+	// Handler for using rank location
 	const useRankLocation = async () => {
-		if (!selectedRoute) return;
+		if (selectedRoute) {
+			let rankToUse;
 
-		const rank = ranks.find((r) => r.id === selectedRoute.rankId);
-		if (rank && type === "pickup") {
-			const address = await getAddressFromLatLng(rank.coordinates);
-			onSelect(rank.name + " - " + address);
+			if (ranks.length > 0) {
+				// For pickup, use the origin rank
+				if (type === "pickup") {
+					rankToUse = ranks.find((r) => r.id === selectedRoute.rankId);
+				}
+				// For dropoff, suggest destination ranks
+				else {
+					// If selectedRoute has a destination rank, use that
+					if (selectedRoute.destinationRankId) {
+						rankToUse = ranks.find((r) => r.id === selectedRoute.destinationRankId);
+					}
+					// Otherwise use the first rank that's not the origin
+					else {
+						rankToUse = ranks.find((r) => r.id !== selectedRoute.rankId);
+					}
+				}
+
+				if (rankToUse) {
+					const address = await getAddressFromLatLng(rankToUse.coordinates);
+					const fullAddress = `${rankToUse.name} - ${address}`;
+					setInputValue(fullAddress);
+					onSelect(fullAddress);
+
+					if (type === "pickup") {
+						setPickupMarker(rankToUse.coordinates);
+					} else {
+						setDropoffMarker(rankToUse.coordinates);
+					}
+				}
+			}
 		}
 	};
 
-	const handleActivate = () => {
-		setSelectionMode(type);
+	// Get list of available ranks, excluding the origin rank for dropoff
+	const availableRanks = ranks.filter((r) => {
+		if (type === "pickup") {
+			return true; // Show all ranks for pickup
+		} else {
+			// For dropoff, don't show the origin rank if it's already selected
+			return selectedRoute?.rankId !== r.id;
+		}
+	});
+
+	// Handle input change
+	const handleInputChange = (value: string) => {
+		setInputValue(value);
+		onSelect(value);
 	};
 
-	const isActive = selectionMode === type;
+	// Handle selection from map modal
+	const handleMapSelection = (address: string) => {
+		setInputValue(address);
+		onSelect(address);
+		onClose();
+	};
 
 	return (
-		<div
-			className={`p-3 rounded-lg ${isActive ? "bg-background/90 shadow-lg" : "bg-background/70"}`}>
+		<div className="mb-4">
 			<div className="flex items-center gap-2 mb-2">
 				<div
 					className={`w-8 h-8 rounded-full ${type === "pickup" ? "bg-primary/10" : "bg-danger/10"} flex items-center justify-center`}>
@@ -79,32 +152,88 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect }) =
 				</label>
 			</div>
 
-			<Button
-				className="w-full mb-2"
-				color={type === "pickup" ? "primary" : "danger"}
-				endContent={<Icon icon="lucide:map-pin" />}
-				variant={isActive ? "solid" : "flat"}
-				onPress={handleActivate}>
-				{isActive ? "Selecting..." : "Select on Map"}
-			</Button>
+			<div className="flex mb-3">
+				<Input
+					className="flex-1"
+					placeholder={type === "pickup" ? "Where are you?" : "Where are you going?"}
+					value={inputValue}
+					onValueChange={handleInputChange}
+				/>
+				<Button
+					isIconOnly
+					aria-label={`Select ${type} on map`}
+					className="ml-2"
+					color={type === "pickup" ? "primary" : "danger"}
+					variant="flat"
+					onPress={onOpen}>
+					<Icon icon="lucide:map-pin" />
+				</Button>
+			</div>
 
-			{type === "pickup" && (
-				<div className="flex gap-2">
-					<Button
-						className="flex-1"
-						size="sm"
-						variant="flat"
-						onPress={useCurrentLocation}>
-						<Icon className="mr-1" icon="lucide:navigation" />
-						Current Location
-					</Button>
+			{/* Popular locations and ranks section */}
+			<div className="mb-3">
+				<p className="text-xs text-default-500 mb-2">Popular locations:</p>
+				<div className="flex flex-wrap gap-2">
+					{/* Popular locations */}
+					{POPULAR_LOCATIONS[type].map((location) => (
+						<Chip
+							key={location}
+							className="cursor-pointer"
+							color={type === "pickup" ? "primary" : "danger"}
+							radius="sm"
+							size="sm"
+							variant="flat"
+							onClick={() => handlePopularLocation(location)}>
+							{location}
+						</Chip>
+					))}
 
-					<Button className="flex-1" size="sm" variant="flat" onPress={useRankLocation}>
-						<Icon className="mr-1" icon="lucide:home" />
-						Use Rank
-					</Button>
+					{/* Rank locations */}
+					{availableRanks.map((rank) => (
+						<Chip
+							key={rank.id}
+							className="cursor-pointer"
+							color={type === "pickup" ? "primary" : "danger"}
+							radius="sm"
+							size="sm"
+							startContent={<Icon icon="lucide:map-pin" size={12} />}
+							variant="flat"
+							onClick={() => handleRankSelection(rank.id)}>
+							{rank.name}
+						</Chip>
+					))}
 				</div>
-			)}
+			</div>
+
+			<div className="flex gap-2">
+				<Button
+					className="flex-1"
+					size="sm"
+					variant="flat"
+					color={type === "pickup" ? "primary" : "danger"}
+					startContent={<Icon icon="lucide:navigation" />}
+					onPress={useCurrentLocation}>
+					Current Location
+				</Button>
+
+				<Button
+					className="flex-1"
+					size="sm"
+					variant="flat"
+					color={type === "pickup" ? "primary" : "danger"}
+					startContent={<Icon icon="lucide:home" />}
+					onPress={useRankLocation}
+					isDisabled={!selectedRoute}>
+					Use {type === "pickup" ? "Origin" : "Destination"} Rank
+				</Button>
+			</div>
+
+			<MapSelectionModal
+				isOpen={isOpen}
+				onClose={onClose}
+				type={type}
+				onSelect={handleMapSelection}
+			/>
 		</div>
 	);
 };

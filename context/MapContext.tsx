@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useRef } from "react";
 
 type MapContextType = {
-	mapRef: React.MutableRefObject<any>; // Changed from GoogleMapType to any
+	mapRef: React.MutableRefObject<any>;
 	isMapLoaded: boolean;
 	selectedLocation: google.maps.LatLngLiteral | null;
 	selectionMode: "pickup" | "dropoff" | null;
@@ -24,7 +24,7 @@ type MapContextType = {
 const MapContext = createContext<MapContextType | undefined>(undefined);
 
 export function MapProvider({ children }: { children: React.ReactNode }) {
-	const mapRef = useRef<any>(null); // Changed from GoogleMapType to any
+	const mapRef = useRef<any>(null);
 	const [isMapLoaded, setIsMapLoaded] = useState(false);
 	const [selectedLocation, setSelectedLocation] = useState<google.maps.LatLngLiteral | null>(
 		null,
@@ -38,6 +38,8 @@ export function MapProvider({ children }: { children: React.ReactNode }) {
 	const handleMapClick = (e: google.maps.MapMouseEvent) => {
 		if (!e.latLng || !selectionMode) return;
 
+		console.log("Map clicked in mode:", selectionMode);
+
 		const clickedLocation = {
 			lat: e.latLng.lat(),
 			lng: e.latLng.lng(),
@@ -46,8 +48,10 @@ export function MapProvider({ children }: { children: React.ReactNode }) {
 		setSelectedLocation(clickedLocation);
 
 		if (selectionMode === "pickup") {
+			console.log("Setting pickup marker to:", clickedLocation);
 			setPickupMarker(clickedLocation);
 		} else if (selectionMode === "dropoff") {
+			console.log("Setting dropoff marker to:", clickedLocation);
 			setDropoffMarker(clickedLocation);
 		}
 	};

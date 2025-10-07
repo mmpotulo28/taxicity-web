@@ -8,39 +8,40 @@ export interface iRoute {
 	id: string;
 	name: string;
 	rankId: string;
-	description?: string;
-	estimatedFare: string;
+	destinationRankId?: string; // Added destination rank ID
 	estimatedDuration: string;
+	estimatedFare: string;
 	distance: string;
-	status: "active" | "busy" | "delayed";
+	status: "active" | "inactive" | "busy";
 }
 
 export interface iRank {
 	id: string;
 	name: string;
-	location: string;
 	coordinates: {
 		lat: number;
 		lng: number;
 	};
-	capacity: number;
-	operatingHours: string;
+	address: string;
+	phone: string;
+	region: string;
 }
 
 export interface iTaxi {
 	id: string;
-	registrationNumber: string;
 	driver: string;
-	phone: string;
-	capacity: number;
 	model: string;
-	status: "available" | "on-trip" | "offline";
-	routes: string[];
+	licensePlate: string;
+	capacity: number;
 	rating: number;
+	status: "available" | "busy" | "offline";
 	location?: {
 		lat: number;
 		lng: number;
 	};
+	eta?: string;
+	routeId?: string;
+	phone?: string;
 }
 
 export interface iTrip {
@@ -50,10 +51,11 @@ export interface iTrip {
 	time: string;
 	pickup: string;
 	dropoff: string;
-	fare: string;
-	status: "completed" | "cancelled" | "in-progress";
 	driver: string;
 	vehicle: string;
 	licensePlate: string;
+	fare: string;
+	status: "completed" | "cancelled" | "in-progress";
 	paymentMethod: string;
+	rating?: number;
 }
