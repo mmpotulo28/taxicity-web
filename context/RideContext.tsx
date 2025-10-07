@@ -66,6 +66,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 
 		if (!availableTaxi) {
 			console.error("No available taxis for this route");
+
 			return;
 		}
 
@@ -89,7 +90,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			status: "in-progress",
 			driver: availableTaxi.driver,
 			vehicle: availableTaxi.model,
-			licensePlate: availableTaxi.registrationNumber,
+			licensePlate: availableTaxi.licensePlate,
 			paymentMethod: "Cash",
 		};
 
@@ -100,9 +101,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 
 		// Update taxi status
 		setTaxis((prev) =>
-			prev.map((taxi) =>
-				taxi.id === availableTaxi.id ? { ...taxi, status: "on-trip" } : taxi,
-			),
+			prev.map((taxi) => (taxi.id === availableTaxi.id ? { ...taxi, status: "busy" } : taxi)),
 		);
 	};
 
