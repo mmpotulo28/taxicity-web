@@ -2,14 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useDisclosure } from "@heroui/modal";
 
 import { useRide } from "@/context/RideContext";
 import { MapView } from "@/components/map-view";
 import TripCard from "@/components/TripCard";
 import DriverCard from "@/components/DriverCard";
 import TripModal from "@/components/TripModal";
-import { useDisclosure } from "@heroui/modal";
-
 const TrackRide: React.FC = () => {
 	const router = useRouter();
 	const { activeTrip, selectedTaxi, selectedRoute, cancelRide } = useRide();

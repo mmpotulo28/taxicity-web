@@ -8,10 +8,12 @@ import { useRouter } from "next/navigation";
 import { useRide } from "@/context/RideContext";
 import { MapView } from "@/components/map-view";
 import TripModal from "@/components/TripModal";
+import DriverCard from "@/components/DriverCard";
+import TripCard from "@/components/TripCard";
 
 const TripDetails: React.FC = () => {
 	const router = useRouter();
-	const { activeTrip } = useRide();
+	const { activeTrip, selectedTaxi } = useRide();
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
 	// If no active trip, redirect to home
@@ -36,99 +38,16 @@ const TripDetails: React.FC = () => {
 				<p className="text-sm text-default-500">Thank you for riding with TaxiCity</p>
 			</div>
 
-			{/* Map showing the completed route */}
-			<div className="w-full h-40 mb-2">
-				<MapView showTaxis={true} />
-			</div>
-
-			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">
+			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden flex flex-col gap-4 justify-center">
 				{/* Trip Summary Card */}
-				<Card className="mb-4">
-					<CardBody className="p-4">
-						<div className="flex items-center justify-between mb-3">
-							<div>
-								<h3 className="font-medium">{activeTrip.route}</h3>
-								<p className="text-xs text-default-500">
-									{activeTrip.date} • {activeTrip.time}
-								</p>
-							</div>
-							<div className="bg-success-100 text-success-600 text-xs px-2 py-0.5 rounded-full">
-								Completed
-							</div>
-						</div>
-
-						<div className="flex items-start gap-3">
-							<div className="flex flex-col items-center">
-								<div className="w-3 h-3 rounded-full bg-primary" />
-								<div className="w-0.5 h-10 bg-default-200" />
-								<div className="w-3 h-3 rounded-full bg-danger" />
-							</div>
-
-							<div className="flex-1">
-								<div className="mb-3">
-									<div className="text-sm font-medium">Pickup</div>
-									<div className="text-xs text-default-500">
-										{activeTrip.pickup}
-									</div>
-								</div>
-
-								<div>
-									<div className="text-sm font-medium">Drop-off</div>
-									<div className="text-xs text-default-500">
-										{activeTrip.dropoff}
-									</div>
-								</div>
-							</div>
-						</div>
-					</CardBody>
-				</Card>
-
-				{/* Payment Details Card */}
-				<Card className="mb-4">
-					<CardBody className="p-4">
-						<h3 className="text-sm font-semibold mb-2">Payment Details</h3>
-						<div className="space-y-2">
-							<div className="flex justify-between">
-								<span className="text-default-500">Base Fare</span>
-								<span>{activeTrip.fare}</span>
-							</div>
-							<div className="flex justify-between">
-								<span className="text-default-500">Service Fee</span>
-								<span>R2.00</span>
-							</div>
-							<Divider className="my-2" />
-							<div className="flex justify-between font-semibold">
-								<span>Total</span>
-								<span>
-									R{(parseFloat(activeTrip.fare.replace("R", "")) + 2).toFixed(2)}
-								</span>
-							</div>
-							<div className="flex justify-between text-xs mt-1">
-								<span className="text-default-500">Payment Method</span>
-								<span>{activeTrip.paymentMethod}</span>
-							</div>
-						</div>
-					</CardBody>
-				</Card>
-
+				<TripCard
+					trip={activeTrip}
+					onSelect={() => {
+						onOpen();
+					}}
+				/>
 				{/* Driver Details Card */}
-				<Card className="mb-4">
-					<CardBody className="p-4">
-						<h3 className="text-sm font-semibold mb-2">Driver & Vehicle</h3>
-						<div className="flex items-center gap-3 mb-2">
-							<div className="w-10 h-10 bg-default-100 rounded-full flex items-center justify-center">
-								<Icon className="text-xl text-default-400" icon="lucide:user" />
-							</div>
-							<div>
-								<p className="font-medium">{activeTrip.driver}</p>
-								<p className="text-xs text-default-500">{activeTrip.vehicle}</p>
-							</div>
-						</div>
-						<p className="text-xs text-default-500">
-							License Plate: {activeTrip.licensePlate}
-						</p>
-					</CardBody>
-				</Card>
+				{selectedTaxi && <DriverCard handleCancelRide={() => {}} taxi={selectedTaxi} />}
 
 				{/* Rate Experience */}
 				<Card>
@@ -154,7 +73,7 @@ const TripDetails: React.FC = () => {
 				</Card>
 
 				{/* Actions */}
-				<div className="flex gap-2 mt-4">
+				<div className="flex gap-2">
 					<Button
 						className="flex-1"
 						color="primary"
