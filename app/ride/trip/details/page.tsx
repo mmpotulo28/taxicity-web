@@ -38,7 +38,7 @@ const TripDetails: React.FC = () => {
 
 			{/* Map showing the completed route */}
 			<div className="w-full h-40 mb-2">
-				<MapView showTaxis={false} />
+				<MapView showTaxis={true} />
 			</div>
 
 			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">

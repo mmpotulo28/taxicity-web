@@ -29,11 +29,11 @@ const TaxiList: React.FC = () => {
 	return (
 		<div className="relative h-full">
 			{/* Fullscreen map as background */}
-			<MapView fullscreen={true} zIndex={0} showTaxis centerOnRank />
+			<MapView centerOnRank fullscreen showTaxis zIndex={0} />
 
 			{/* Overlay content */}
 			<div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">
-				<div className="p-4 bg-background/80 backdrop-blur-sm">
+				<div className="p-4 bg-background backdrop-blur-sm rounded-b-2xl z-1">
 					<h2 className="text-lg font-semibold mb-4">Available Taxis</h2>
 					<div className="text-sm text-default-500">
 						{availableTaxis.length} taxis available for your route

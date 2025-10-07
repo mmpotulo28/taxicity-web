@@ -39,6 +39,8 @@ const TrackRide: React.FC = () => {
 					if (currentMin <= 1) {
 						clearInterval(countdown);
 						setIsDriverArrived(true);
+						// routed to ride/trip/details
+						router.push("/ride/trip/details");
 
 						return "Arrived";
 					}
@@ -68,7 +70,7 @@ const TrackRide: React.FC = () => {
 			className="h-full flex flex-col justify-between"
 			initial={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-background shadow-sm">
+			<div className="p-4 bg-background shadow-sm z-1 rounded-b-2xl">
 				<h2 className="text-lg font-semibold mb-2">
 					{isDriverArrived ? "Your Trip is in Progress" : "Your Taxi is Coming"}
 				</h2>
@@ -79,9 +81,7 @@ const TrackRide: React.FC = () => {
 				</p>
 			</div>
 
-			<div className="w-full h-80 mb-2">
-				<MapView />
-			</div>
+			<MapView fullscreen showTaxis zIndex={0} />
 
 			<div className="overflow-y-auto p-4 scrollbar-hidden flex flex-col gap-6">
 				{/* Trip Info Card */}

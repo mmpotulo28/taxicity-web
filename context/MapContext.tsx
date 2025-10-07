@@ -1,7 +1,5 @@
 "use client";
-
 import React, { createContext, useContext, useState, useRef } from "react";
-import type { GoogleMap as GoogleMapType } from "@react-google-maps/api";
 
 type MapContextType = {
 	mapRef: React.MutableRefObject<any>; // Changed from GoogleMapType to any
@@ -106,8 +104,10 @@ export function MapProvider({ children }: { children: React.ReactNode }) {
 
 export function useMap() {
 	const context = useContext(MapContext);
+
 	if (context === undefined) {
 		throw new Error("useMap must be used within a MapProvider");
 	}
+
 	return context;
 }

@@ -88,6 +88,17 @@ export const MapView: React.FC<MapViewProps> = ({
 		[mapRef, setIsMapLoaded],
 	);
 
+	const getTaxiIcon = useCallback(() => {
+		if (typeof window !== "undefined" && window.google && window.google.maps) {
+			return {
+				url: "/images/taxi-3d-transparent.png",
+				scaledSize: new window.google.maps.Size(80, 80),
+			};
+		}
+
+		return undefined;
+	}, []);
+
 	// Render map
 	const renderMap = useCallback(() => {
 		const mapCenter = calculateMapCenter();
@@ -130,26 +141,26 @@ export const MapView: React.FC<MapViewProps> = ({
 				{/* Pickup marker */}
 				{pickupMarker && (
 					<Marker
-						position={pickupMarker}
+						animation={google.maps.Animation.DROP}
 						icon={{
 							url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2322c55e" width="32" height="32"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>',
 							scaledSize: new google.maps.Size(32, 32),
 							anchor: new google.maps.Point(16, 32),
 						}}
-						animation={google.maps.Animation.DROP}
+						position={pickupMarker}
 					/>
 				)}
 
 				{/* Dropoff marker */}
 				{dropoffMarker && (
 					<Marker
-						position={dropoffMarker}
+						animation={google.maps.Animation.DROP}
 						icon={{
 							url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ef4444" width="32" height="32"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>',
 							scaledSize: new google.maps.Size(32, 32),
 							anchor: new google.maps.Point(16, 32),
 						}}
-						animation={google.maps.Animation.DROP}
+						position={dropoffMarker}
 					/>
 				)}
 
@@ -160,14 +171,8 @@ export const MapView: React.FC<MapViewProps> = ({
 						.map((taxi) => (
 							<Marker
 								key={taxi.id}
+								icon={getTaxiIcon()}
 								position={taxi.location!}
-								icon={{
-									url:
-										taxi.status === "available"
-											? 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2322c55e" width="24" height="24"><path d="M5 4h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 2v10h14V6H5zm2 1h10v2H7V7zm0 4h3v5H7v-5zm5 0h5v5h-5v-5z"/></svg>'
-											: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f59e0b" width="24" height="24"><path d="M5 4h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 2v10h14V6H5zm2 1h10v2H7V7zm0 4h3v5H7v-5zm5 0h5v5h-5v-5z"/></svg>',
-									scaledSize: new google.maps.Size(24, 24),
-								}}
 								title={`${taxi.driver} - ${taxi.model}`}
 							/>
 						))}
@@ -176,17 +181,17 @@ export const MapView: React.FC<MapViewProps> = ({
 				{ranks.map((rank) => (
 					<Marker
 						key={rank.id}
-						position={rank.coordinates}
 						icon={{
 							url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ef4444" width="24" height="24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>',
 							scaledSize: new google.maps.Size(24, 24),
 						}}
+						position={rank.coordinates}
 						title={rank.name}
 					/>
 				))}
 
 				{/* Selection Mode Indicator */}
-				{selectionMode && (
+				{/* {selectionMode && (
 					<div
 						style={{
 							position: "absolute",
@@ -202,7 +207,7 @@ export const MapView: React.FC<MapViewProps> = ({
 						}}>
 						Tap to select {selectionMode === "pickup" ? "pickup" : "drop-off"} location
 					</div>
-				)}
+				)} */}
 			</GoogleMap>
 		);
 	}, [
