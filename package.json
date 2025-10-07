@@ -53,6 +53,7 @@
     "@heroui/use-theme": "^2.1.10",
     "@heroui/user": "2.2.21",
     "@iconify/react": "^6.0.2",
+    "@prisma/client": "^6.16.3",
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.27",
     "@react-google-maps/api": "^2.20.7",
@@ -87,6 +88,7 @@
     "globals": "16.0.0",
     "postcss": "8.5.6",
     "prettier": "3.5.3",
+    "prisma": "^6.16.3",
     "tailwind-variants": "3.1.1",
     "tailwindcss": "4.1.11",
     "typescript": "5.6.3"
