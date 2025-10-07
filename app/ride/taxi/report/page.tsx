@@ -18,15 +18,15 @@ const issues = [
 
 const ReportTaxi = () => {
 	const router = useRouter();
-	const [registrationNumber, setRegistrationNumber] = useState("");
+	const [licensePlate, setlicensePlate] = useState("");
 	const [selectedIssue, setSelectedIssue] = useState("");
 	const [details, setDetails] = useState("");
 	const [isFormValid, setIsFormValid] = useState(false);
 
 	// Validate form
 	React.useEffect(() => {
-		setIsFormValid(!!registrationNumber && !!selectedIssue && details.length >= 10);
-	}, [registrationNumber, selectedIssue, details]);
+		setIsFormValid(!!licensePlate && !!selectedIssue && details.length >= 10);
+	}, [licensePlate, selectedIssue, details]);
 
 	const handleSubmit = () => {
 		if (!isFormValid) return;
@@ -62,8 +62,8 @@ const ReportTaxi = () => {
 						<Input
 							label="Registration Number"
 							placeholder="e.g. GP ABC 123"
-							value={registrationNumber}
-							onValueChange={setRegistrationNumber}
+							value={licensePlate}
+							onValueChange={setlicensePlate}
 						/>
 
 						<div className="mt-4">

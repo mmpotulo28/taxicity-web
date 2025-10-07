@@ -196,7 +196,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 							color={type === "pickup" ? "primary" : "danger"}
 							radius="sm"
 							size="sm"
-							startContent={<Icon icon="lucide:map-pin" size={12} />}
+							startContent={<Icon icon="lucide:map-pin" />}
 							variant="flat"
 							onClick={() => handleRankSelection(rank.id)}>
 							{rank.name}

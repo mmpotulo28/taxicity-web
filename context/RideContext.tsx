@@ -8,6 +8,7 @@ import {
 	ranks as mockRanks,
 	taxis as mockTaxis,
 } from "@/lib/data";
+import { addToast } from "@heroui/toast";
 
 interface RideContextType {
 	tripHistory: iTrip[];
@@ -54,18 +55,35 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 
 	// Request a new ride
 	const requestRide = () => {
-		if (!selectedRoute || !pickupLocation || !dropoffLocation) {
+		const isMissingInfo = !selectedRoute || !pickupLocation || !dropoffLocation;
+
+		if (isMissingInfo) {
 			console.error("Cannot request ride: missing required information");
+			addToast({
+				title: "Missing Information",
+				description:
+					"Please ensure you have selected a route, pickup, and drop-off locations.",
+				color: "danger",
+			});
+
 			return;
 		}
 
 		// Find an available taxi for the selected route
-		const availableTaxi = taxis.find(
-			(taxi) => taxi.status === "available" && taxi.routes.includes(selectedRoute.id),
-		);
+		const availableTaxi = taxis.find((taxi) => {
+			const isAvailable = taxi.status === "available";
+			const servesRoute = taxi.routeId === selectedRoute.id;
+
+			return isAvailable && servesRoute;
+		});
 
 		if (!availableTaxi) {
 			console.error("No available taxis for this route");
+			addToast({
+				title: "No Taxis Available",
+				description: "Sorry, there are no available taxis for this route at the moment.",
+				color: "danger",
+			});
 
 			return;
 		}

@@ -28,7 +28,7 @@ const RouteCard: React.FC<RouteCardProps> = ({ route, rank }) => {
 				return "success";
 			case "busy":
 				return "warning";
-			case "delayed":
+			case "inactive":
 				return "danger";
 			default:
 				return "default";
@@ -50,10 +50,6 @@ const RouteCard: React.FC<RouteCardProps> = ({ route, rank }) => {
 						{route.status}
 					</Chip>
 				</div>
-
-				{route.description && (
-					<p className="text-xs text-default-500 mt-2">{route.description}</p>
-				)}
 
 				<div className="flex flex-wrap gap-4 mt-4 text-xs">
 					<div className="flex items-center gap-1 text-default-500">

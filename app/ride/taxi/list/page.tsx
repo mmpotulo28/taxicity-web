@@ -20,11 +20,12 @@ const TaxiList: React.FC = () => {
 		}
 	}, [selectedRoute, router]);
 
-	// Filter taxis for the selected route
-	const availableTaxis = taxis.filter(
-		(taxi) =>
-			taxi.status === "available" && selectedRoute && taxi.routes.includes(selectedRoute.id),
-	);
+	const availableTaxis = taxis.filter((taxi) => {
+		const isAvailable = taxi.status === "available";
+		const servesRoute = taxi.routeId === selectedRoute?.id;
+
+		return isAvailable && servesRoute;
+	});
 
 	return (
 		<div className="relative h-full">

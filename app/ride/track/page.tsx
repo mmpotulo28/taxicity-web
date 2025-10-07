@@ -39,8 +39,6 @@ const TrackRide: React.FC = () => {
 					if (currentMin <= 1) {
 						clearInterval(countdown);
 						setIsDriverArrived(true);
-						// routed to ride/trip/details
-						router.push("/ride/trip/details");
 
 						return "Arrived";
 					}
@@ -69,6 +67,7 @@ const TrackRide: React.FC = () => {
 					if (currentMin <= 1) {
 						clearInterval(countdown);
 						setIsDestinationArrived(true);
+						router.push("/ride/trip/details");
 
 						return "Arrived";
 					}

@@ -73,7 +73,7 @@ const TaxiCard: React.FC<TaxiCardProps> = ({ taxi }) => {
 
 					<div className="flex items-center gap-1">
 						<Icon icon="lucide:tag" />
-						<span>{taxi.registrationNumber}</span>
+						<span>{taxi.licensePlate}</span>
 					</div>
 				</div>
 

@@ -25,6 +25,7 @@ export interface iRank {
 	address: string;
 	phone: string;
 	region: string;
+	operatingHours?: string;
 }
 
 export interface iTaxi {
