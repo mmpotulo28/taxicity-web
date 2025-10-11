@@ -11,7 +11,6 @@
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
-  "type": "module",
   "dependencies": {
     "@clerk/nextjs": "^6.33.3",
     "@eslint/compat": "^1.4.0",

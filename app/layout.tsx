@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 						storageKey: "taxicity_theme",
 						themes: ["light", "dark"],
 					}}>
-					<div className="flex flex-col h-screen max-w-md mx-auto text-foreground bg-background">
+					<div className="flex flex-col h-screen  mx-auto text-foreground bg-background">
 						<Main>{children}</Main>
 						<MobileTabs />
 					</div>

@@ -60,43 +60,6 @@ export default function ApiDocsPage() {
 							},
 						},
 					},
-					customCss: `
-						.scalar-api-reference {
-							font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-								'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-							--scalar-color-1: #121212;
-							--scalar-color-2: #1a1a1a;
-							--scalar-color-3: #2a2a2a;
-							--scalar-color-accent: #7c3aed;
-							--scalar-radius: 8px;
-						}
-
-						.scalar-api-reference .sidebar {
-							background: var(--scalar-color-2);
-							border-right: 1px solid var(--scalar-color-3);
-						}
-
-						.scalar-api-reference .main {
-							background: #fafafa;
-						}
-
-						@media (prefers-color-scheme: dark) {
-							.scalar-api-reference .main {
-								background: var(--scalar-color-1);
-								color: #e5e5e5;
-							}
-						}
-
-						.scalar-api-reference h1,
-						.scalar-api-reference h2,
-						.scalar-api-reference h3 {
-							color: var(--scalar-color-accent);
-						}
-
-						.scalar-api-reference .method-badge {
-							border-radius: var(--scalar-radius);
-						}
-					`,
 				}}
 			/>
 		</div>
