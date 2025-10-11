@@ -43,3 +43,6 @@ bun.lockb
 .env.sentry-build-plugin
 
 /lib/prisma/generated
+
+# clerk configuration (can include secrets)
+/.clerk/

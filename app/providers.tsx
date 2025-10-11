@@ -7,10 +7,11 @@ import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
+import { ClerkProvider } from "@clerk/nextjs";
 
 import { RideProvider } from "@/context/RideContext";
 import { MapProvider } from "@/context/MapContext";
-import { ClerkProvider } from "@clerk/nextjs/dist/types/components.server";
+import { clerkConfig } from "@/lib/config/clerk";
 
 export interface ProvidersProps {
 	children: React.ReactNode;
@@ -27,7 +28,7 @@ function Providers({ children, themeProps }: ProvidersProps) {
 	const router = useRouter();
 
 	return (
-		<ClerkProvider>
+		<ClerkProvider appearance={clerkConfig.appearance}>
 			<HeroUIProvider navigate={router.push}>
 				<NextThemesProvider {...themeProps}>
 					<RideProvider>
