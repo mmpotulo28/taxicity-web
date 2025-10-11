@@ -10,11 +10,11 @@ import { useRide } from "@/context/RideContext";
 import TripCard from "@/components/TripCard";
 import { MapView } from "@/components/map-view";
 import AuthButton from "@/components/AuthButton";
+import Header from "@/components/Header";
 
 export default function Home() {
 	const router = useRouter();
 	const { tripHistory } = useRide();
-	const { user } = useUser();
 
 	const onRequestRide = () => {
 		router.push("/ride/route");
@@ -24,6 +24,8 @@ export default function Home() {
 		<div className="relative h-full">
 			{/* Fullscreen map as background */}
 			<MapView centerOnRank showTaxis fullscreen={true} zIndex={0} />
+
+			<Header />
 
 			{/* Overlay content */}
 			<div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col">

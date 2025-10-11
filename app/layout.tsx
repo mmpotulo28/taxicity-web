@@ -64,7 +64,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 						themes: ["light", "dark"],
 					}}>
 					<div className="flex flex-col h-screen max-w-md mx-auto text-foreground bg-background">
-						<Header />
 						<Main>{children}</Main>
 						<MobileTabs />
 					</div>

@@ -153,7 +153,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 				</label>
 			</div>
 
-			<div className="flex mb-3">
+			<div className="flex mb-10">
 				<Input
 					className="flex-1"
 					placeholder={type === "pickup" ? "Where are you?" : "Where are you going?"}
@@ -197,8 +197,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 							color={type === "pickup" ? "primary" : "danger"}
 							radius="sm"
 							size="sm"
-							startContent={<Icon icon="lucide:map-pin" />}
-							variant="flat"
+							variant="dot"
 							onClick={() => handleRankSelection(rank.id)}>
 							{rank.name}
 						</Chip>
@@ -206,7 +205,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 				</div>
 			</div>
 
-			<div className="flex gap-2">
+			<div className="flex gap-2 mt-10">
 				<Button
 					className="flex-1"
 					color={type === "pickup" ? "primary" : "danger"}
