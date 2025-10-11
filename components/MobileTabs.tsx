@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
@@ -13,13 +14,13 @@ const tabs = [
 		icon: "lucide:home",
 		href: "/",
 	},
-	{ key: "route", label: "Route", icon: "lucide:route", href: "/ride/route" },
 	{
 		key: "trip-history",
 		label: "History",
 		icon: "lucide:clock",
 		href: "/ride/trip/history",
 	},
+	{ key: "route", label: "Ride", icon: "lucide:bus", href: "/ride/route", main: true },
 	{
 		key: "support",
 		label: "Support",
@@ -66,7 +67,7 @@ const MobileTabs = () => {
 							as={Link}
 							className={`flex flex-col items-center w-full transition-all duration-200 px-3 py-2 h-16
 								${isActive ? "bg-primary/10 text-primary font-semibold shadow-md" : "text-default-700"}
-								hover:bg-primary/5 active:scale-95`}
+								hover:bg-primary/5 active:scale-95 ${tab.main ? "-mt-6 shadow-lg rounded-xl bg-primary text-white w-16 h-16" : "rounded-none"}`}
 							href={tab.href}
 							radius="none"
 							style={{
@@ -75,7 +76,10 @@ const MobileTabs = () => {
 							}}
 							variant="light">
 							<Icon
-								className="text-2xl h-4 w-4 text-default-700"
+								className={cn(
+									"text-2xl text-default-700",
+									tab.main ? "w-8 h-8" : "h-4 w-4",
+								)}
 								fontSize={24}
 								icon={tab.icon}
 							/>
@@ -86,7 +90,10 @@ const MobileTabs = () => {
 
 							{isActive && (
 								<span
-									className="absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full bg-primary"
+									className={cn(
+										"absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full ",
+										tab.main ? "bg-white" : "bg-primary",
+									)}
 									style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)" }}
 								/>
 							)}
