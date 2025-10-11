@@ -63,14 +63,17 @@
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.27",
     "@react-google-maps/api": "^2.20.7",
+    "@scalar/api-reference-react": "^0.8.0",
     "@sentry/nextjs": "^10.17.0",
     "clsx": "2.1.1",
     "framer-motion": "^11.18.2",
     "intl-messageformat": "10.7.16",
+    "lucide-react": "^0.545.0",
     "next": "15.3.1",
     "next-themes": "0.4.6",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "15.3.4",
