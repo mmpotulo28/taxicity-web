@@ -1,7 +1,5 @@
 "use client";
-import { title } from "@/components/primitives";
 import { Card } from "@heroui/card";
-import { Chip } from "@heroui/react";
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
 	return (
@@ -14,22 +12,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
 			</div>
 
 			{/* Right Section: Sign-In Form */}
-			<div className="flex flex-1 flex-col min-h-[calc(90vh-4rem)] gap-8 text-center justify-center items-center w-full bg-gradient-to-tl from-primary-50 via-secondary-50 to-background p-10 relative rounded-2xl">
-				<h1 className={`${title({ color: "blue" })} text-center`}>
-					Welcome to PulseCampus
-				</h1>
-				<p className="text-xl text-default-500">
-					Connect, collaborate, and engage with your campus community like never before.
-				</p>
-				<ul className="space-y-4 text-lg text-foreground">
-					<li>🚀 Create and manage proposals</li>
-					<li>🌌 Engage in group discussions</li>
-					<li>📊 Track metrics and insights</li>
-				</ul>
-				<Chip color="secondary" className="mt-8 text-lg">
-					Empowering the Future
-				</Chip>
-			</div>
+			<div className="flex flex-1 flex-col min-h-[calc(90vh-4rem)] gap-8 text-center justify-center items-center w-full bg-gradient-to-tl from-primary-50 via-secondary-50 to-background p-10 relative rounded-2xl"></div>
 		</div>
 	);
 };
