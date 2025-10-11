@@ -10,6 +10,7 @@ import { ToastProvider } from "@heroui/toast";
 
 import { RideProvider } from "@/context/RideContext";
 import { MapProvider } from "@/context/MapContext";
+import { ClerkProvider } from "@clerk/nextjs/dist/types/components.server";
 
 export interface ProvidersProps {
 	children: React.ReactNode;
@@ -26,16 +27,18 @@ function Providers({ children, themeProps }: ProvidersProps) {
 	const router = useRouter();
 
 	return (
-		<HeroUIProvider navigate={router.push}>
-			<NextThemesProvider {...themeProps}>
-				<RideProvider>
-					<MapProvider>
-						<ToastProvider />
-						{children}
-					</MapProvider>
-				</RideProvider>
-			</NextThemesProvider>
-		</HeroUIProvider>
+		<ClerkProvider>
+			<HeroUIProvider navigate={router.push}>
+				<NextThemesProvider {...themeProps}>
+					<RideProvider>
+						<MapProvider>
+							<ToastProvider />
+							{children}
+						</MapProvider>
+					</RideProvider>
+				</NextThemesProvider>
+			</HeroUIProvider>
+		</ClerkProvider>
 	);
 }
 

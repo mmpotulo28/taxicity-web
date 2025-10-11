@@ -9,6 +9,7 @@
     "check": "tsc --noEmit && eslint --fix"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.33.3",
     "@eslint/compat": "^1.4.0",
     "@heroui/accordion": "2.2.23",
     "@heroui/alert": "2.2.26",
