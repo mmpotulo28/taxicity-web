@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "check": "tsc --noEmit && eslint --fix"
+    "check": "tsc --noEmit && eslint --fix",
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.33.3",
@@ -54,7 +58,8 @@
     "@heroui/use-theme": "^2.1.10",
     "@heroui/user": "2.2.21",
     "@iconify/react": "^6.0.2",
-    "@prisma/client": "^6.16.3",
+    "@prisma/client": "^6.17.1",
+    "@prisma/extension-accelerate": "^2.0.2",
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.27",
     "@react-google-maps/api": "^2.20.7",
@@ -89,7 +94,7 @@
     "globals": "16.0.0",
     "postcss": "8.5.6",
     "prettier": "3.5.3",
-    "prisma": "^6.16.3",
+    "prisma": "^6.17.1",
     "tailwind-variants": "3.1.1",
     "tailwindcss": "4.1.11",
     "typescript": "5.6.3"
