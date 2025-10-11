@@ -1,4 +1,4 @@
-import { iRank, iRoute, iTaxi, iTrip } from "@/types";
+import { iRank, iRoute, iTaxi, iTrip } from "../types";
 
 // Mock Ranks Data
 export const ranks: iRank[] = [

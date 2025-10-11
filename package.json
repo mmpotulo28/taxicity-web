@@ -6,12 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "check": "tsc --noEmit && eslint --fix",
-    "seed": "ts-node prisma/seed.ts"
+    "check": "tsc --noEmit && eslint --fix"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
+  "type": "module",
   "dependencies": {
     "@clerk/nextjs": "^6.33.3",
     "@eslint/compat": "^1.4.0",

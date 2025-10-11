@@ -2,10 +2,8 @@
 // Seed script for TaxiCity database using Prisma
 // Run with: npx prisma db seed
 
-import { PrismaClient } from "../lib/prisma/generated";
+import prisma from "../lib/prisma";
 import { taxis, ranks, routes, trips } from "../lib/data";
-
-const prisma = new PrismaClient();
 
 async function main() {
 	// Seed Ranks
