@@ -66,7 +66,7 @@ export interface iTrip {
 	vehicle: string;
 	licensePlate: string;
 	fare: string;
-	status: "completed" | "cancelled" | "in-progress" | "requested";
+	status: "completed" | "cancelled" | "in-progress" | "requested" | "driver-arrived";
 	paymentMethod: string;
 	rating?: number;
 }

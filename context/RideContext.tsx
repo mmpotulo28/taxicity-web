@@ -25,9 +25,12 @@ interface RideContextType {
 	setSelectedTaxi: (taxi: iTaxi | null) => void;
 	setPickupLocation: (location: string) => void;
 	setDropoffLocation: (location: string) => void;
-	requestRide: () => void;
+	requestRide: () => Promise<void>;
+	driverArrived: () => void;
+	startRide: () => void;
 	cancelRide: () => void;
 	isLoading: boolean;
+	isRestoring: boolean;
 }
 
 const RideContext = createContext<RideContextType | undefined>(undefined);
@@ -106,6 +109,63 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	const [selectedTaxi, setSelectedTaxi] = useState<iTaxi | null>(null);
 	const [pickupLocation, setPickupLocation] = useState<string>("");
 	const [dropoffLocation, setDropoffLocation] = useState<string>("");
+	const [isRestoring, setIsRestoring] = useState(true);
+
+	// Restore state from local storage
+	React.useEffect(() => {
+		const restoreState = () => {
+			try {
+				const storedTrip = localStorage.getItem("activeTrip");
+				const storedRoute = localStorage.getItem("selectedRoute");
+				const storedTaxi = localStorage.getItem("selectedTaxi");
+				const storedPickup = localStorage.getItem("pickupLocation");
+				const storedDropoff = localStorage.getItem("dropoffLocation");
+
+				if (storedTrip) setActiveTrip(JSON.parse(storedTrip));
+				if (storedRoute) setSelectedRoute(JSON.parse(storedRoute));
+				if (storedTaxi) setSelectedTaxi(JSON.parse(storedTaxi));
+				if (storedPickup) setPickupLocation(storedPickup);
+				if (storedDropoff) setDropoffLocation(storedDropoff);
+			} catch (error) {
+				console.error("Failed to restore ride state:", error);
+			} finally {
+				setIsRestoring(false);
+			}
+		};
+
+		restoreState();
+	}, []);
+
+	// Persist state changes
+	React.useEffect(() => {
+		if (isRestoring) return;
+		if (activeTrip) localStorage.setItem("activeTrip", JSON.stringify(activeTrip));
+		else localStorage.removeItem("activeTrip");
+	}, [activeTrip, isRestoring]);
+
+	React.useEffect(() => {
+		if (isRestoring) return;
+		if (selectedRoute) localStorage.setItem("selectedRoute", JSON.stringify(selectedRoute));
+		else localStorage.removeItem("selectedRoute");
+	}, [selectedRoute, isRestoring]);
+
+	React.useEffect(() => {
+		if (isRestoring) return;
+		if (selectedTaxi) localStorage.setItem("selectedTaxi", JSON.stringify(selectedTaxi));
+		else localStorage.removeItem("selectedTaxi");
+	}, [selectedTaxi, isRestoring]);
+
+	React.useEffect(() => {
+		if (isRestoring) return;
+		if (pickupLocation) localStorage.setItem("pickupLocation", pickupLocation);
+		else localStorage.removeItem("pickupLocation");
+	}, [pickupLocation, isRestoring]);
+
+	React.useEffect(() => {
+		if (isRestoring) return;
+		if (dropoffLocation) localStorage.setItem("dropoffLocation", dropoffLocation);
+		else localStorage.removeItem("dropoffLocation");
+	}, [dropoffLocation, isRestoring]);
 
 	// Queries
 	const { data: routes = [], isLoading: isLoadingRoutes } = useQuery({
@@ -173,7 +233,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	});
 
 	// Request a new ride
-	const requestRide = () => {
+	const requestRide = async () => {
 		const isMissingInfo = !selectedRoute || !pickupLocation || !dropoffLocation;
 
 		if (isMissingInfo) {
@@ -230,18 +290,52 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			return;
 		}
 
-		createTripMutation.mutate({
-			routeId: selectedRoute.id,
-			taxiId: availableTaxi.id,
-			rankId: rank.id,
-			pickupAddress: pickupLocation,
-			pickupLat: pickupLat,
-			pickupLng: pickupLng,
-			dropoffAddress: dropoffLocation,
-			dropoffLat: dropoffLat,
-			dropoffLng: dropoffLng,
-			fare: parseFloat(selectedRoute.estimatedFare.replace("R", "")),
-			paymentMethod: "CASH"
+		try {
+			await createTripMutation.mutateAsync({
+				routeId: selectedRoute.id,
+				taxiId: availableTaxi.id,
+				rankId: rank.id,
+				pickupAddress: pickupLocation,
+				pickupLat: pickupLat,
+				pickupLng: pickupLng,
+				dropoffAddress: dropoffLocation,
+				dropoffLat: dropoffLat,
+				dropoffLng: dropoffLng,
+				fare: parseFloat(selectedRoute.estimatedFare.replace("R", "")),
+				paymentMethod: "CASH"
+			});
+		} catch (error) {
+			// Error handling is already done in onError callback of mutation
+			console.error("Failed to create trip", error);
+		}
+	};
+
+	// Driver has arrived
+	const driverArrived = () => {
+		if (!activeTrip) return;
+
+		const updatedTrip = { ...activeTrip, status: "driver-arrived" as const };
+		setActiveTrip(updatedTrip);
+
+		addToast({
+			title: "Driver Arrived",
+			description: "Your taxi has arrived at the pickup location.",
+			color: "primary",
+		});
+	};
+
+	// Start the ride (after QR scan)
+	const startRide = () => {
+		if (!activeTrip) return;
+
+		const updatedTrip = { ...activeTrip, status: "in-progress" as const };
+		setActiveTrip(updatedTrip);
+
+		// TODO: Call API to update trip status
+		addToast({
+			title: "Ride Started",
+			description: "You have successfully boarded the taxi.",
+			color: "success",
 		});
 	};
 
@@ -264,6 +358,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		pickupLocation,
 		dropoffLocation,
 		isLoading: isLoadingRoutes || isLoadingRanks || isLoadingTaxis || isLoadingTrips,
+		isRestoring,
 
 		setActiveTrip,
 		setSelectedRoute,
@@ -271,6 +366,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		setPickupLocation,
 		setDropoffLocation,
 		requestRide,
+		driverArrived,
+		startRide,
 		cancelRide,
 	};
 

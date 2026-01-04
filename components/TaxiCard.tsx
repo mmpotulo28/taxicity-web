@@ -16,9 +16,9 @@ const TaxiCard: React.FC<TaxiCardProps> = ({ taxi }) => {
 	const router = useRouter();
 	const { setSelectedTaxi, requestRide } = useRide();
 
-	const handleSelectTaxi = () => {
+	const handleSelectTaxi = async () => {
 		setSelectedTaxi(taxi);
-		requestRide();
+		await requestRide();
 		router.push("/ride/track");
 	};
 

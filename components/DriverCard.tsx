@@ -5,9 +5,10 @@ import { Icon } from "@iconify/react";
 
 import { iTaxi } from "@/types";
 
-const DriverCard: React.FC<{ taxi: iTaxi; handleCancelRide: () => void }> = ({
+const DriverCard: React.FC<{ taxi: iTaxi; handleCancelRide: () => void; currentCapacity?: number }> = ({
 	taxi,
 	handleCancelRide,
+	currentCapacity,
 }) => {
 	return (
 		<Card className="mb-4">
@@ -26,6 +27,15 @@ const DriverCard: React.FC<{ taxi: iTaxi; handleCancelRide: () => void }> = ({
 						</div>
 					</div>
 				</div>
+
+				{currentCapacity !== undefined && (
+					<div className="flex items-center gap-2 mb-3 text-sm bg-default-50 p-2 rounded-lg">
+						<Icon className="text-primary" icon="lucide:users" />
+						<span>
+							Current Capacity: <span className="font-semibold">{currentCapacity}</span> / {taxi.capacity}
+						</span>
+					</div>
+				)}
 
 				<Divider className="my-3" />
 

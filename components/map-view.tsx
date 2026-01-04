@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from "react";
-import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
+import React, { useEffect, useCallback, useState, useMemo } from "react";
+import { GoogleMap, useLoadScript, Marker, DirectionsRenderer, Polyline } from "@react-google-maps/api";
 
 import { useRide } from "@/context/RideContext";
 import { useMap } from "@/context/MapContext";
@@ -13,6 +13,7 @@ interface MapViewProps {
 	height?: string;
 	modalMap?: boolean;
 	selectionModeOverride?: "pickup" | "dropoff" | null;
+	showRoute?: boolean;
 }
 
 const defaultCenter = {
@@ -28,6 +29,7 @@ export const MapView: React.FC<MapViewProps> = ({
 	fullscreen = true,
 	modalMap = false,
 	selectionModeOverride = null,
+	showRoute = false,
 }) => {
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -46,7 +48,62 @@ export const MapView: React.FC<MapViewProps> = ({
 		selectionMode,
 	} = useMap();
 
+	const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+	const [directionsError, setDirectionsError] = useState(false);
+
 	const effectiveSelectionMode = selectionModeOverride || selectionMode;
+
+	// Calculate route points for fallback
+	const routePoints = useMemo(() => {
+		if (!selectedRoute || ranks.length === 0) return null;
+
+		const originRank = ranks.find((r) => r.id === selectedRoute.rankId);
+		const destRank = ranks.find((r) => r.id === selectedRoute.destinationRankId);
+		const origin = originRank?.coordinates;
+		const destination = destRank?.coordinates || dropoffMarker;
+
+		if (!origin || !destination) return null;
+
+		const waypoints =
+			selectedRoute.popularLocations?.map((loc) => ({
+				lat: loc.lat,
+				lng: loc.lng,
+			})) || [];
+
+		return [origin, ...waypoints, destination];
+	}, [selectedRoute, ranks, dropoffMarker]);
+
+	// Fetch directions when showRoute is true
+	useEffect(() => {
+		if (isLoaded && showRoute && routePoints) {
+			const origin = routePoints[0];
+			const destination = routePoints[routePoints.length - 1];
+			const waypoints = routePoints.slice(1, -1).map((loc) => ({
+				location: loc,
+				stopover: true,
+			}));
+
+			const directionsService = new google.maps.DirectionsService();
+
+			directionsService.route(
+				{
+					origin,
+					destination,
+					waypoints,
+					travelMode: google.maps.TravelMode.DRIVING,
+				},
+				(result, status) => {
+					if (status === google.maps.DirectionsStatus.OK) {
+						setDirections(result);
+						setDirectionsError(false);
+					} else {
+						console.error(`Directions request failed due to ${status}`);
+						setDirectionsError(true);
+					}
+				},
+			);
+		}
+	}, [isLoaded, showRoute, routePoints]);
 
 	// Get user's current location
 	useEffect(() => {
@@ -101,20 +158,20 @@ export const MapView: React.FC<MapViewProps> = ({
 
 	const mapContainerStyle = fullscreen
 		? {
-				position: "absolute" as const,
-				top: 0,
-				left: 0,
-				right: 0,
-				bottom: 0,
-				width: "100%",
-				height: "100%",
-				zIndex: zIndex,
-			}
+			position: "absolute" as const,
+			top: 0,
+			left: 0,
+			right: 0,
+			bottom: 0,
+			width: "100%",
+			height: "100%",
+			zIndex: zIndex,
+		}
 		: {
-				width: "100%",
-				height: height,
-				position: "relative" as const,
-			};
+			width: "100%",
+			height: height,
+			position: "relative" as const,
+		};
 
 	// Render map
 	const renderMap = useCallback(() => {
@@ -142,6 +199,53 @@ export const MapView: React.FC<MapViewProps> = ({
 				zoom={14}
 				onClick={modalMap ? handleMapClick : undefined}
 				onLoad={handleMapLoad}>
+				{/* Directions Renderer */}
+				{directions && !directionsError && (
+					<DirectionsRenderer
+						directions={directions}
+						options={{
+							suppressMarkers: true, // We use our own markers
+							polylineOptions: {
+								strokeColor: "#4f46e5",
+								strokeWeight: 5,
+							},
+						}}
+					/>
+				)}
+
+				{/* Fallback Polyline if Directions API fails */}
+				{directionsError && routePoints && (
+					<Polyline
+						path={routePoints}
+						options={{
+							strokeColor: "#4f46e5",
+							strokeOpacity: 0.5,
+							strokeWeight: 4,
+							geodesic: true,
+						}}
+					/>
+				)}
+
+				{/* Route Stops (Popular Locations) */}
+				{showRoute && selectedRoute?.popularLocations?.map((loc, index) => (
+					<Marker
+						key={loc.id}
+						icon={{
+							url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f59e0b" width="24" height="24"><circle cx="12" cy="12" r="8" stroke="white" stroke-width="2"/></svg>',
+							scaledSize: new google.maps.Size(20, 20),
+							anchor: new google.maps.Point(10, 10),
+						}}
+						position={{ lat: loc.lat, lng: loc.lng }}
+						title={loc.name}
+						label={{
+							text: (index + 1).toString(),
+							color: "white",
+							fontSize: "10px",
+							fontWeight: "bold"
+						}}
+					/>
+				))}
+
 				{/* User location marker */}
 				{userLocation && (
 					<Marker

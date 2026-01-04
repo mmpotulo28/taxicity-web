@@ -14,10 +14,14 @@ import Header from "@/components/Header";
 
 export default function Home() {
 	const router = useRouter();
-	const { tripHistory } = useRide();
+	const { tripHistory, activeTrip } = useRide();
 
 	const onRequestRide = () => {
-		router.push("/ride/route");
+		if (activeTrip) {
+			router.push("/ride/track");
+		} else {
+			router.push("/ride/route");
+		}
 	};
 
 	return (
@@ -37,11 +41,11 @@ export default function Home() {
 					<SignedIn>
 						<Button
 							className="w-full"
-							color="primary"
-							endContent={<Icon icon="lucide:arrow-right" />}
+							color={activeTrip ? "secondary" : "primary"}
+							endContent={<Icon icon={activeTrip ? "lucide:map-pin" : "lucide:arrow-right"} />}
 							size="lg"
 							onPress={onRequestRide}>
-							Request a Taxi
+							{activeTrip ? "Track Current Ride" : "Request a Taxi"}
 						</Button>
 
 						<div className="flex gap-2 justify-between">
