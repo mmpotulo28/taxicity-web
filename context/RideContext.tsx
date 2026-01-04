@@ -30,6 +30,7 @@ interface RideContextType {
 	startRide: () => Promise<void>;
 	completeRide: () => Promise<void>;
 	cancelRide: () => void;
+	resetRide: () => void;
 	shareRide: () => Promise<void>;
 	isLoading: boolean;
 	isRestoring: boolean;
@@ -366,14 +367,23 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		}
 	};
 
+	// Reset all ride state
+	const resetRide = () => {
+		setActiveTrip(null);
+		setSelectedRoute(null);
+		setSelectedTaxi(null);
+		setPickupLocation("");
+		setDropoffLocation("");
+		// LocalStorage is handled by useEffects
+	};
+
 	// Cancel the current active ride
 	const cancelRide = async () => {
 		if (!activeTrip) return;
 
 		try {
 			await updateTripStatus("CANCELLED");
-			setActiveTrip(null);
-			setSelectedTaxi(null);
+			resetRide();
 			addToast({
 				title: "Ride Cancelled",
 				description: "Your ride has been cancelled.",
@@ -392,6 +402,12 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			await updateTripStatus("COMPLETED");
 			const updatedTrip = { ...activeTrip, status: "completed" as const };
 			setActiveTrip(updatedTrip);
+
+			// Clear other state, but keep activeTrip for the receipt view
+			setSelectedRoute(null);
+			setSelectedTaxi(null);
+			setPickupLocation("");
+			setDropoffLocation("");
 
 			addToast({
 				title: "Trip Completed",
@@ -452,6 +468,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		startRide,
 		completeRide,
 		cancelRide,
+		resetRide,
 		shareRide,
 	};
 

@@ -11,6 +11,7 @@ const statusSchema = z.object({
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
 	try {
 		const { userId } = await auth();
+		const { id } = await params;
 		if (!userId) {
 			return new NextResponse("Unauthorized", { status: 401 });
 		}
@@ -27,7 +28,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 		// Verify trip belongs to user (or driver - but for now we assume user context)
 		// In a real app, drivers would also hit this endpoint
 		const trip = await prisma.trip.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!trip) {
@@ -38,7 +39,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 		// For this demo/prototype, we allow the frontend to drive the state.
 
 		const updatedTrip = await prisma.trip.update({
-			where: { id: params.id },
+			where: { id },
 			data: {
 				status,
 				// Update timestamps based on status

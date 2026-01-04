@@ -11,7 +11,7 @@ import { MapView } from "@/components/map-view";
 
 const TripDetails: React.FC = () => {
 	const router = useRouter();
-	const { activeTrip, selectedTaxi, shareRide } = useRide();
+	const { activeTrip, selectedTaxi, shareRide, resetRide } = useRide();
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
 	// If no active trip, redirect to home
@@ -20,6 +20,11 @@ const TripDetails: React.FC = () => {
 			router.push("/");
 		}
 	}, [activeTrip, router]);
+
+	const handleFinish = () => {
+		resetRide();
+		router.push("/");
+	};
 
 	if (!activeTrip) {
 		return null;
@@ -145,7 +150,7 @@ const TripDetails: React.FC = () => {
 								color="primary"
 								variant="flat"
 								className="w-full font-medium"
-								onPress={() => router.push("/")}
+								onPress={handleFinish}
 							>
 								Submit Rating
 							</Button>
@@ -166,7 +171,7 @@ const TripDetails: React.FC = () => {
 							className="flex-1 font-medium shadow-lg shadow-primary/20"
 							color="primary"
 							startContent={<Icon icon="lucide:home" />}
-							onPress={() => router.push("/")}
+							onPress={handleFinish}
 						>
 							Home
 						</Button>
