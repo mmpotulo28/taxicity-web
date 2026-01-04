@@ -26,9 +26,11 @@ interface RideContextType {
 	setPickupLocation: (location: string) => void;
 	setDropoffLocation: (location: string) => void;
 	requestRide: () => Promise<void>;
-	driverArrived: () => void;
-	startRide: () => void;
+	driverArrived: () => Promise<void>;
+	startRide: () => Promise<void>;
+	completeRide: () => Promise<void>;
 	cancelRide: () => void;
+	shareRide: () => Promise<void>;
 	isLoading: boolean;
 	isRestoring: boolean;
 }
@@ -310,41 +312,121 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		}
 	};
 
+	// Update trip status helper
+	const updateTripStatus = async (status: string) => {
+		if (!activeTrip) return;
+		try {
+			await axios.patch(`/api/trips/${activeTrip.id}/status`, { status });
+		} catch (error) {
+			console.error("Failed to update trip status", error);
+			addToast({
+				title: "Error",
+				description: "Failed to update trip status. Please try again.",
+				color: "danger",
+			});
+			throw error;
+		}
+	};
+
 	// Driver has arrived
-	const driverArrived = () => {
+	const driverArrived = async () => {
 		if (!activeTrip) return;
 
-		const updatedTrip = { ...activeTrip, status: "driver-arrived" as const };
-		setActiveTrip(updatedTrip);
+		try {
+			await updateTripStatus("ARRIVED_AT_PICKUP");
+			const updatedTrip = { ...activeTrip, status: "driver-arrived" as const };
+			setActiveTrip(updatedTrip);
 
-		addToast({
-			title: "Driver Arrived",
-			description: "Your taxi has arrived at the pickup location.",
-			color: "primary",
-		});
+			addToast({
+				title: "Driver Arrived",
+				description: "Your taxi has arrived at the pickup location.",
+				color: "primary",
+			});
+		} catch (error) {
+			// Error handled in helper
+		}
 	};
 
 	// Start the ride (after QR scan)
-	const startRide = () => {
+	const startRide = async () => {
 		if (!activeTrip) return;
 
-		const updatedTrip = { ...activeTrip, status: "in-progress" as const };
-		setActiveTrip(updatedTrip);
+		try {
+			await updateTripStatus("IN_PROGRESS");
+			const updatedTrip = { ...activeTrip, status: "in-progress" as const };
+			setActiveTrip(updatedTrip);
 
-		// TODO: Call API to update trip status
-		addToast({
-			title: "Ride Started",
-			description: "You have successfully boarded the taxi.",
-			color: "success",
-		});
+			addToast({
+				title: "Ride Started",
+				description: "You have successfully boarded the taxi.",
+				color: "success",
+			});
+		} catch (error) {
+			// Error handled in helper
+		}
 	};
 
 	// Cancel the current active ride
-	const cancelRide = () => {
+	const cancelRide = async () => {
 		if (!activeTrip) return;
-		// TODO: Implement cancel API endpoint
-		setActiveTrip(null);
-		setSelectedTaxi(null);
+
+		try {
+			await updateTripStatus("CANCELLED");
+			setActiveTrip(null);
+			setSelectedTaxi(null);
+			addToast({
+				title: "Ride Cancelled",
+				description: "Your ride has been cancelled.",
+				color: "default",
+			});
+		} catch (error) {
+			// Error handled in helper
+		}
+	};
+
+	// Complete the ride (arrived at destination)
+	const completeRide = async () => {
+		if (!activeTrip) return;
+
+		try {
+			await updateTripStatus("COMPLETED");
+			const updatedTrip = { ...activeTrip, status: "completed" as const };
+			setActiveTrip(updatedTrip);
+
+			addToast({
+				title: "Trip Completed",
+				description: "You have arrived at your destination.",
+				color: "success",
+			});
+		} catch (error) {
+			// Error handled in helper
+		}
+	};
+
+	// Share ride details
+	const shareRide = async () => {
+		if (!activeTrip) return;
+
+		const shareData = {
+			title: 'Track my TaxiCity Ride',
+			text: `I'm on my way to ${activeTrip.dropoff}. Track my ride here:`,
+			url: `${window.location.origin}/ride/track?trip=${activeTrip.id}`
+		};
+
+		try {
+			if (navigator.share) {
+				await navigator.share(shareData);
+			} else {
+				await navigator.clipboard.writeText(shareData.url);
+				addToast({
+					title: "Link Copied",
+					description: "Tracking link copied to clipboard.",
+					color: "success",
+				});
+			}
+		} catch (error) {
+			console.error("Error sharing", error);
+		}
 	};
 
 	const value = {
@@ -368,7 +450,9 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		requestRide,
 		driverArrived,
 		startRide,
+		completeRide,
 		cancelRide,
+		shareRide,
 	};
 
 	return <RideContext.Provider value={value}>{children}</RideContext.Provider>;

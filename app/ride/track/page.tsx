@@ -16,7 +16,7 @@ import TripModal from "@/components/TripModal";
 
 const TrackRide: React.FC = () => {
 	const router = useRouter();
-	const { activeTrip, selectedTaxi, selectedRoute, cancelRide, startRide, driverArrived, isRestoring } = useRide();
+	const { activeTrip, selectedTaxi, selectedRoute, cancelRide, startRide, driverArrived, completeRide, isRestoring, shareRide } = useRide();
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 	const { isOpen: isScannerOpen, onOpen: onScannerOpen, onOpenChange: onScannerOpenChange } = useDisclosure();
 
@@ -237,19 +237,40 @@ const TrackRide: React.FC = () => {
 				</Button>
 
 				{activeTrip.status === "in-progress" && (
-					<Card className="bg-background/90 backdrop-blur-md shadow-sm pointer-events-auto">
-						<CardBody className="py-2 px-4 flex flex-row items-center gap-3">
-							<div className="flex flex-col items-end">
-								<span className="text-[10px] text-default-500 uppercase font-bold">Arrival</span>
-								<span className="text-sm font-bold text-primary">14:35</span>
-							</div>
-							<div className="h-6 w-[1px] bg-default-200" />
-							<div className="flex flex-col items-start">
-								<span className="text-[10px] text-default-500 uppercase font-bold">Distance</span>
-								<span className="text-sm font-bold">4.2 km</span>
-							</div>
-						</CardBody>
-					</Card>
+					<div className="flex gap-2 pointer-events-auto items-start">
+						<Card className="bg-background/90 backdrop-blur-md shadow-sm hidden sm:flex">
+							<CardBody className="py-2 px-4 flex flex-row items-center gap-3">
+								<div className="flex flex-col items-end">
+									<span className="text-[10px] text-default-500 uppercase font-bold">Arrival</span>
+									<span className="text-sm font-bold text-primary">14:35</span>
+								</div>
+								<div className="h-6 w-[1px] bg-default-200" />
+								<div className="flex flex-col items-start">
+									<span className="text-[10px] text-default-500 uppercase font-bold">Distance</span>
+									<span className="text-sm font-bold">4.2 km</span>
+								</div>
+							</CardBody>
+						</Card>
+						<Button
+							size="sm"
+							color="warning"
+							variant="flat"
+							className="bg-warning/10 backdrop-blur-md shadow-sm font-semibold"
+							onPress={() => {
+								completeRide();
+								router.push("/ride/trip/details");
+							}}
+						>
+							Simulate Arrival
+						</Button>
+						<Button
+							isIconOnly
+							className="bg-background/80 backdrop-blur-md shadow-sm"
+							onPress={shareRide}
+						>
+							<Icon icon="lucide:share-2" />
+						</Button>
+					</div>
 				)}
 			</div>
 
