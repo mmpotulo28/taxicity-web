@@ -209,6 +209,28 @@ const Settings: React.FC = () => {
 								</CardBody>
 							</Card>
 
+							<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
+								<CardBody className="flex flex-row items-center justify-between p-4">
+									<div className="flex items-center gap-3">
+										<div className="p-2 rounded-xl bg-warning/10 text-warning">
+											<Icon icon="lucide:car-taxi-front" className="w-5 h-5" />
+										</div>
+										<div>
+											<p className="font-medium">Driver Mode</p>
+											<p className="text-xs text-default-500">Switch to driver dashboard</p>
+										</div>
+									</div>
+									<Button
+										size="sm"
+										color="warning"
+										variant="flat"
+										onPress={() => router.push("/driver/dashboard")}
+									>
+										Switch
+									</Button>
+								</CardBody>
+							</Card>
+
 							<Button
 								color="primary"
 								size="lg"

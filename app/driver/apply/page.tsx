@@ -6,6 +6,7 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Icon } from "@iconify/react";
+import { Select, SelectItem } from "@heroui/select";
 import { useDriver } from "@/context/DriverContext";
 
 export default function DriverApplicationPage() {
@@ -13,6 +14,7 @@ export default function DriverApplicationPage() {
  const { driver, isLoading } = useDriver();
  const [submitting, setSubmitting] = useState(false);
  const [step, setStep] = useState(1);
+ const [routes, setRoutes] = useState<any[]>([]);
 
  // Form State
  const [formData, setFormData] = useState({
@@ -26,12 +28,21 @@ export default function DriverApplicationPage() {
   year: "",
   color: "",
   capacity: "",
+  routeId: "",
   registrationDoc: "",
   insuranceDoc: "",
   permitDoc: ""
  });
 
  const [uploading, setUploading] = useState<string | null>(null);
+
+ useEffect(() => {
+  // Fetch routes
+  fetch("/api/routes")
+   .then((res) => res.json())
+   .then((data) => setRoutes(data.routes || []))
+   .catch((err) => console.error("Failed to fetch routes", err));
+ }, []);
 
  useEffect(() => {
   if (!isLoading && driver) {
@@ -107,9 +118,15 @@ export default function DriverApplicationPage() {
     <Card className="mb-6">
      <CardHeader className="flex gap-3">
       <div className="flex flex-col">
-       <p className="text-md font-bold">Step {step} of 3</p>
+       <p className="text-md font-bold">Step {step} of 4</p>
        <p className="text-small text-default-500">
-        {step === 1 ? "Driver Information" : step === 2 ? "Vehicle Information" : "Documents"}
+        {step === 1
+         ? "Driver Information"
+         : step === 2
+          ? "Vehicle Information"
+          : step === 3
+           ? "Route Selection"
+           : "Documents"}
        </p>
       </div>
      </CardHeader>
@@ -265,6 +282,40 @@ export default function DriverApplicationPage() {
       )}
 
       {step === 3 && (
+       <div className="space-y-4">
+        <p className="text-small text-default-500">
+         Select the primary route you will be operating on. You must provide a valid operating permit for this route in the next step.
+        </p>
+        <Select
+         label="Select Route"
+         placeholder="Choose a route"
+         selectedKeys={formData.routeId ? [formData.routeId] : []}
+         onChange={(e) => setFormData({ ...formData, routeId: e.target.value })}
+        >
+         {routes.map((route) => (
+          <SelectItem key={route.id}>
+           {route.name}
+          </SelectItem>
+         ))}
+        </Select>
+
+        <div className="flex gap-2 mt-4">
+         <Button variant="flat" onPress={() => setStep(2)} className="flex-1">
+          Back
+         </Button>
+         <Button
+          color="primary"
+          className="flex-1"
+          onPress={() => setStep(4)}
+          isDisabled={!formData.routeId}
+         >
+          Next
+         </Button>
+        </div>
+       </div>
+      )}
+
+      {step === 4 && (
        <div className="space-y-6">
         {/* Registration Document */}
         <div>
@@ -337,6 +388,7 @@ export default function DriverApplicationPage() {
            <>
             <Icon icon="lucide:badge-check" className="w-8 h-8 mx-auto mb-2 text-default-500" />
             <p className="text-sm font-medium">Upload Operating Permit</p>
+            <p className="text-xs text-default-400 mt-1">Must be valid for the selected route</p>
             <p className="text-xs text-default-400 mt-1">{uploading === 'permitDoc' ? 'Uploading...' : 'Tap to select file'}</p>
            </>
           )}
@@ -351,7 +403,7 @@ export default function DriverApplicationPage() {
         </div>
 
         <div className="flex gap-2 mt-4">
-         <Button variant="flat" onPress={() => setStep(2)} className="flex-1">
+         <Button variant="flat" onPress={() => setStep(3)} className="flex-1">
           Back
          </Button>
          <Button

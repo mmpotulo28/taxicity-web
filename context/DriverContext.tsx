@@ -1,13 +1,34 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import { addToast } from "@heroui/toast";
 
 export interface Driver {
  id: string;
  firstName: string;
  lastName: string;
  status: string;
- taxis: { id: string; licensePlate: string }[];
+ taxis: {
+  id: string;
+  licensePlate: string;
+  make: string;
+  model: string;
+  year: number;
+  color: string;
+  capacity: number;
+  status: string;
+  registrationDoc?: string;
+  insuranceDoc?: string;
+  permitDoc?: string;
+  routes?: {
+   id: string;
+   route: {
+    id: string;
+    name: string;
+   };
+   isActive: boolean;
+  }[];
+ }[];
 }
 
 export interface Trip {
@@ -33,6 +54,7 @@ interface DriverContextType {
  acceptRequest: (tripId: string) => Promise<void>;
  updateTripStatus: (tripId: string, status: string) => Promise<void>;
  refreshRequests: () => Promise<void>;
+ refreshDriver: () => Promise<void>;
 }
 
 const DriverContext = createContext<DriverContextType | undefined>(undefined);
@@ -45,30 +67,30 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
  const [incomingRequests, setIncomingRequests] = useState<Trip[]>([]);
  const [isLoading, setIsLoading] = useState(true);
 
+ const fetchDriver = React.useCallback(async () => {
+  if (!user) return;
+  try {
+   const res = await fetch("/api/driver/me");
+   if (res.ok) {
+    const data = await res.json();
+    setDriver(data);
+    // Restore online status if persisted or from DB
+    if (data.status === "ACTIVE") {
+     // setIsOnline(true); // Maybe don't auto-online
+    }
+   }
+  } catch (error) {
+   console.error("Failed to fetch driver:", error);
+  } finally {
+   setIsLoading(false);
+  }
+ }, [user]);
+
  // Fetch driver profile
  useEffect(() => {
   if (!isLoaded || !user) return;
-
-  const fetchDriver = async () => {
-   try {
-    const res = await fetch("/api/driver/me");
-    if (res.ok) {
-     const data = await res.json();
-     setDriver(data);
-     // Restore online status if persisted or from DB
-     if (data.status === "ACTIVE") {
-      // setIsOnline(true); // Maybe don't auto-online
-     }
-    }
-   } catch (error) {
-    console.error("Failed to fetch driver:", error);
-   } finally {
-    setIsLoading(false);
-   }
-  };
-
   fetchDriver();
- }, [isLoaded, user]);
+ }, [isLoaded, user, fetchDriver]);
 
  // Poll for requests when online
  useEffect(() => {
@@ -125,9 +147,26 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const trip = await res.json();
     setActiveRequest(trip);
     setIncomingRequests((prev) => prev.filter((r) => r.id !== tripId));
+    addToast({
+     title: "Trip Accepted",
+     description: "You have successfully accepted the trip.",
+     color: "success",
+    });
+   } else {
+    const errorData = await res.json();
+    addToast({
+     title: "Error",
+     description: errorData.error || "Failed to accept trip",
+     color: "danger",
+    });
    }
   } catch (error) {
    console.error("Failed to accept trip:", error);
+   addToast({
+    title: "Error",
+    description: "An unexpected error occurred",
+    color: "danger",
+   });
   }
  };
 
@@ -172,6 +211,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     acceptRequest,
     updateTripStatus,
     refreshRequests,
+    refreshDriver: fetchDriver,
    }}
   >
    {children}

@@ -256,8 +256,8 @@ model Trip {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   userId         String
-  taxi           Taxi          @relation(fields: [taxiId], references: [id])
-  taxiId         String
+  taxi           Taxi?         @relation(fields: [taxiId], references: [id])
+  taxiId         String?
   route          Route         @relation(fields: [routeId], references: [id])
   routeId        String
   rank           Rank          @relation(fields: [rankId], references: [id])

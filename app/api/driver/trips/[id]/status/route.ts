@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
 		if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-		const tripId = params.id;
+		const tripId = (await params).id;
 		const body = await req.json();
 		const { status } = body;
 

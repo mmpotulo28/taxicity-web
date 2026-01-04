@@ -191,6 +191,83 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		queryFn: fetchTrips
 	});
 
+	// Poll for active trip updates
+	const { data: polledTrip } = useQuery({
+		queryKey: ["activeTrip", activeTrip?.id],
+		queryFn: async () => {
+			if (!activeTrip?.id) return null;
+			const { data } = await axios.get(`/api/trips/${activeTrip.id}`);
+			return data;
+		},
+		enabled: !!activeTrip?.id && ["requested", "accepted", "arrived_at_pickup", "in_progress"].includes(activeTrip.status),
+		refetchInterval: 3000, // Poll every 3 seconds
+		refetchIntervalInBackground: true,
+	});
+
+	// Sync polled trip data with activeTrip state
+	React.useEffect(() => {
+		if (polledTrip && activeTrip) {
+			const driverName = polledTrip.taxi?.driver
+				? (polledTrip.taxi.driver.fullName || `${polledTrip.taxi.driver.firstName} ${polledTrip.taxi.driver.lastName}`)
+				: "Pending Assignment";
+
+			// Map backend status to frontend status
+			let mappedStatus = polledTrip.status.toLowerCase();
+			if (mappedStatus === 'arrived_at_pickup') mappedStatus = 'driver-arrived';
+
+			const updatedTrip: iTrip = {
+				id: polledTrip.id,
+				route: polledTrip.route?.name || "Unknown Route",
+				date: new Date(polledTrip.requestTime).toISOString().split('T')[0],
+				time: new Date(polledTrip.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+				pickup: polledTrip.pickupAddress,
+				dropoff: polledTrip.dropoffAddress,
+				driver: driverName,
+				vehicle: polledTrip.taxi?.model || "Pending Assignment",
+				licensePlate: polledTrip.taxi?.licensePlate || "Pending Assignment",
+				fare: `R${polledTrip.fare}`,
+				status: mappedStatus,
+				paymentMethod: polledTrip.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
+				rating: polledTrip.rating?.rating,
+				taxiId: polledTrip.taxiId
+			};
+
+			// Check if status changed or driver was assigned
+			const statusChanged = updatedTrip.status !== activeTrip.status;
+			const driverAssigned = activeTrip.driver === "Pending Assignment" && updatedTrip.driver !== "Pending Assignment";
+
+			if (statusChanged || driverAssigned) {
+				setActiveTrip(updatedTrip);
+
+				if (statusChanged && updatedTrip.status === 'accepted') {
+					addToast({
+						title: "Ride Accepted",
+						description: `${updatedTrip.driver} is on their way!`,
+						color: "success",
+					});
+				} else if (statusChanged && updatedTrip.status === 'driver-arrived') {
+					addToast({
+						title: "Driver Arrived",
+						description: "Your taxi has arrived at the pickup location.",
+						color: "primary",
+					});
+				} else if (statusChanged && updatedTrip.status === 'in-progress') {
+					addToast({
+						title: "Ride Started",
+						description: "You are on your way to the destination.",
+						color: "success",
+					});
+				} else if (statusChanged && updatedTrip.status === 'completed') {
+					addToast({
+						title: "Ride Completed",
+						description: "You have arrived at your destination.",
+						color: "success",
+					});
+				}
+			}
+		}
+	}, [polledTrip, activeTrip]);
+
 	// Mutations
 	const createTripMutation = useMutation({
 		mutationFn: async (tripData: any) => {
@@ -200,8 +277,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["trips"] });
 
-			// Find the taxi used for this trip
-			const taxi = taxis.find(t => t.id === data.taxiId);
+			// Find the taxi used for this trip (if assigned)
+			const taxi = data.taxiId ? taxis.find(t => t.id === data.taxiId) : null;
 
 			const newTrip: iTrip = {
 				id: data.id,
@@ -210,18 +287,19 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				time: new Date(data.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 				pickup: data.pickupAddress,
 				dropoff: data.dropoffAddress,
-				driver: taxi?.driver || "Unknown",
-				vehicle: taxi?.model || "Unknown",
-				licensePlate: taxi?.licensePlate || "Unknown",
+				driver: taxi?.driver || "Pending Assignment",
+				vehicle: taxi?.model || "Pending Assignment",
+				licensePlate: taxi?.licensePlate || "Pending Assignment",
 				fare: `R${data.fare}`,
 				status: "requested",
-				paymentMethod: "Cash"
+				paymentMethod: "Cash",
+				taxiId: data.taxiId
 			};
 
 			setActiveTrip(newTrip);
 			addToast({
 				title: "Ride Requested",
-				description: `Your taxi (${taxi?.licensePlate}) is on the way!`,
+				description: "Your request has been sent to nearby drivers.",
 				color: "success",
 			});
 		},
@@ -245,23 +323,6 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				title: "Missing Information",
 				description:
 					"Please ensure you have selected a route, pickup, and drop-off locations.",
-				color: "danger",
-			});
-			return;
-		}
-
-		// Find an available taxi for the selected route
-		const availableTaxi = taxis.find((taxi) => {
-			const isAvailable = taxi.status === "available";
-			const servesRoute = taxi.routeId === selectedRoute.id;
-			return isAvailable && servesRoute;
-		});
-
-		if (!availableTaxi) {
-			console.error("No available taxis for this route");
-			addToast({
-				title: "No Taxis Available",
-				description: "Sorry, there are no available taxis for this route at the moment.",
 				color: "danger",
 			});
 			return;
@@ -296,7 +357,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		try {
 			await createTripMutation.mutateAsync({
 				routeId: selectedRoute.id,
-				taxiId: availableTaxi.id,
+				// taxiId is optional now, we don't pass it for broadcast requests
 				rankId: rank.id,
 				pickupAddress: pickupLocation,
 				pickupLat: pickupLat,
@@ -355,9 +416,15 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		if (!activeTrip) return;
 
 		try {
+			console.log("Starting ride for trip:", activeTrip.id);
 			await updateTripStatus("IN_PROGRESS");
+
+			// Optimistic update
 			const updatedTrip = { ...activeTrip, status: "in-progress" as const };
 			setActiveTrip(updatedTrip);
+
+			// Force refetch to ensure backend state is synced
+			queryClient.invalidateQueries({ queryKey: ["activeTrip", activeTrip.id] });
 
 			addToast({
 				title: "Ride Started",
@@ -365,7 +432,12 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				color: "success",
 			});
 		} catch (error) {
-			// Error handled in helper
+			console.error("Error starting ride:", error);
+			addToast({
+				title: "Error",
+				description: "Failed to start ride. Please try again.",
+				color: "danger",
+			});
 		}
 	};
 

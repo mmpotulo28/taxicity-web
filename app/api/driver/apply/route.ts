@@ -19,6 +19,7 @@ const DriverApplicationSchema = z.object({
 	registrationDoc: z.string().url("Invalid registration document URL"),
 	insuranceDoc: z.string().url("Invalid insurance document URL"),
 	permitDoc: z.string().url("Invalid permit document URL"),
+	routeId: z.string().min(1, "Route selection is required"),
 });
 
 export async function POST(req: NextRequest) {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Validation Error", details: validationResult.error.flatten() }, { status: 400 });
 		}
 
-		const { licenseNumber, licenseExpiry, licenseImageFront, licenseImageBack, plateNumber, make, model, year, color, capacity, registrationDoc, insuranceDoc, permitDoc } = validationResult.data;
+		const { licenseNumber, licenseExpiry, licenseImageFront, licenseImageBack, plateNumber, make, model, year, color, capacity, registrationDoc, insuranceDoc, permitDoc, routeId } = validationResult.data;
 
 		// Check if driver already exists
 		const existingDriver = await prisma.driver.findUnique({
@@ -74,11 +75,21 @@ export async function POST(req: NextRequest) {
 						registrationDoc,
 						insuranceDoc,
 						permitDoc,
+						routes: {
+							create: {
+								routeId,
+								isActive: true,
+							},
+						},
 					},
 				},
 			},
 			include: {
-				taxis: true,
+				taxis: {
+					include: {
+						routes: true,
+					},
+				},
 			},
 		});
 

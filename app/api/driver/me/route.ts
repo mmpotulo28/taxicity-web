@@ -15,7 +15,16 @@ export async function GET(req: NextRequest) {
 		let driver = await prisma.driver.findUnique({
 			where: { userId },
 			include: {
-				taxis: true,
+				taxis: {
+					include: {
+						routes: {
+							where: { isActive: true },
+							include: {
+								route: true,
+							},
+						},
+					},
+				},
 			},
 		});
 
@@ -24,7 +33,18 @@ export async function GET(req: NextRequest) {
 			const email = user.emailAddresses[0].emailAddress;
 			driver = await prisma.driver.findUnique({
 				where: { email },
-				include: { taxis: true },
+				include: {
+					taxis: {
+						include: {
+							routes: {
+								where: { isActive: true },
+								include: {
+									route: true,
+								},
+							},
+						},
+					},
+				},
 			});
 
 			if (driver) {
@@ -32,7 +52,18 @@ export async function GET(req: NextRequest) {
 				driver = await prisma.driver.update({
 					where: { id: driver.id },
 					data: { userId },
-					include: { taxis: true },
+					include: {
+						taxis: {
+							include: {
+								routes: {
+									where: { isActive: true },
+									include: {
+										route: true,
+									},
+								},
+							},
+						},
+					},
 				});
 			}
 		}
@@ -68,6 +99,26 @@ export async function PATCH(req: NextRequest) {
 				// Add other fields as needed
 			},
 		});
+
+		// Update taxi status if isOnline is provided
+		if (typeof isOnline === "boolean") {
+			if (isOnline) {
+				// Set taxis to AVAILABLE (unless in MAINTENANCE)
+				await prisma.taxi.updateMany({
+					where: {
+						driverId: driver.id,
+						status: { not: "MAINTENANCE" },
+					},
+					data: { status: "AVAILABLE" },
+				});
+			} else {
+				// Set taxis to OFFLINE
+				await prisma.taxi.updateMany({
+					where: { driverId: driver.id },
+					data: { status: "OFFLINE" },
+				});
+			}
+		}
 
 		return NextResponse.json(driver);
 	} catch (error) {

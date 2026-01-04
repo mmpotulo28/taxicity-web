@@ -66,7 +66,8 @@ export interface iTrip {
 	vehicle: string;
 	licensePlate: string;
 	fare: string;
-	status: "completed" | "cancelled" | "in-progress" | "requested" | "driver-arrived";
+	status: "completed" | "cancelled" | "in-progress" | "requested" | "driver-arrived" | "accepted";
 	paymentMethod: string;
 	rating?: number;
+	taxiId?: string;
 }

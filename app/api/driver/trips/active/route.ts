@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 
-type TaxiWithRoutes = {
-	id: string;
-	routes: { routeId: string }[];
-};
-
 export async function GET(req: NextRequest) {
 	try {
 		const { userId } = getAuth(req);
@@ -16,13 +11,7 @@ export async function GET(req: NextRequest) {
 		const driver = await prisma.driver.findUnique({
 			where: { userId },
 			include: {
-				taxis: {
-					include: {
-						routes: {
-							where: { isActive: true },
-						},
-					},
-				},
+				taxis: true,
 			},
 		});
 
@@ -30,30 +19,26 @@ export async function GET(req: NextRequest) {
 			return NextResponse.json({ error: "Driver profile not found" }, { status: 404 });
 		}
 
-		const taxis = driver.taxis as unknown as TaxiWithRoutes[];
-		const taxiIds = taxis.map((t) => t.id);
-		const activeRouteIds = taxis.flatMap((t) => t.routes).map((r) => r.routeId);
+		const taxiIds = driver.taxis.map((t: { id: string }) => t.id);
 
-		// Fetch requested trips for this driver's taxis OR active routes
-		const requests = await prisma.trip.findMany({
+		// Fetch active trip for this driver's taxis
+		const activeTrip = await prisma.trip.findFirst({
 			where: {
-				status: "REQUESTED",
-				OR: [{ taxiId: { in: taxiIds } }, { routeId: { in: activeRouteIds }, taxiId: null }],
+				taxiId: { in: taxiIds },
+				status: { in: ["ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS"] },
 			},
 			orderBy: {
 				requestTime: "desc",
 			},
 			include: {
 				route: true,
-				rank: true,
 				taxi: true,
 			},
-			take: 10,
 		});
 
-		return NextResponse.json(requests);
+		return NextResponse.json({ trip: activeTrip });
 	} catch (error) {
-		console.error("Error fetching requests:", error);
+		console.error("Error fetching active trip:", error);
 		return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
 	}
 }

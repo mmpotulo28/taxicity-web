@@ -8,6 +8,7 @@ import { Icon } from "@iconify/react";
 import { Scanner, IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { Switch, Card, CardBody, Chip } from "@heroui/react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
+import { addToast } from "@heroui/toast";
 
 import { useRide } from "@/context/RideContext";
 import { MapView } from "@/components/map-view";
@@ -16,7 +17,7 @@ import TripModal from "@/components/TripModal";
 
 const TrackRide: React.FC = () => {
 	const router = useRouter();
-	const { activeTrip, selectedTaxi, selectedRoute, cancelRide, startRide, driverArrived, completeRide, isRestoring, shareRide } = useRide();
+	const { activeTrip, selectedRoute, cancelRide, startRide, completeRide, isRestoring, shareRide } = useRide();
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 	const { isOpen: isScannerOpen, onOpen: onScannerOpen, onOpenChange: onScannerOpenChange } = useDisclosure();
 
@@ -27,14 +28,14 @@ const TrackRide: React.FC = () => {
 	// If no active trip, redirect to home
 	useEffect(() => {
 		if (isRestoring) return;
-		if (!activeTrip || !selectedTaxi) {
+		if (!activeTrip) {
 			router.push("/");
 		}
-	}, [activeTrip, selectedTaxi, router, isRestoring]);
+	}, [activeTrip, router, isRestoring]);
 
-	// Simulated driver arrival logic
+	// Simulated driver arrival logic (Visual only - state updates come from polling)
 	useEffect(() => {
-		if (activeTrip?.status === "requested") {
+		if ((activeTrip?.status === "requested" || activeTrip?.status === "accepted") && activeTrip.driver !== "Pending Assignment") {
 			// Only run countdown if we haven't arrived yet
 			const initialMinutes = Math.floor(Math.random() * 3) + 1; // 1-3 minutes for demo
 			setEstimatedTime(`${initialMinutes} min`);
@@ -44,8 +45,8 @@ const TrackRide: React.FC = () => {
 					const currentMin = parseInt(prev?.split(" ")[0] || "0");
 					if (currentMin <= 1) {
 						clearInterval(countdown);
-						driverArrived(); // Update global state
-						return "Arrived";
+						// driverArrived(); // Removed: Let polling handle the state change
+						return "Arriving soon";
 					}
 					return `${currentMin - 1} min`;
 				});
@@ -53,7 +54,7 @@ const TrackRide: React.FC = () => {
 
 			return () => clearInterval(countdown);
 		}
-	}, [activeTrip?.status, driverArrived]);
+	}, [activeTrip?.status, activeTrip?.driver]);
 
 	const handleScanSuccess = () => {
 		setIsScanning(true);
@@ -67,12 +68,23 @@ const TrackRide: React.FC = () => {
 
 	const handleRealScan = (result: IDetectedBarcode[]) => {
 		if (result && result.length > 0) {
-			startRide();
-			onScannerOpenChange();
+			const scannedValue = result[0].rawValue;
+			console.log("QR Code scanned:", scannedValue);
+
+			if (activeTrip?.taxiId && scannedValue === activeTrip.taxiId) {
+				startRide();
+				onScannerOpenChange();
+			} else {
+				addToast({
+					title: "Invalid QR Code",
+					description: "The scanned QR code does not match your assigned taxi.",
+					color: "danger",
+				});
+			}
 		}
 	};
 
-	if (isRestoring || !activeTrip || !selectedTaxi) {
+	if (isRestoring || !activeTrip) {
 		return (
 			<div className="flex items-center justify-center h-full">
 				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -82,50 +94,65 @@ const TrackRide: React.FC = () => {
 
 	// --- VIEW COMPONENTS ---
 
-	const WaitingView = () => (
-		<div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-			<Card className="w-full shadow-lg bg-background/95 backdrop-blur-md border-t border-default-200">
-				<CardBody className="p-4">
-					<div className="flex justify-between items-center mb-4">
-						<div>
-							<h2 className="text-lg font-bold">Driver is on the way</h2>
-							<p className="text-default-500 text-sm">Arriving in {estimatedTime}</p>
-						</div>
-						<Chip color="warning" variant="flat" startContent={<Icon icon="lucide:clock" />}>
-							{estimatedTime}
-						</Chip>
-					</div>
+	const WaitingView = () => {
+		const isAssigned = activeTrip.driver !== "Pending Assignment";
 
-					<div className="flex items-center gap-4 mb-6 bg-default-50 p-3 rounded-xl">
-						<div className="w-12 h-12 bg-default-200 rounded-full flex items-center justify-center">
-							<Icon icon="lucide:user" className="text-2xl text-default-500" />
+		return (
+			<div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+				<Card className="w-full shadow-lg bg-background/95 backdrop-blur-md border-t border-default-200">
+					<CardBody className="p-4">
+						<div className="flex justify-between items-center mb-4">
+							<div>
+								<h2 className="text-lg font-bold">{isAssigned ? "Driver is on the way" : "Searching for driver..."}</h2>
+								<p className="text-default-500 text-sm">{isAssigned ? `Arriving in ${estimatedTime}` : "Please wait"}</p>
+							</div>
+							{isAssigned && (
+								<Chip color="warning" variant="flat" startContent={<Icon icon="lucide:clock" />}>
+									{estimatedTime}
+								</Chip>
+							)}
 						</div>
-						<div className="flex-1">
-							<p className="font-semibold">{selectedTaxi.driver}</p>
-							<p className="text-xs text-default-500">{selectedTaxi.model} • {selectedTaxi.licensePlate}</p>
-						</div>
-						<div className="flex gap-2">
-							<Button isIconOnly size="sm" variant="flat" color="primary">
-								<Icon icon="lucide:phone" />
-							</Button>
-							<Button isIconOnly size="sm" variant="flat" color="default">
-								<Icon icon="lucide:message-circle" />
-							</Button>
-						</div>
-					</div>
 
-					<Button
-						color="danger"
-						variant="light"
-						className="w-full"
-						onPress={cancelRide}
-					>
-						Cancel Ride
-					</Button>
-				</CardBody>
-			</Card>
-		</div>
-	);
+						{isAssigned ? (
+							<div className="flex items-center gap-4 mb-6 bg-default-50 p-3 rounded-xl">
+								<div className="w-12 h-12 bg-default-200 rounded-full flex items-center justify-center">
+									<Icon icon="lucide:user" className="text-2xl text-default-500" />
+								</div>
+								<div className="flex-1">
+									<p className="font-semibold">{activeTrip.driver}</p>
+									<p className="text-xs text-default-500">{activeTrip.vehicle} • {activeTrip.licensePlate}</p>
+								</div>
+								<div className="flex gap-2">
+									<Button isIconOnly size="sm" variant="flat" color="primary">
+										<Icon icon="lucide:phone" />
+									</Button>
+									<Button isIconOnly size="sm" variant="flat" color="default">
+										<Icon icon="lucide:message-circle" />
+									</Button>
+								</div>
+							</div>
+						) : (
+							<div className="flex items-center justify-center py-8">
+								<div className="animate-pulse flex flex-col items-center">
+									<Icon icon="lucide:radar" className="text-4xl text-primary mb-2" />
+									<p className="text-default-500">Contacting nearby drivers...</p>
+								</div>
+							</div>
+						)}
+
+						<Button
+							color="danger"
+							variant="light"
+							className="w-full"
+							onPress={cancelRide}
+						>
+							Cancel Request
+						</Button>
+					</CardBody>
+				</Card>
+			</div>
+		);
+	};
 
 	const BoardingView = () => (
 		<div className="absolute bottom-0 left-0 right-0 p-4 z-10">
@@ -135,7 +162,7 @@ const TrackRide: React.FC = () => {
 						<Icon icon="lucide:check" className="text-3xl" />
 					</div>
 					<h2 className="text-xl font-bold mb-2">Driver Arrived!</h2>
-					<p className="text-default-500 mb-6">Please locate your taxi ({selectedTaxi.licensePlate}) and scan the QR code to board.</p>
+					<p className="text-default-500 mb-6">Please locate your taxi ({activeTrip.licensePlate}) and scan the QR code to board.</p>
 
 					<Button
 						color="primary"
@@ -276,7 +303,7 @@ const TrackRide: React.FC = () => {
 
 			{/* State-based UI */}
 			<AnimatePresence mode="wait">
-				{activeTrip.status === "requested" && (
+				{(activeTrip.status === "requested" || activeTrip.status === "accepted") && (
 					<motion.div
 						key="waiting"
 						initial={{ y: 100, opacity: 0 }}

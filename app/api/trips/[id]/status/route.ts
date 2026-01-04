@@ -8,7 +8,7 @@ const statusSchema = z.object({
 	status: z.enum(["REQUESTED", "ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
 });
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = await auth();
 		const { id } = await params;
@@ -38,15 +38,22 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 		// Allow user to cancel, but maybe restrict other status updates to driver only?
 		// For this demo/prototype, we allow the frontend to drive the state.
 
+		const updateData: any = {
+			status,
+			// Update timestamps based on status
+			...(status === "ARRIVED_AT_PICKUP" ? { pickupTime: new Date() } : {}),
+			...(status === "IN_PROGRESS" ? { pickupTime: new Date() } : {}), // Fallback if arrived skipped
+			...(status === "COMPLETED" ? { dropoffTime: new Date() } : {}),
+		};
+
+		// If status is IN_PROGRESS, ensure we have a pickup time if not already set
+		if (status === "IN_PROGRESS" && !trip.pickupTime) {
+			updateData.pickupTime = new Date();
+		}
+
 		const updatedTrip = await prisma.trip.update({
 			where: { id },
-			data: {
-				status,
-				// Update timestamps based on status
-				...(status === "ARRIVED_AT_PICKUP" ? { pickupTime: new Date() } : {}),
-				...(status === "IN_PROGRESS" ? { pickupTime: new Date() } : {}), // Fallback if arrived skipped
-				...(status === "COMPLETED" ? { dropoffTime: new Date() } : {}),
-			},
+			data: updateData,
 		});
 
 		return NextResponse.json(updatedTrip);

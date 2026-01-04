@@ -103,7 +103,7 @@ export default function DriverDashboard() {
    </div>
 
    {/* Bottom Panel */}
-   <div className="absolute bottom-0 left-0 right-0 z-10 p-4">
+   <div className="absolute bottom-20 left-0 right-0 z-10 p-4">
     <AnimatePresence mode="wait">
      {!isOnline ? (
       <motion.div
