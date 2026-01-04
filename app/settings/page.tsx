@@ -1,10 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
 	Button,
 	Card,
 	CardBody,
+	CardHeader,
 	Divider,
 	Switch,
 	Avatar,
@@ -13,6 +14,8 @@ import {
 	Tab,
 	Select,
 	SelectItem,
+	Chip,
+	Badge,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
@@ -35,13 +38,12 @@ const Settings: React.FC = () => {
 		language: "english",
 	});
 
-	const toggleDarkMode = () => {
-		const newTheme = theme === "dark" ? "light" : "dark";
-
+	const toggleDarkMode = (isSelected: boolean) => {
+		const newTheme = isSelected ? "dark" : "light";
 		setTheme(newTheme);
 		setPreferences((prev) => ({
 			...prev,
-			darkMode: !prev.darkMode,
+			darkMode: isSelected,
 		}));
 	};
 
@@ -71,317 +73,360 @@ const Settings: React.FC = () => {
 		alert("Profile updated successfully");
 	};
 
+	const containerVariants = {
+		hidden: { opacity: 0, y: 20 },
+		visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+		exit: { opacity: 0, y: -20, transition: { duration: 0.2 } },
+	};
+
 	return (
-		<motion.div
-			animate={{ opacity: 1 }}
-			className="h-full flex flex-col"
-			initial={{ opacity: 0 }}
-			transition={{ duration: 0.3 }}>
-			<div className="p-4 bg-background shadow-sm">
-				<h2 className="text-lg font-semibold mb-4">Settings</h2>
+		<div className="h-full flex flex-col bg-background relative overflow-hidden">
+			{/* Decorative background elements similar to track page style */}
+			<div className="absolute top-[-20%] right-[-10%] w-[300px] h-[300px] bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+			<div className="absolute bottom-[-10%] left-[-10%] w-[200px] h-[200px] bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+
+			<div className="p-6 pb-2 z-10">
+				<div className="flex items-center justify-between mb-6">
+					<div>
+						<h1 className="text-2xl font-bold">Settings</h1>
+						<p className="text-default-500 text-sm">Manage your account and preferences</p>
+					</div>
+					<Button isIconOnly variant="light" radius="full" onPress={() => router.back()}>
+						<Icon icon="lucide:x" className="w-6 h-6" />
+					</Button>
+				</div>
 
 				<Tabs
 					aria-label="Settings options"
 					color="primary"
+					variant="light"
+					classNames={{
+						tabList: "bg-default-100/50 backdrop-blur-md p-1 rounded-2xl",
+						cursor: "shadow-sm rounded-xl",
+						tab: "h-9",
+						tabContent: "group-data-[selected=true]:text-primary font-medium",
+					}}
 					selectedKey={activeTab}
-					variant="underlined"
 					onSelectionChange={(key) => setActiveTab(key as string)}>
-					<Tab key="profile" title="Profile" />
-					<Tab key="preferences" title="Preferences" />
-					<Tab key="payment" title="Payment" />
+					<Tab
+						key="profile"
+						title={
+							<div className="flex items-center gap-2">
+								<Icon icon="lucide:user" />
+								<span>Profile</span>
+							</div>
+						}
+					/>
+					<Tab
+						key="preferences"
+						title={
+							<div className="flex items-center gap-2">
+								<Icon icon="lucide:settings" />
+								<span>Preferences</span>
+							</div>
+						}
+					/>
+					<Tab
+						key="payment"
+						title={
+							<div className="flex items-center gap-2">
+								<Icon icon="lucide:credit-card" />
+								<span>Payment</span>
+							</div>
+						}
+					/>
 				</Tabs>
 			</div>
 
-			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">
-				{activeTab === "profile" && (
-					<Card>
-						<CardBody className="p-4">
-							<div className="flex flex-col items-center mb-6">
-								<Avatar
-									className="w-20 h-20"
-									src="https://img.heroui.chat/image/avatar?w=100&h=100&u=user1"
-								/>
-								<Button className="mt-2" color="primary" size="sm" variant="flat">
-									Change Photo
-								</Button>
-							</div>
+			<div className="flex-1 overflow-y-auto p-6 pt-2 scrollbar-hide z-10">
+				<AnimatePresence mode="wait">
+					{activeTab === "profile" && (
+						<motion.div
+							key="profile"
+							variants={containerVariants}
+							initial="hidden"
+							animate="visible"
+							exit="exit"
+							className="space-y-6">
+							<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
+								<CardBody className="flex flex-col items-center p-6 gap-4">
+									<div className="relative">
+										<Badge
+											content={<Icon icon="lucide:camera" className="w-3 h-3 text-white" />}
+											color="primary"
+											placement="bottom-right"
+											shape="circle"
+											className="cursor-pointer">
+											<Avatar
+												src="https://i.pravatar.cc/150?u=a042581f4e29026024d"
+												className="w-24 h-24 text-large"
+												isBordered
+												color="primary"
+											/>
+										</Badge>
+									</div>
+									<div className="text-center">
+										<h3 className="text-lg font-bold">{profileForm.name}</h3>
+										<p className="text-default-500 text-sm">Passenger</p>
+									</div>
+								</CardBody>
+							</Card>
 
-							<div className="space-y-4">
-								<Input
-									label="Full Name"
-									value={profileForm.name}
-									onValueChange={(value) => handleProfileChange("name", value)}
-								/>
+							<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
+								<CardHeader className="px-6 pt-6 pb-0">
+									<h4 className="text-base font-bold">Personal Information</h4>
+								</CardHeader>
+								<CardBody className="gap-4 p-6">
+									<Input
+										label="Full Name"
+										placeholder="Enter your name"
+										value={profileForm.name}
+										onChange={(e) => handleProfileChange("name", e.target.value)}
+										variant="bordered"
+										labelPlacement="outside"
+										startContent={<Icon icon="lucide:user" className="text-default-400" />}
+									/>
+									<Input
+										label="Email"
+										placeholder="Enter your email"
+										type="email"
+										value={profileForm.email}
+										onChange={(e) => handleProfileChange("email", e.target.value)}
+										variant="bordered"
+										labelPlacement="outside"
+										startContent={<Icon icon="lucide:mail" className="text-default-400" />}
+									/>
+									<Input
+										label="Phone Number"
+										placeholder="Enter your phone"
+										type="tel"
+										value={profileForm.phone}
+										onChange={(e) => handleProfileChange("phone", e.target.value)}
+										variant="bordered"
+										labelPlacement="outside"
+										startContent={<Icon icon="lucide:phone" className="text-default-400" />}
+									/>
+								</CardBody>
+							</Card>
 
-								<Input
-									label="Email Address"
-									type="email"
-									value={profileForm.email}
-									onValueChange={(value) => handleProfileChange("email", value)}
-								/>
+							<Button
+								color="primary"
+								size="lg"
+								className="w-full font-semibold shadow-lg shadow-primary/20"
+								onPress={handleSaveProfile}
+								startContent={<Icon icon="lucide:save" />}>
+								Save Changes
+							</Button>
+						</motion.div>
+					)}
 
-								<Input
-									label="Phone Number"
-									value={profileForm.phone}
-									onValueChange={(value) => handleProfileChange("phone", value)}
-								/>
+					{activeTab === "preferences" && (
+						<motion.div
+							key="preferences"
+							variants={containerVariants}
+							initial="hidden"
+							animate="visible"
+							exit="exit"
+							className="space-y-4">
+							<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
+								<CardBody className="p-0">
+									<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
+										<div className="flex items-center gap-3">
+											<div className="p-2 rounded-xl bg-primary/10 text-primary">
+												<Icon icon="lucide:bell" className="w-5 h-5" />
+											</div>
+											<div>
+												<p className="font-medium">Push Notifications</p>
+												<p className="text-xs text-default-500">Receive ride updates</p>
+											</div>
+										</div>
+										<Switch
+											isSelected={preferences.notifications}
+											onValueChange={(val) => handleToggleChange("notifications", val)}
+											color="primary"
+											size="sm"
+										/>
+									</div>
+									<Divider className="opacity-50" />
+									<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
+										<div className="flex items-center gap-3">
+											<div className="p-2 rounded-xl bg-secondary/10 text-secondary">
+												<Icon icon="lucide:map-pin" className="w-5 h-5" />
+											</div>
+											<div>
+												<p className="font-medium">Location Sharing</p>
+												<p className="text-xs text-default-500">Share live location with driver</p>
+											</div>
+										</div>
+										<Switch
+											isSelected={preferences.locationSharing}
+											onValueChange={(val) => handleToggleChange("locationSharing", val)}
+											color="secondary"
+											size="sm"
+										/>
+									</div>
+									<Divider className="opacity-50" />
+									<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
+										<div className="flex items-center gap-3">
+											<div className="p-2 rounded-xl bg-warning/10 text-warning">
+												<Icon icon="lucide:moon" className="w-5 h-5" />
+											</div>
+											<div>
+												<p className="font-medium">Dark Mode</p>
+												<p className="text-xs text-default-500">Toggle app theme</p>
+											</div>
+										</div>
+										<Switch
+											isSelected={theme === "dark"}
+											onValueChange={toggleDarkMode}
+											color="warning"
+											size="sm"
+											thumbIcon={({ isSelected, className }) =>
+												isSelected ? (
+													<Icon icon="lucide:moon" className={className} />
+												) : (
+													<Icon icon="lucide:sun" className={className} />
+												)
+											}
+										/>
+									</div>
+								</CardBody>
+							</Card>
 
-								<Button
-									className="w-full"
-									color="primary"
-									onPress={handleSaveProfile}>
-									Save Changes
-								</Button>
-							</div>
+							<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
+								<CardBody className="p-4 gap-4">
+									<div className="flex items-center gap-3 mb-2">
+										<div className="p-2 rounded-xl bg-success/10 text-success">
+											<Icon icon="lucide:globe" className="w-5 h-5" />
+										</div>
+										<div>
+											<p className="font-medium">Language</p>
+											<p className="text-xs text-default-500">Select your preferred language</p>
+										</div>
+									</div>
+									<Select
+										selectedKeys={[preferences.language]}
+										onChange={(e) => handleLanguageChange(e.target.value)}
+										variant="bordered"
+										labelPlacement="outside"
+										classNames={{
+											trigger: "bg-default-100/50",
+										}}>
+										<SelectItem key="english" startContent={<span className="text-lg">🇬🇧</span>}>
+											English
+										</SelectItem>
+										<SelectItem key="spanish" startContent={<span className="text-lg">🇪🇸</span>}>
+											Spanish
+										</SelectItem>
+										<SelectItem key="french" startContent={<span className="text-lg">🇫🇷</span>}>
+											French
+										</SelectItem>
+										<SelectItem key="zulu" startContent={<span className="text-lg">🇿🇦</span>}>
+											Zulu
+										</SelectItem>
+									</Select>
+								</CardBody>
+							</Card>
+						</motion.div>
+					)}
 
-							<div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-900/50">
-								<div className="flex items-center gap-3 mb-3">
-									<div className="p-2 bg-primary text-white rounded-lg">
-										<Icon icon="lucide:car-taxi-front" className="text-xl" />
+					{activeTab === "payment" && (
+						<motion.div
+							key="payment"
+							variants={containerVariants}
+							initial="hidden"
+							animate="visible"
+							exit="exit"
+							className="space-y-6">
+							{/* Credit Card Visual */}
+							<div className="relative h-48 w-full rounded-2xl overflow-hidden shadow-xl bg-gradient-to-br from-primary to-secondary p-6 text-white">
+								<div className="absolute top-0 right-0 p-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
+								<div className="relative z-10 flex flex-col justify-between h-full">
+									<div className="flex justify-between items-start">
+										<Icon icon="lucide:credit-card" className="w-8 h-8 opacity-80" />
+										<Icon icon="lucide:wifi" className="w-6 h-6 opacity-60" />
 									</div>
 									<div>
-										<h3 className="font-bold text-primary-900 dark:text-primary-100">Driver Mode</h3>
-										<p className="text-xs text-primary-600 dark:text-primary-300">Earn money by driving with TaxiCity</p>
+										<p className="text-sm opacity-80 mb-1">Card Number</p>
+										<p className="text-xl font-mono tracking-wider">•••• •••• •••• 4242</p>
+									</div>
+									<div className="flex justify-between items-end">
+										<div>
+											<p className="text-xs opacity-80">Card Holder</p>
+											<p className="font-medium tracking-wide">{profileForm.name.toUpperCase()}</p>
+										</div>
+										<div>
+											<p className="text-xs opacity-80">Expires</p>
+											<p className="font-medium">12/25</p>
+										</div>
 									</div>
 								</div>
-								<Button
-									className="w-full font-semibold"
-									color="primary"
-									onPress={() => router.push("/driver")}
-								>
-									Switch to Driver App
-								</Button>
 							</div>
 
-							<Divider className="my-6" />
+							<Button
+								variant="flat"
+								color="primary"
+								className="w-full"
+								startContent={<Icon icon="lucide:plus" />}>
+								Add New Payment Method
+							</Button>
 
-							<div className="space-y-4">
-								<h3 className="font-medium">Account Security</h3>
-
-								<Button
-									className="w-full"
-									color="primary"
-									startContent={<Icon icon="lucide:lock" />}
-									variant="flat">
-									Change Password
-								</Button>
-
-								<Button
-									className="w-full"
-									color="primary"
-									startContent={<Icon icon="lucide:shield" />}
-									variant="flat">
-									Two-Factor Authentication
-								</Button>
-
-								<Button
-									className="w-full"
-									color="danger"
-									startContent={<Icon icon="lucide:log-out" />}
-									variant="flat">
-									Sign Out
-								</Button>
+							<div>
+								<h4 className="text-base font-bold mb-3 px-1">Recent Transactions</h4>
+								<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
+									<CardBody className="p-0">
+										{[
+											{
+												id: 1,
+												dest: "Sandton City Mall",
+												date: "Today, 10:23 AM",
+												amount: "R45.00",
+												status: "Completed",
+											},
+											{
+												id: 2,
+												dest: "Rosebank Station",
+												date: "Yesterday, 14:30 PM",
+												amount: "R32.50",
+												status: "Completed",
+											},
+											{
+												id: 3,
+												dest: "OR Tambo Airport",
+												date: "2 Oct, 08:15 AM",
+												amount: "R250.00",
+												status: "Completed",
+											},
+										].map((tx, i) => (
+											<React.Fragment key={tx.id}>
+												<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
+													<div className="flex items-center gap-3">
+														<div className="p-2 rounded-full bg-default-100 text-default-500">
+															<Icon icon="lucide:car" className="w-4 h-4" />
+														</div>
+														<div>
+															<p className="font-medium text-sm">{tx.dest}</p>
+															<p className="text-xs text-default-400">{tx.date}</p>
+														</div>
+													</div>
+													<div className="text-right">
+														<p className="font-bold text-sm">{tx.amount}</p>
+														<Chip size="sm" variant="flat" color="success" className="h-5 text-[10px]">
+															{tx.status}
+														</Chip>
+													</div>
+												</div>
+												{i < 2 && <Divider className="opacity-50" />}
+											</React.Fragment>
+										))}
+									</CardBody>
+								</Card>
 							</div>
-						</CardBody>
-					</Card>
-				)}
-
-				{activeTab === "preferences" && (
-					<div className="space-y-4">
-						<Card>
-							<CardBody className="p-4">
-								<h3 className="font-medium mb-4">App Preferences</h3>
-
-								<div className="space-y-4">
-									<div className="flex justify-between items-center">
-										<div>
-											<p className="font-medium">Push Notifications</p>
-											<p className="text-xs text-default-500">
-												Receive alerts about your rides
-											</p>
-										</div>
-										<Switch
-											color="primary"
-											isSelected={preferences.notifications}
-											onValueChange={(value) =>
-												handleToggleChange("notifications", value)
-											}
-										/>
-									</div>
-
-									<Divider />
-
-									<div className="flex justify-between items-center">
-										<div>
-											<p className="font-medium">Location Sharing</p>
-											<p className="text-xs text-default-500">
-												Allow app to access your location
-											</p>
-										</div>
-										<Switch
-											color="primary"
-											isSelected={preferences.locationSharing}
-											onValueChange={(value) =>
-												handleToggleChange("locationSharing", value)
-											}
-										/>
-									</div>
-
-									<Divider />
-
-									<div className="flex justify-between items-center">
-										<div>
-											<p className="font-medium">Dark Mode</p>
-											<p className="text-xs text-default-500">
-												Use dark theme for the app
-											</p>
-										</div>
-										<Switch
-											color="primary"
-											isSelected={preferences.darkMode}
-											onValueChange={toggleDarkMode}
-										/>
-									</div>
-								</div>
-							</CardBody>
-						</Card>
-
-						<Card>
-							<CardBody className="p-4">
-								<h3 className="font-medium mb-4">Language & Region</h3>
-
-								<Select
-									label="Language"
-									selectedKeys={[preferences.language]}
-									onSelectionChange={(keys) => {
-										const selected = Array.from(keys)[0] as string;
-
-										handleLanguageChange(selected);
-									}}>
-									<SelectItem key="english">English</SelectItem>
-									<SelectItem key="afrikaans">Afrikaans</SelectItem>
-									<SelectItem key="zulu">isiZulu</SelectItem>
-									<SelectItem key="xhosa">isiXhosa</SelectItem>
-									<SelectItem key="sotho">Sesotho</SelectItem>
-								</Select>
-							</CardBody>
-						</Card>
-
-						<Card>
-							<CardBody className="p-4">
-								<h3 className="font-medium mb-4">Privacy Settings</h3>
-
-								<div className="space-y-4">
-									<div className="flex justify-between items-center">
-										<div>
-											<p className="font-medium">Trip History</p>
-											<p className="text-xs text-default-500">
-												Store your trip history
-											</p>
-										</div>
-										<Switch defaultSelected color="primary" />
-									</div>
-
-									<Divider />
-
-									<div className="flex justify-between items-center">
-										<div>
-											<p className="font-medium">Data Collection</p>
-											<p className="text-xs text-default-500">
-												Allow anonymous usage data collection
-											</p>
-										</div>
-										<Switch defaultSelected color="primary" />
-									</div>
-								</div>
-							</CardBody>
-						</Card>
-					</div>
-				)}
-
-				{activeTab === "payment" && (
-					<div className="space-y-4">
-						<Card>
-							<CardBody className="p-4">
-								<h3 className="font-medium mb-4">Payment Methods</h3>
-
-								<div className="space-y-4">
-									<div className="flex items-center gap-3">
-										<div className="w-10 h-10 bg-default-100 rounded-full flex items-center justify-center">
-											<Icon className="text-success" icon="lucide:banknote" />
-										</div>
-										<div className="flex-1">
-											<p className="font-medium">Cash</p>
-											<p className="text-xs text-default-500">
-												Default payment method
-											</p>
-										</div>
-										<div className="bg-success-100 text-success-600 text-xs px-2 py-0.5 rounded-full">
-											Active
-										</div>
-									</div>
-
-									<Divider />
-
-									<div className="flex items-center gap-3">
-										<div className="w-10 h-10 bg-default-100 rounded-full flex items-center justify-center">
-											<Icon className="text-primary" icon="lucide:qr-code" />
-										</div>
-										<div className="flex-1">
-											<p className="font-medium">QR Code Payment</p>
-											<p className="text-xs text-default-500">
-												Scan to pay and confirm rides
-											</p>
-										</div>
-										<Button color="primary" size="sm" variant="flat">
-											Setup
-										</Button>
-									</div>
-								</div>
-							</CardBody>
-						</Card>
-
-						<Card>
-							<CardBody className="p-4">
-								<h3 className="font-medium mb-4">Fare Preferences</h3>
-
-								<div className="space-y-4">
-									<div className="flex justify-between items-center">
-										<div>
-											<p className="font-medium">Fare Estimates</p>
-											<p className="text-xs text-default-500">
-												Show fare estimates before booking
-											</p>
-										</div>
-										<Switch defaultSelected color="primary" />
-									</div>
-
-									<Divider />
-
-									<div className="flex justify-between items-center">
-										<div>
-											<p className="font-medium">Receipt by Email</p>
-											<p className="text-xs text-default-500">
-												Send trip receipts to your email
-											</p>
-										</div>
-										<Switch color="primary" />
-									</div>
-								</div>
-							</CardBody>
-						</Card>
-
-						<Button
-							className="w-full"
-							color="primary"
-							startContent={<Icon icon="lucide:receipt" />}
-							variant="flat">
-							View Payment History
-						</Button>
-					</div>
-				)}
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
-		</motion.div>
+		</div>
 	);
 };
 

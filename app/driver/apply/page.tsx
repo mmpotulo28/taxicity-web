@@ -21,8 +21,10 @@ export default function DriverApplicationPage() {
   licenseImageFront: "",
   licenseImageBack: "",
   plateNumber: "",
+  make: "",
   model: "",
   year: "",
+  color: "",
   capacity: "",
   registrationDoc: "",
   insuranceDoc: "",
@@ -203,10 +205,26 @@ export default function DriverApplicationPage() {
          isRequired
         />
         <Input
+         label="Vehicle Make"
+         name="make"
+         placeholder="Toyota"
+         value={formData.make}
+         onChange={handleChange}
+         isRequired
+        />
+        <Input
          label="Vehicle Model"
          name="model"
          placeholder="Toyota Quantum"
          value={formData.model}
+         onChange={handleChange}
+         isRequired
+        />
+        <Input
+         label="Vehicle Color"
+         name="color"
+         placeholder="White"
+         value={formData.color}
          onChange={handleChange}
          isRequired
         />
@@ -238,7 +256,7 @@ export default function DriverApplicationPage() {
           color="primary"
           className="flex-1"
           onPress={() => setStep(3)}
-          isDisabled={!formData.plateNumber || !formData.model || !formData.year || !formData.capacity}
+          isDisabled={!formData.plateNumber || !formData.make || !formData.model || !formData.year || !formData.color || !formData.capacity}
          >
           Next
          </Button>

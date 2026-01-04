@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth, currentUser } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { z } from "zod";
+
+const DriverApplicationSchema = z.object({
+	licenseNumber: z.string().min(1, "License number is required"),
+	licenseExpiry: z.string().refine((date) => !isNaN(Date.parse(date)), {
+		message: "Invalid license expiry date",
+	}),
+	licenseImageFront: z.string().url("Invalid license front image URL"),
+	licenseImageBack: z.string().url("Invalid license back image URL"),
+	plateNumber: z.string().min(1, "Plate number is required"),
+	make: z.string().min(1, "Vehicle make is required"),
+	model: z.string().min(1, "Vehicle model is required"),
+	year: z.union([z.string(), z.number()]).transform((val) => Number(val)),
+	color: z.string().min(1, "Vehicle color is required"),
+	capacity: z.union([z.string(), z.number()]).transform((val) => Number(val)),
+	registrationDoc: z.string().url("Invalid registration document URL"),
+	insuranceDoc: z.string().url("Invalid insurance document URL"),
+	permitDoc: z.string().url("Invalid permit document URL"),
+});
 
 export async function POST(req: NextRequest) {
 	try {
@@ -12,12 +31,14 @@ export async function POST(req: NextRequest) {
 		}
 
 		const body = await req.json();
-		const { licenseNumber, licenseExpiry, licenseImageFront, licenseImageBack, plateNumber, model, year, capacity, registrationDoc, insuranceDoc, permitDoc } = body;
 
-		// Basic validation
-		if (!licenseNumber || !plateNumber || !model || !licenseImageFront || !licenseImageBack || !registrationDoc || !insuranceDoc || !permitDoc) {
-			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+		const validationResult = DriverApplicationSchema.safeParse(body);
+
+		if (!validationResult.success) {
+			return NextResponse.json({ error: "Validation Error", details: validationResult.error.flatten() }, { status: 400 });
 		}
+
+		const { licenseNumber, licenseExpiry, licenseImageFront, licenseImageBack, plateNumber, make, model, year, color, capacity, registrationDoc, insuranceDoc, permitDoc } = validationResult.data;
 
 		// Check if driver already exists
 		const existingDriver = await prisma.driver.findUnique({
@@ -43,10 +64,12 @@ export async function POST(req: NextRequest) {
 				status: "PENDING_VERIFICATION",
 				taxis: {
 					create: {
-						plateNumber,
+						licensePlate: plateNumber,
+						make,
 						model,
-						year: parseInt(year),
-						capacity: parseInt(capacity),
+						year,
+						color,
+						capacity,
 						status: "AVAILABLE",
 						registrationDoc,
 						insuranceDoc,
