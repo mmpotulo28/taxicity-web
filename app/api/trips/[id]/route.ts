@@ -17,10 +17,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 				route: true,
 				taxi: {
 					include: {
-						driver: true
-					}
-				}
-			}
+						driver: true,
+					},
+				},
+			},
 		});
 
 		if (!trip) {
