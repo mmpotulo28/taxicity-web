@@ -120,7 +120,7 @@ export const RouteManagementModal: React.FC<RouteManagementModalProps> = ({
 						onChange={(e) => setSelectedRoute(e.target.value)}
 					>
 						{routes.map((route) => (
-							<SelectItem key={route.id} value={route.id}>
+							<SelectItem key={route.id}>
 								{route.name}
 							</SelectItem>
 						))}
@@ -129,11 +129,10 @@ export const RouteManagementModal: React.FC<RouteManagementModalProps> = ({
 					<div className="mt-4">
 						<p className="text-small font-bold mb-2">Upload New Permit</p>
 						<div
-							className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
-								permitFile
+							className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${permitFile
 									? "border-success bg-success-50"
 									: "border-default-300 hover:bg-default-100"
-							}`}
+								}`}
 							onClick={() => document.getElementById("modalPermitDoc")?.click()}
 						>
 							{permitFile ? (

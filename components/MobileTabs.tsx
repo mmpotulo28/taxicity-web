@@ -38,8 +38,6 @@ const tabs = [
 const MobileTabs = () => {
 	const pathname = usePathname();
 
-	if (pathname?.startsWith("/driver")) return null;
-
 	const [currentPage, setCurrentPage] = useState<
 		"home" | "settings" | "trip-history" | "support" | "route"
 	>("home");
@@ -57,6 +55,8 @@ const MobileTabs = () => {
 
 		return () => { };
 	}, [pathname]);
+
+	if (pathname?.startsWith("/driver")) return null;
 
 	return (
 		<footer className="z-50 bg-background border-t border-default-200 shadow-lg h-16 rounded-t-2xl">

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 const UpdateRouteSchema = z.object({
@@ -38,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 		}
 
 		// Transaction to update permit and route
-		await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+		await prisma.$transaction(async (tx: any) => {
 			// 1. Update Taxi Permit
 			await tx.taxi.update({
 				where: { id: taxiId },

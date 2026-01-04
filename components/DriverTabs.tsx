@@ -9,9 +9,9 @@ import { useEffect, useState } from "react";
 // Driver tab data structure
 const tabs = [
  {
-  key: "dashboard",
-  label: "Home",
-  icon: "lucide:layout-dashboard",
+  key: "home",
+  label: "Console",
+  icon: "lucide:car-taxi-front",
   href: "/driver",
  },
  {
@@ -47,7 +47,8 @@ const DriverTabs = () => {
 
  useEffect(() => {
   const handleRouteChange = (url: string) => {
-   if (url === "/driver") setCurrentPage("dashboard");
+   if (url === "/driver") setCurrentPage("home");
+   else if (url.includes("dashboard")) setCurrentPage("stats");
    else if (url.includes("earnings")) setCurrentPage("earnings");
    else if (url.includes("requests")) setCurrentPage("requests");
    else if (url.includes("vehicle")) setCurrentPage("vehicle");

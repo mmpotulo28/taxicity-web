@@ -52,7 +52,6 @@ export async function POST(req: NextRequest) {
 				},
 				data: {
 					isActive: true,
-					joinedAt: new Date(),
 				},
 			});
 			return NextResponse.json(updated);

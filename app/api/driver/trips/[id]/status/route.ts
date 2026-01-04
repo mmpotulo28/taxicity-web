@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { TripStatus } from "@prisma/client";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -32,16 +33,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 			return NextResponse.json({ error: "Trip not found" }, { status: 404 });
 		}
 
-		if (!taxiIds.includes(trip.taxiId)) {
+		if (!trip.taxiId || !taxiIds.includes(trip.taxiId)) {
 			return NextResponse.json({ error: "Unauthorized for this trip" }, { status: 403 });
 		}
 
 		const updateData: {
-			status: string;
+			status: TripStatus;
 			pickupTime?: Date;
 			dropoffTime?: Date;
 			paymentStatus?: "PENDING" | "PAID" | "FAILED";
-		} = { status };
+		} = { status: status as TripStatus };
 
 		if (status === "ARRIVED_AT_PICKUP") {
 			// Maybe log arrival time?
