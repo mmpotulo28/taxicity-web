@@ -11,8 +11,8 @@ const CreateRouteSchema = z.object({
 	distance: z.number().positive(),
 	baseFare: z.number().positive(),
 	estimatedDuration: z.number().positive(),
-	sourceRankId: z.string().uuid(),
-	destRankId: z.string().uuid().optional(),
+	sourceRankId: z.string(),
+	destRankId: z.string().optional(),
 	status: z.enum(["ACTIVE", "BUSY", "INACTIVE"]).default("ACTIVE"),
 });
 
@@ -50,6 +50,8 @@ export async function GET(req: NextRequest) {
 			where.destRankId = destRankId;
 		}
 
+		console.log("Route filter where clause:", where);
+
 		const [routes, total] = await Promise.all([
 			prisma.route.findMany({
 				where,
@@ -72,6 +74,7 @@ export async function GET(req: NextRequest) {
 							lng: true,
 						},
 					},
+					popularLocations: true,
 					_count: {
 						select: {
 							taxis: true,
@@ -85,6 +88,8 @@ export async function GET(req: NextRequest) {
 			}),
 			prisma.route.count({ where }),
 		]);
+
+		console.log("Fetched routes:", routes.length);
 
 		return NextResponse.json({
 			routes,
@@ -102,6 +107,8 @@ export async function GET(req: NextRequest) {
 	}
 }
 
+import { isAdmin, unauthorizedResponse } from "@/lib/auth";
+
 // POST /api/routes - Create a new route (admin only)
 export async function POST(req: NextRequest) {
 	try {
@@ -111,16 +118,17 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// TODO: Add admin role check here
+		const isUserAdmin = await isAdmin();
+		if (!isUserAdmin) {
+			return unauthorizedResponse();
+		}
 
 		const body = await req.json();
 		const parsed = CreateRouteSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Verify source rank exists

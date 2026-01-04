@@ -12,7 +12,7 @@ const CreateTaxiSchema = z.object({
 	year: z.number().positive().optional(),
 	color: z.string().min(1),
 	capacity: z.number().positive(),
-	driverId: z.string().uuid(),
+	driverId: z.string(),
 	registrationDoc: z.string().optional(),
 	insuranceDoc: z.string().optional(),
 });
@@ -149,6 +149,8 @@ export async function GET(req: NextRequest) {
 	}
 }
 
+import { isAdmin, unauthorizedResponse } from "@/lib/auth";
+
 // POST /api/taxis - Create a new taxi (admin only)
 export async function POST(req: NextRequest) {
 	try {
@@ -158,16 +160,17 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// TODO: Add admin role check here
+		const isUserAdmin = await isAdmin();
+		if (!isUserAdmin) {
+			return unauthorizedResponse();
+		}
 
 		const body = await req.json();
 		const parsed = CreateTaxiSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Verify driver exists and is active

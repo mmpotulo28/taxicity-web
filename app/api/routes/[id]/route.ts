@@ -99,10 +99,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		const parsed = UpdateRouteSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Check if route exists
@@ -177,10 +175,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 		// Check if route has active trips or taxis
 		if (existingRoute._count.trips > 0 || existingRoute._count.taxis > 0) {
-			return NextResponse.json(
-				{ error: "Cannot delete route with active trips or assigned taxis" },
-				{ status: 400 },
-			);
+			return NextResponse.json({ error: "Cannot delete route with active trips or assigned taxis" }, { status: 400 });
 		}
 
 		await prisma.route.delete({

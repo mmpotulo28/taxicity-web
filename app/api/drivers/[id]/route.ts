@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import prisma from "@/lib/prisma";
@@ -77,6 +77,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 						rating: true,
 						comment: true,
 						createdAt: true,
+						userId: true,
 						trip: {
 							select: {
 								id: true,
@@ -85,22 +86,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 								fare: true,
 							},
 						},
-						user: {
-							select: {
-								id: true,
-								fullName: true,
-							},
-						},
 					},
 				},
 				favoriteOfUsers: {
 					select: {
-						user: {
-							select: {
-								id: true,
-								fullName: true,
-							},
-						},
+						userId: true,
 					},
 				},
 				_count: {
@@ -119,15 +109,48 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 		// Calculate average rating
 		const ratings = driver.tripRatings.map((r: any) => r.rating);
-		const averageRating =
-			ratings.length > 0
-				? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length
-				: 0;
+		const averageRating = ratings.length > 0 ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length : 0;
 
-		return NextResponse.json({
-			...driver,
-			averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+		// Fetch user details for ratings and favorites
+		const userIds = new Set<string>();
+		driver.tripRatings.forEach((r) => {
+			if (r.userId) userIds.add(r.userId);
 		});
+		driver.favoriteOfUsers.forEach((f) => {
+			if (f.userId) userIds.add(f.userId);
+		});
+
+		const client = await clerkClient();
+		const usersMap = new Map<string, any>();
+
+		if (userIds.size > 0) {
+			try {
+				const usersList = await client.users.getUserList({ userId: Array.from(userIds) });
+				usersList.data.forEach((u) => {
+					usersMap.set(u.id, {
+						id: u.id,
+						fullName: `${u.firstName} ${u.lastName}`,
+					});
+				});
+			} catch (error) {
+				console.error("Error fetching users from Clerk:", error);
+			}
+		}
+
+		const enrichedDriver = {
+			...driver,
+			tripRatings: driver.tripRatings.map((r) => ({
+				...r,
+				user: r.userId ? usersMap.get(r.userId) : null,
+			})),
+			favoriteOfUsers: driver.favoriteOfUsers.map((f) => ({
+				...f,
+				user: f.userId ? usersMap.get(f.userId) : null,
+			})),
+			averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+		};
+
+		return NextResponse.json(enrichedDriver);
 	} catch (error) {
 		console.error("Error fetching driver:", error);
 
@@ -150,10 +173,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		const parsed = UpdateDriverSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Check if driver exists
@@ -187,7 +208,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		// Update fullName if first or last name is being updated
-		let updateData: any = { ...parsed.data };
+		const updateData: any = { ...parsed.data };
 
 		if (parsed.data.firstName || parsed.data.lastName) {
 			const firstName = parsed.data.firstName || existingDriver.firstName;
@@ -248,12 +269,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 						trips: {
 							where: {
 								status: {
-									in: [
-										"REQUESTED",
-										"ACCEPTED",
-										"ARRIVED_AT_PICKUP",
-										"IN_PROGRESS",
-									],
+									in: ["REQUESTED", "ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS"],
 								},
 							},
 						},
@@ -267,20 +283,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		// Check if driver has taxis with active trips
-		const hasActiveTrips = existingDriver.taxis.some((taxi: any) => taxi.trips.length > 0);
+		const hasActiveTrips = (existingDriver as any).taxis.some((taxi: any) => taxi.trips.length > 0);
 
 		if (hasActiveTrips) {
-			return NextResponse.json(
-				{ error: "Cannot delete driver with active trips" },
-				{ status: 400 },
-			);
+			return NextResponse.json({ error: "Cannot delete driver with active trips" }, { status: 400 });
 		}
 
-		if (existingDriver.taxis.length > 0) {
-			return NextResponse.json(
-				{ error: "Cannot delete driver with assigned taxis" },
-				{ status: 400 },
-			);
+		if ((existingDriver as any).taxis.length > 0) {
+			return NextResponse.json({ error: "Cannot delete driver with assigned taxis" }, { status: 400 });
 		}
 
 		await prisma.driver.delete({

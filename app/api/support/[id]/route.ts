@@ -1,4 +1,4 @@
-import { getAuth } from "@clerk/nextjs/server";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -11,21 +11,10 @@ const CreateSupportMessageSchema = z.object({
 });
 
 const UpdateSupportTicketSchema = z.object({
-	status: z.enum(["OPEN", "IN_PROGRESS", "WAITING_FOR_USER", "RESOLVED", "CLOSED"]).optional(),
+	status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]).optional(),
 	priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-	assignedToId: z.string().uuid().optional(),
-	category: z
-		.enum([
-			"ACCOUNT_ISSUE",
-			"PAYMENT_PROBLEM",
-			"TECHNICAL_SUPPORT",
-			"BOOKING_ISSUE",
-			"DRIVER_COMPLAINT",
-			"FEATURE_REQUEST",
-			"BUG_REPORT",
-			"OTHER",
-		])
-		.optional(),
+	assignedTo: z.string().optional(),
+	category: z.enum(["ACCOUNT_ISSUE", "PAYMENT_PROBLEM", "TECHNICAL_SUPPORT", "BOOKING_ISSUE", "DRIVER_COMPLAINT", "FEATURE_REQUEST", "BUG_REPORT", "OTHER"]).optional(),
 	resolution: z.string().max(2000).optional(),
 });
 
@@ -39,45 +28,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		// Get user to determine permissions
-		const user = await prisma.user.findUnique({
-			where: { clerkId: userId },
-			select: { id: true, role: true },
-		});
-
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
+		const client = await clerkClient();
+		const user = await client.users.getUser(userId);
+		const role = (user.publicMetadata.role as string) || "USER";
 
 		const ticket = await prisma.supportTicket.findUnique({
 			where: { id: params.id },
 			include: {
-				user: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-					},
-				},
-				assignedTo: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-					},
-				},
 				messages: {
-					include: {
-						author: {
-							select: {
-								id: true,
-								firstName: true,
-								lastName: true,
-								role: true,
-							},
-						},
-					},
 					orderBy: { createdAt: "asc" },
 				},
 			},
@@ -88,16 +46,51 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		// Check permissions: staff can see all, users can only see their own
-		if (user.role !== "ADMIN" && user.role !== "SUPPORT" && ticket.userId !== user.id) {
+		if (role !== "ADMIN" && role !== "SUPPORT" && ticket.userId !== userId) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		// Filter out internal messages for regular users
-		if (user.role !== "ADMIN" && user.role !== "SUPPORT") {
+		if (role !== "ADMIN" && role !== "SUPPORT") {
 			ticket.messages = ticket.messages.filter((message: any) => !message.isInternal);
 		}
 
-		return NextResponse.json(ticket);
+		// Fetch user details for ticket and messages
+		const userIds = new Set<string>();
+		if (ticket.userId) userIds.add(ticket.userId);
+		if (ticket.assignedTo) userIds.add(ticket.assignedTo);
+		ticket.messages.forEach((msg: any) => {
+			if (msg.senderId) userIds.add(msg.senderId);
+		});
+
+		const usersMap = new Map<string, any>();
+		if (userIds.size > 0) {
+			try {
+				const usersList = await client.users.getUserList({ userId: Array.from(userIds) });
+				usersList.data.forEach((u) => {
+					usersMap.set(u.id, {
+						id: u.id,
+						fullName: `${u.firstName} ${u.lastName}`,
+						email: u.emailAddresses[0]?.emailAddress,
+						role: u.publicMetadata.role,
+					});
+				});
+			} catch (error) {
+				console.error("Error fetching users from Clerk:", error);
+			}
+		}
+
+		const enrichedTicket = {
+			...ticket,
+			user: ticket.userId ? usersMap.get(ticket.userId) : null,
+			assignedToUser: ticket.assignedTo ? usersMap.get(ticket.assignedTo) : null,
+			messages: ticket.messages.map((msg: any) => ({
+				...msg,
+				senderUser: msg.senderId ? usersMap.get(msg.senderId) : null,
+			})),
+		};
+
+		return NextResponse.json(enrichedTicket);
 	} catch (error) {
 		console.error("Error fetching support ticket:", error);
 
@@ -115,17 +108,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		// Get user to check permissions
-		const user = await prisma.user.findUnique({
-			where: { clerkId: userId },
-			select: { id: true, role: true },
-		});
-
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
+		const client = await clerkClient();
+		const user = await client.users.getUser(userId);
+		const role = (user.publicMetadata.role as string) || "USER";
 
 		// Only staff can update support tickets
-		if (user.role !== "ADMIN" && user.role !== "SUPPORT") {
+		if (role !== "ADMIN" && role !== "SUPPORT") {
 			return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 		}
 
@@ -133,10 +121,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		const parsed = UpdateSupportTicketSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Check if ticket exists
@@ -148,55 +134,72 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 			return NextResponse.json({ error: "Support ticket not found" }, { status: 404 });
 		}
 
-		// Validate assignedToId if provided
-		if (parsed.data.assignedToId) {
-			const assignedUser = await prisma.user.findUnique({
-				where: { id: parsed.data.assignedToId },
-				select: { id: true, role: true },
-			});
+		// Validate assignedTo if provided
+		if (parsed.data.assignedTo) {
+			try {
+				const assignedUser = await client.users.getUser(parsed.data.assignedTo);
+				const assignedUserRole = (assignedUser.publicMetadata.role as string) || "USER";
 
-			if (!assignedUser) {
+				// Only allow assignment to staff users
+				if (assignedUserRole !== "ADMIN" && assignedUserRole !== "SUPPORT") {
+					return NextResponse.json({ error: "Can only assign to staff users" }, { status: 400 });
+				}
+			} catch (error) {
 				return NextResponse.json({ error: "Assigned user not found" }, { status: 404 });
-			}
-
-			// Only allow assignment to staff users
-			if (assignedUser.role !== "ADMIN" && assignedUser.role !== "SUPPORT") {
-				return NextResponse.json(
-					{ error: "Can only assign to staff users" },
-					{ status: 400 },
-				);
 			}
 		}
 
 		// Update the ticket
+		const updateData: any = {};
+		if (parsed.data.status) updateData.status = parsed.data.status;
+		if (parsed.data.priority) updateData.priority = parsed.data.priority;
+		if (parsed.data.assignedTo) updateData.assignedTo = parsed.data.assignedTo;
+		if (parsed.data.category) updateData.category = parsed.data.category;
+		// resolution is ignored for now as it's not in schema
+
 		const updatedTicket = await prisma.supportTicket.update({
 			where: { id: params.id },
 			data: {
-				...parsed.data,
+				...updateData,
 				updatedAt: new Date(),
-				...(parsed.data.status === "RESOLVED" && { resolvedAt: new Date() }),
-			},
-			include: {
-				user: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-					},
-				},
-				assignedTo: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-					},
-				},
 			},
 		});
 
-		return NextResponse.json(updatedTicket);
+		// Fetch user details for response
+		let ticketUser = null;
+		let assignedToUser = null;
+
+		if (updatedTicket.userId) {
+			try {
+				const u = await client.users.getUser(updatedTicket.userId);
+				ticketUser = {
+					id: u.id,
+					fullName: `${u.firstName} ${u.lastName}`,
+					email: u.emailAddresses[0]?.emailAddress,
+				};
+			} catch (e) {
+				console.error("Error fetching user:", e);
+			}
+		}
+
+		if (updatedTicket.assignedTo) {
+			try {
+				const u = await client.users.getUser(updatedTicket.assignedTo);
+				assignedToUser = {
+					id: u.id,
+					fullName: `${u.firstName} ${u.lastName}`,
+					email: u.emailAddresses[0]?.emailAddress,
+				};
+			} catch (e) {
+				console.error("Error fetching assigned user:", e);
+			}
+		}
+
+		return NextResponse.json({
+			...updatedTicket,
+			user: ticketUser,
+			assignedToUser,
+		});
 	} catch (error) {
 		console.error("Error updating support ticket:", error);
 
@@ -217,26 +220,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 		const parsed = CreateSupportMessageSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
-		// Get user information
-		const user = await prisma.user.findUnique({
-			where: { clerkId: userId },
-			select: { id: true, role: true },
-		});
+		// Get user to check permissions
+		const client = await clerkClient();
+		const user = await client.users.getUser(userId);
+		const role = (user.publicMetadata.role as string) || "USER";
 
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
-
-		// Check if ticket exists and user has permission
+		// Check if ticket exists
 		const ticket = await prisma.supportTicket.findUnique({
 			where: { id: params.id },
-			select: { id: true, userId: true, status: true },
 		});
 
 		if (!ticket) {
@@ -244,54 +239,55 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 		}
 
 		// Check permissions
-		const isStaff = user.role === "ADMIN" || user.role === "SUPPORT";
-		const isTicketOwner = ticket.userId === user.id;
-
-		if (!isStaff && !isTicketOwner) {
+		if (role !== "ADMIN" && role !== "SUPPORT" && ticket.userId !== userId) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
-		// Don't allow regular users to add internal messages
-		if (!isStaff && parsed.data.isInternal) {
-			return NextResponse.json({ error: "Cannot create internal messages" }, { status: 403 });
+		// Regular users cannot send internal messages
+		if (parsed.data.isInternal && role !== "ADMIN" && role !== "SUPPORT") {
+			return NextResponse.json({ error: "Forbidden: Cannot send internal messages" }, { status: 403 });
 		}
 
 		// Create the message
 		const message = await prisma.supportMessage.create({
 			data: {
 				ticketId: params.id,
-				authorId: user.id,
+				senderId: userId,
 				message: parsed.data.message,
-				isFromUser: !isStaff,
-				isInternal: parsed.data.isInternal || false,
 				attachments: parsed.data.attachments || [],
-			},
-			include: {
-				author: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						role: true,
-					},
-				},
+				isInternal: parsed.data.isInternal,
 			},
 		});
 
-		// Update ticket status and timestamp
-		await prisma.supportTicket.update({
-			where: { id: params.id },
-			data: {
-				updatedAt: new Date(),
-				// If user responds, change status from WAITING_FOR_USER to IN_PROGRESS
-				...(ticket.status === "WAITING_FOR_USER" && !isStaff && { status: "IN_PROGRESS" }),
-			},
-		});
+		// Update ticket status if needed (e.g., reopen if closed)
+		if (ticket.status === "RESOLVED" || ticket.status === "CLOSED") {
+			await prisma.supportTicket.update({
+				where: { id: params.id },
+				data: { status: "OPEN", updatedAt: new Date() },
+			});
+		} else {
+			await prisma.supportTicket.update({
+				where: { id: params.id },
+				data: { updatedAt: new Date() },
+			});
+		}
 
-		return NextResponse.json(message, { status: 201 });
+		// Fetch sender details for response
+		const senderUser = {
+			id: user.id,
+			fullName: `${user.firstName} ${user.lastName}`,
+			role: user.publicMetadata.role,
+		};
+
+		return NextResponse.json(
+			{
+				...message,
+				senderUser,
+			},
+			{ status: 201 },
+		);
 	} catch (error) {
-		console.error("Error creating support message:", error);
-
+		console.error("Error adding message to ticket:", error);
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 	}
 }

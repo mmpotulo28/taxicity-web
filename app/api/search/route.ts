@@ -1,4 +1,4 @@
-import { getAuth } from "@clerk/nextjs/server";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -28,12 +28,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 	const R = 6371; // Earth's radius in kilometers
 	const dLat = ((lat2 - lat1) * Math.PI) / 180;
 	const dLon = ((lon2 - lon1) * Math.PI) / 180;
-	const a =
-		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-		Math.cos((lat1 * Math.PI) / 180) *
-			Math.cos((lat2 * Math.PI) / 180) *
-			Math.sin(dLon / 2) *
-			Math.sin(dLon / 2);
+	const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
 	return R * c;
@@ -75,23 +70,16 @@ export async function GET(req: NextRequest) {
 		});
 
 		if (!searchData.success) {
-			return NextResponse.json(
-				{ error: "Invalid search parameters", details: searchData.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", searchData.error.issues);
+			return NextResponse.json({ error: "Invalid search parameters", details: searchData.error.issues }, { status: 400 });
 		}
 
 		const { query: searchQuery, type: searchType, filters: searchFilters } = searchData.data;
 
 		// Get user to determine permissions
-		const user = await prisma.user.findUnique({
-			where: { clerkId: userId },
-			select: { id: true, role: true },
-		});
-
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
+		const client = await clerkClient();
+		const user = await client.users.getUser(userId);
+		const role = (user.publicMetadata.role as string) || "USER";
 
 		const results: any = {
 			query: searchQuery,
@@ -103,11 +91,7 @@ export async function GET(req: NextRequest) {
 		// Search Taxis
 		if (searchType === "all" || searchType === "taxis") {
 			const taxiWhere: any = {
-				OR: [
-					{ registrationNumber: { contains: searchQuery, mode: "insensitive" } },
-					{ model: { contains: searchQuery, mode: "insensitive" } },
-					{ make: { contains: searchQuery, mode: "insensitive" } },
-				],
+				OR: [{ licensePlate: { contains: searchQuery, mode: "insensitive" } }, { model: { contains: searchQuery, mode: "insensitive" } }, { make: { contains: searchQuery, mode: "insensitive" } }],
 			};
 
 			if (searchFilters?.status) {
@@ -123,15 +107,6 @@ export async function GET(req: NextRequest) {
 							id: true,
 							firstName: true,
 							lastName: true,
-							rating: true,
-						},
-					},
-					currentRoute: {
-						select: {
-							id: true,
-							name: true,
-							sourceRank: { select: { name: true } },
-							destinationRank: { select: { name: true } },
 						},
 					},
 				},
@@ -143,12 +118,7 @@ export async function GET(req: NextRequest) {
 				const { latitude, longitude, radius } = searchFilters.location;
 				const filteredTaxis = taxis.filter((taxi: any) => {
 					if (!taxi.currentLocation) return false;
-					const distance = calculateDistance(
-						latitude,
-						longitude,
-						taxi.currentLocation.latitude,
-						taxi.currentLocation.longitude,
-					);
+					const distance = calculateDistance(latitude, longitude, taxi.currentLocation.latitude, taxi.currentLocation.longitude);
 
 					return distance <= radius;
 				});
@@ -162,24 +132,15 @@ export async function GET(req: NextRequest) {
 		// Search Drivers
 		if (searchType === "all" || searchType === "drivers") {
 			const driverWhere: any = {
-				OR: [
-					{ firstName: { contains: searchQuery, mode: "insensitive" } },
-					{ lastName: { contains: searchQuery, mode: "insensitive" } },
-					{ licenseNumber: { contains: searchQuery, mode: "insensitive" } },
-					{ phoneNumber: { contains: searchQuery, mode: "insensitive" } },
-				],
+				OR: [{ firstName: { contains: searchQuery, mode: "insensitive" } }, { lastName: { contains: searchQuery, mode: "insensitive" } }, { licenseNumber: { contains: searchQuery, mode: "insensitive" } }, { phone: { contains: searchQuery, mode: "insensitive" } }],
 			};
 
 			if (searchFilters?.status) {
 				driverWhere.status = searchFilters.status;
 			}
 
-			if (searchFilters?.rating) {
-				driverWhere.rating = { gte: searchFilters.rating };
-			}
-
 			// Only show verified drivers to regular users
-			if (user.role !== "ADMIN" && user.role !== "SUPPORT") {
+			if (role !== "ADMIN" && role !== "SUPPORT") {
 				driverWhere.status = "ACTIVE";
 			}
 
@@ -189,13 +150,13 @@ export async function GET(req: NextRequest) {
 					id: true,
 					firstName: true,
 					lastName: true,
-					phoneNumber: true,
-					rating: true,
+					phone: true,
 					status: true,
-					currentTaxi: {
+					taxis: {
+						take: 1,
 						select: {
 							id: true,
-							registrationNumber: true,
+							licensePlate: true,
 							model: true,
 							make: true,
 						},
@@ -209,11 +170,7 @@ export async function GET(req: NextRequest) {
 		// Search Routes
 		if (searchType === "all" || searchType === "routes") {
 			const routeWhere: any = {
-				OR: [
-					{ name: { contains: searchQuery, mode: "insensitive" } },
-					{ sourceRank: { name: { contains: searchQuery, mode: "insensitive" } } },
-					{ destinationRank: { name: { contains: searchQuery, mode: "insensitive" } } },
-				],
+				OR: [{ name: { contains: searchQuery, mode: "insensitive" } }, { sourceRank: { name: { contains: searchQuery, mode: "insensitive" } } }, { destRank: { name: { contains: searchQuery, mode: "insensitive" } } }],
 			};
 
 			if (searchFilters?.status) {
@@ -227,14 +184,16 @@ export async function GET(req: NextRequest) {
 						select: {
 							id: true,
 							name: true,
-							location: true,
+							lat: true,
+							lng: true,
 						},
 					},
-					destinationRank: {
+					destRank: {
 						select: {
 							id: true,
 							name: true,
-							location: true,
+							lat: true,
+							lng: true,
 						},
 					},
 				},
@@ -246,11 +205,7 @@ export async function GET(req: NextRequest) {
 		// Search Ranks
 		if (searchType === "all" || searchType === "ranks") {
 			const rankWhere: any = {
-				OR: [
-					{ name: { contains: searchQuery, mode: "insensitive" } },
-					{ address: { contains: searchQuery, mode: "insensitive" } },
-					{ description: { contains: searchQuery, mode: "insensitive" } },
-				],
+				OR: [{ name: { contains: searchQuery, mode: "insensitive" } }, { address: { contains: searchQuery, mode: "insensitive" } }, { description: { contains: searchQuery, mode: "insensitive" } }],
 			};
 
 			if (searchFilters?.status) {
@@ -262,9 +217,9 @@ export async function GET(req: NextRequest) {
 				include: {
 					_count: {
 						select: {
-							taxis: true,
+							taxiRanks: true,
 							sourceRoutes: true,
-							destinationRoutes: true,
+							destRoutes: true,
 						},
 					},
 				},
@@ -276,12 +231,7 @@ export async function GET(req: NextRequest) {
 				const { latitude, longitude, radius } = searchFilters.location;
 
 				ranks = ranks.filter((rank: any) => {
-					const distance = calculateDistance(
-						latitude,
-						longitude,
-						rank.location.latitude,
-						rank.location.longitude,
-					);
+					const distance = calculateDistance(latitude, longitude, rank.lat, rank.lng);
 
 					return distance <= radius;
 				});
@@ -291,42 +241,30 @@ export async function GET(req: NextRequest) {
 		}
 
 		// Search Users (admin/support only)
-		if (
-			(searchType === "all" || searchType === "users") &&
-			(user.role === "ADMIN" || user.role === "SUPPORT")
-		) {
-			const userWhere: any = {
-				OR: [
-					{ firstName: { contains: searchQuery, mode: "insensitive" } },
-					{ lastName: { contains: searchQuery, mode: "insensitive" } },
-					{ email: { contains: searchQuery, mode: "insensitive" } },
-					{ phoneNumber: { contains: searchQuery, mode: "insensitive" } },
-				],
-			};
+		if ((searchType === "all" || searchType === "users") && (role === "ADMIN" || role === "SUPPORT")) {
+			try {
+				const usersList = await client.users.getUserList({
+					query: searchQuery,
+					limit: limit,
+					offset: skip,
+				});
 
-			results.results.users = await prisma.user.findMany({
-				where: userWhere,
-				select: {
-					id: true,
-					clerkId: true,
-					firstName: true,
-					lastName: true,
-					email: true,
-					phoneNumber: true,
-					role: true,
-					status: true,
-					createdAt: true,
-				},
-				skip,
-				take: limit,
-			});
+				results.results.users = usersList.data.map((u) => ({
+					id: u.id,
+					fullName: `${u.firstName} ${u.lastName}`,
+					email: u.emailAddresses[0]?.emailAddress,
+					phone: u.phoneNumbers[0]?.phoneNumber,
+					role: u.publicMetadata.role,
+					createdAt: u.createdAt,
+				}));
+			} catch (error) {
+				console.error("Error searching users in Clerk:", error);
+				results.results.users = [];
+			}
 		}
 
 		// Calculate total results
-		results.total = Object.values(results.results).reduce(
-			(acc: number, items: any) => acc + (Array.isArray(items) ? items.length : 0),
-			0,
-		);
+		results.total = Object.values(results.results).reduce((acc: number, items: any) => acc + (Array.isArray(items) ? items.length : 0), 0);
 
 		return NextResponse.json({
 			...results,
@@ -353,30 +291,29 @@ export async function POST(req: NextRequest) {
 		}
 
 		const body = await req.json();
-		const parsed = SearchQuerySchema.safeParse(body);
+		const searchData = SearchQuerySchema.safeParse(body);
 
-		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid search data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+		if (!searchData.success) {
+			return NextResponse.json({ error: "Invalid search parameters", details: searchData.error.issues }, { status: 400 });
 		}
 
-		// For now, redirect to GET with query parameters
-		// This could be expanded for more complex search logic
-		const searchParams = new URLSearchParams({
-			query: parsed.data.query,
-			type: parsed.data.type,
+		// Redirect to GET with query params for now, or implement POST logic if needed
+		// For now, we'll just reuse the GET logic by constructing a URL
+		const url = new URL(req.url);
+		url.searchParams.set("query", searchData.data.query);
+		url.searchParams.set("type", searchData.data.type);
+		if (searchData.data.filters) {
+			url.searchParams.set("filters", JSON.stringify(searchData.data.filters));
+		}
+
+		// Create a new request with GET method
+		const newReq = new NextRequest(url, {
+			headers: req.headers,
 		});
 
-		if (parsed.data.filters) {
-			searchParams.set("filters", JSON.stringify(parsed.data.filters));
-		}
-
-		return NextResponse.redirect(new URL(`/api/search?${searchParams.toString()}`, req.url));
+		return GET(newReq);
 	} catch (error) {
-		console.error("Error processing advanced search:", error);
-
+		console.error("Error performing search:", error);
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 	}
 }

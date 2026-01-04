@@ -47,10 +47,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		const parsed = UpdateLocationSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Verify taxi exists

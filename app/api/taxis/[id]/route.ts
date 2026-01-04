@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import prisma from "@/lib/prisma";
@@ -99,12 +99,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 						dropoffAddress: true,
 						fare: true,
 						requestTime: true,
-						user: {
-							select: {
-								id: true,
-								fullName: true,
-							},
-						},
+						userId: true,
 					},
 				},
 				maintenanceLog: {
@@ -124,7 +119,38 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 			return NextResponse.json({ error: "Taxi not found" }, { status: 404 });
 		}
 
-		return NextResponse.json(taxi);
+		// Fetch user details for trips
+		const userIds = new Set<string>();
+		taxi.trips.forEach((t) => {
+			if (t.userId) userIds.add(t.userId);
+		});
+
+		const client = await clerkClient();
+		const usersMap = new Map<string, any>();
+
+		if (userIds.size > 0) {
+			try {
+				const usersList = await client.users.getUserList({ userId: Array.from(userIds) });
+				usersList.data.forEach((u) => {
+					usersMap.set(u.id, {
+						id: u.id,
+						fullName: `${u.firstName} ${u.lastName}`,
+					});
+				});
+			} catch (error) {
+				console.error("Error fetching users from Clerk:", error);
+			}
+		}
+
+		const enrichedTaxi = {
+			...taxi,
+			trips: taxi.trips.map((t) => ({
+				...t,
+				user: t.userId ? usersMap.get(t.userId) : null,
+			})),
+		};
+
+		return NextResponse.json(enrichedTaxi);
 	} catch (error) {
 		console.error("Error fetching taxi:", error);
 
@@ -147,10 +173,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		const parsed = UpdateTaxiSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Check if taxi exists
@@ -216,11 +240,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 			return NextResponse.json({ error: "Taxi not found" }, { status: 404 });
 		}
 
-		if (existingTaxi.trips.length > 0) {
-			return NextResponse.json(
-				{ error: "Cannot delete taxi with active trips" },
-				{ status: 400 },
-			);
+		if ((existingTaxi as any).trips.length > 0) {
+			return NextResponse.json({ error: "Cannot delete taxi with active trips" }, { status: 400 });
 		}
 
 		await prisma.taxi.delete({

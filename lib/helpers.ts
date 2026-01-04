@@ -1,7 +1,3 @@
-import { taxis } from "./data";
-
-import { iTaxi } from "@/types";
-
 export const getTaxiIcon = () => {
 	const isWindowDefined = typeof window !== "undefined";
 	const hasGoogle = isWindowDefined && window.google;
@@ -15,13 +11,4 @@ export const getTaxiIcon = () => {
 	}
 
 	return undefined;
-};
-
-// Helper functions
-export const getRandomTaxis = (count: number = 3): iTaxi[] => {
-	// Shuffle taxis array
-	const shuffled = [...taxis].sort(() => 0.5 - Math.random());
-
-	// Get first n elements
-	return shuffled.slice(0, count);
 };

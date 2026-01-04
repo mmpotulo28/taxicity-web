@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/prisma/generated"
 }
 
 datasource db {
@@ -11,27 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// USER MODELS
-model User {
-  id                String             @id @default(uuid())
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  email             String             @unique
-  phone             String?
-  passwordHash      String
-  fullName          String
-  profileImage      String?
-  deviceToken       String?
-  trips             Trip[]
-  tripRatings       TripRating[]
-  savedLocations    SavedLocation[]
-  emergencyContacts EmergencyContact[]
-  favoriteDrivers   FavoriteDriver[]
-  preferredRoutes   RoutePreference[]
-  lastKnownLocation UserLocation?
-
-  @@map("users")
-}
+// USER DATA MODELS (User auth is managed by Clerk)
 
 model UserLocation {
   id        String   @id @default(uuid())
@@ -40,7 +19,6 @@ model UserLocation {
   lat       Float
   lng       Float
   accuracy  Float?
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @unique
 
   @@map("user_locations")
@@ -55,7 +33,6 @@ model SavedLocation {
   lat       Float
   lng       Float
   type      String // home, work, favorite, etc.
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 
   @@map("saved_locations")
@@ -68,7 +45,6 @@ model EmergencyContact {
   name      String
   phone     String
   relation  String?
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 
   @@map("emergency_contacts")
@@ -92,6 +68,7 @@ model Driver {
   status           DriverStatus     @default(ACTIVE)
   verificationDate DateTime?
   taxis            Taxi[]
+  reports          Report[]
   tripRatings      TripRating[]
   favoriteOfUsers  FavoriteDriver[]
 
@@ -116,6 +93,7 @@ model Taxi {
   taxiRanks       TaxiRank[]
   routes          TaxiOnRoute[]
   trips           Trip[]
+  reports         Report[]
   currentLocation TaxiLocation?  @relation("current_location")
   locationHistory TaxiLocation[] @relation("history")
   maintenanceLog  Maintenance[]
@@ -157,7 +135,6 @@ model Maintenance {
 model FavoriteDriver {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
   driverId  String
@@ -209,6 +186,7 @@ model Route {
   taxis             TaxiOnRoute[]
   trips             Trip[]
   userPreferences   RoutePreference[]
+  popularLocations  PopularLocation[]
 
   @@map("routes")
 }
@@ -217,13 +195,27 @@ model RoutePreference {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   frequency Int      @default(0) // How often user takes this route
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
   routeId   String
 
   @@unique([userId, routeId])
   @@map("route_preferences")
+}
+
+model PopularLocation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  type      String? // e.g. "MALL", "HOSPITAL", "STOP"
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  routeId   String
+
+  @@map("popular_locations")
 }
 
 model TaxiRank {
@@ -259,7 +251,6 @@ model Trip {
   id             String        @id @default(uuid())
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-  user           User          @relation(fields: [userId], references: [id])
   userId         String
   taxi           Taxi          @relation(fields: [taxiId], references: [id])
   taxiId         String
@@ -294,7 +285,6 @@ model TripRating {
   updatedAt   DateTime @updatedAt
   trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
   tripId      String   @unique
-  user        User     @relation(fields: [userId], references: [id])
   userId      String
   driver      Driver   @relation(fields: [driverId], references: [id])
   driverId    String
@@ -329,11 +319,18 @@ model Report {
   type            ReportType
   description     String
   status          ReportStatus @default(OPEN)
+
+  taxi            Taxi?        @relation(fields: [taxiId], references: [id])
   taxiId          String?
+
+  driver          Driver?      @relation(fields: [driverId], references: [id])
   driverId        String?
-  reporterId      String // User ID of reporter
-  assignedTo      String? // Admin/staff ID
-  images          String[] // URLs to uploaded images
+
+  reporterId      String
+
+  assignedTo      String?
+
+  images          String[]
   resolutionNotes String?
   closedAt        DateTime?
 
@@ -341,32 +338,71 @@ model Report {
 }
 
 model SupportTicket {
-  id         String           @id @default(uuid())
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  subject    String
-  message    String
-  status     TicketStatus     @default(OPEN)
-  userId     String
-  assignedTo String? // Admin/staff ID
-  messages   SupportMessage[]
+  id            String           @id @default(uuid())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  ticketNumber  String           @unique
+  subject       String
+  message       String
+  status        TicketStatus     @default(OPEN)
+  priority      TicketPriority   @default(MEDIUM)
+  category      TicketCategory
+
+  userId        String
+
+  assignedTo    String?
+
+  attachments   String[]
+  contactMethod String?
+  phoneNumber   String?
+
+  messages      SupportMessage[]
 
   @@map("support_tickets")
 }
 
 model SupportMessage {
-  id        String        @id @default(uuid())
-  createdAt DateTime      @default(now())
-  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  ticketId  String
-  message   String
-  sender    String // "user" or "staff"
-  readAt    DateTime?
+  id          String        @id @default(uuid())
+  createdAt   DateTime      @default(now())
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId    String
+  message     String
+  attachments String[]
+
+  senderId    String?
+
+  isInternal  Boolean       @default(false)
+  readAt      DateTime?
 
   @@map("support_messages")
 }
 
 // ENUMS
+enum Role {
+  USER
+  ADMIN
+  DRIVER
+  SUPPORT
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  ACCOUNT_ISSUE
+  PAYMENT_PROBLEM
+  TECHNICAL_SUPPORT
+  BOOKING_ISSUE
+  DRIVER_COMPLAINT
+  FEATURE_REQUEST
+  BUG_REPORT
+  OTHER
+}
+
 enum DriverStatus {
   ACTIVE
   INACTIVE

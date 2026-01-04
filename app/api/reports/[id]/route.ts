@@ -1,14 +1,12 @@
-import { getAuth } from "@clerk/nextjs/server";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import prisma from "@/lib/prisma";
 
 const UpdateReportSchema = z.object({
-	status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "DISMISSED"]).optional(),
-	priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-	assignedToId: z.string().uuid().optional(),
-	adminNotes: z.string().max(2000).optional(),
+	status: z.enum(["OPEN", "UNDER_REVIEW", "RESOLVED", "CLOSED"]).optional(),
+	assignedTo: z.string().optional(),
 	resolution: z.string().max(2000).optional(),
 });
 
@@ -22,36 +20,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		// Get user to determine permissions
-		const user = await prisma.user.findUnique({
-			where: { clerkId: userId },
-			select: { id: true, role: true },
-		});
-
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
+		const client = await clerkClient();
+		const user = await client.users.getUser(userId);
+		const role = (user.publicMetadata.role as string) || "USER";
 
 		const report = await prisma.report.findUnique({
 			where: { id: params.id },
-			include: {
-				reporter: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-						role: true,
-					},
-				},
-				assignedTo: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-					},
-				},
-			},
 		});
 
 		if (!report) {
@@ -59,11 +33,46 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		// Check permissions: admin/support can see all, users can only see their own
-		if (user.role !== "ADMIN" && user.role !== "SUPPORT" && report.reporterId !== user.id) {
+		if (role !== "ADMIN" && role !== "SUPPORT" && report.reporterId !== userId) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
-		return NextResponse.json(report);
+		// Fetch reporter and assigned user details
+		let reporter = null;
+		let assignedToUser = null;
+
+		if (report.reporterId) {
+			try {
+				const u = await client.users.getUser(report.reporterId);
+				reporter = {
+					id: u.id,
+					fullName: `${u.firstName} ${u.lastName}`,
+					email: u.emailAddresses[0]?.emailAddress,
+					role: u.publicMetadata.role,
+				};
+			} catch (e) {
+				console.error("Error fetching reporter:", e);
+			}
+		}
+
+		if (report.assignedTo) {
+			try {
+				const u = await client.users.getUser(report.assignedTo);
+				assignedToUser = {
+					id: u.id,
+					fullName: `${u.firstName} ${u.lastName}`,
+					email: u.emailAddresses[0]?.emailAddress,
+				};
+			} catch (e) {
+				console.error("Error fetching assigned user:", e);
+			}
+		}
+
+		return NextResponse.json({
+			...report,
+			reporter,
+			assignedToUser,
+		});
 	} catch (error) {
 		console.error("Error fetching report:", error);
 
@@ -81,17 +90,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		// Get user to check permissions
-		const user = await prisma.user.findUnique({
-			where: { clerkId: userId },
-			select: { id: true, role: true },
-		});
-
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
+		const client = await clerkClient();
+		const user = await client.users.getUser(userId);
+		const role = (user.publicMetadata.role as string) || "USER";
 
 		// Only admin and support can update reports
-		if (user.role !== "ADMIN" && user.role !== "SUPPORT") {
+		if (role !== "ADMIN" && role !== "SUPPORT") {
 			return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 		}
 
@@ -99,10 +103,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		const parsed = UpdateReportSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Check if report exists
@@ -114,56 +116,71 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 			return NextResponse.json({ error: "Report not found" }, { status: 404 });
 		}
 
-		// Validate assignedToId if provided
-		if (parsed.data.assignedToId) {
-			const assignedUser = await prisma.user.findUnique({
-				where: { id: parsed.data.assignedToId },
-				select: { id: true, role: true },
-			});
+		// Validate assignedTo if provided
+		if (parsed.data.assignedTo) {
+			try {
+				const assignedUser = await client.users.getUser(parsed.data.assignedTo);
+				const assignedUserRole = (assignedUser.publicMetadata.role as string) || "USER";
 
-			if (!assignedUser) {
+				// Only allow assignment to admin or support users
+				if (assignedUserRole !== "ADMIN" && assignedUserRole !== "SUPPORT") {
+					return NextResponse.json({ error: "Can only assign to admin or support users" }, { status: 400 });
+				}
+			} catch (error) {
 				return NextResponse.json({ error: "Assigned user not found" }, { status: 404 });
-			}
-
-			// Only allow assignment to admin or support users
-			if (assignedUser.role !== "ADMIN" && assignedUser.role !== "SUPPORT") {
-				return NextResponse.json(
-					{ error: "Can only assign to admin or support users" },
-					{ status: 400 },
-				);
 			}
 		}
 
 		// Update the report
+		const updateData: any = {};
+		if (parsed.data.status) updateData.status = parsed.data.status;
+		if (parsed.data.assignedTo) updateData.assignedTo = parsed.data.assignedTo;
+		if (parsed.data.resolution) updateData.resolutionNotes = parsed.data.resolution;
+		if (parsed.data.status === "RESOLVED" || parsed.data.status === "CLOSED") {
+			updateData.closedAt = new Date();
+		}
+
 		const updatedReport = await prisma.report.update({
 			where: { id: params.id },
-			data: {
-				...parsed.data,
-				updatedAt: new Date(),
-				...(parsed.data.status === "RESOLVED" && { resolvedAt: new Date() }),
-			},
-			include: {
-				reporter: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-						role: true,
-					},
-				},
-				assignedTo: {
-					select: {
-						id: true,
-						firstName: true,
-						lastName: true,
-						email: true,
-					},
-				},
-			},
+			data: updateData,
 		});
 
-		return NextResponse.json(updatedReport);
+		// Fetch reporter and assigned user details for response
+		let reporter = null;
+		let assignedToUser = null;
+
+		if (updatedReport.reporterId) {
+			try {
+				const u = await client.users.getUser(updatedReport.reporterId);
+				reporter = {
+					id: u.id,
+					fullName: `${u.firstName} ${u.lastName}`,
+					email: u.emailAddresses[0]?.emailAddress,
+					role: u.publicMetadata.role,
+				};
+			} catch (e) {
+				console.error("Error fetching reporter:", e);
+			}
+		}
+
+		if (updatedReport.assignedTo) {
+			try {
+				const u = await client.users.getUser(updatedReport.assignedTo);
+				assignedToUser = {
+					id: u.id,
+					fullName: `${u.firstName} ${u.lastName}`,
+					email: u.emailAddresses[0]?.emailAddress,
+				};
+			} catch (e) {
+				console.error("Error fetching assigned user:", e);
+			}
+		}
+
+		return NextResponse.json({
+			...updatedReport,
+			reporter,
+			assignedToUser,
+		});
 	} catch (error) {
 		console.error("Error updating report:", error);
 
@@ -181,17 +198,12 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		// Get user to check permissions
-		const user = await prisma.user.findUnique({
-			where: { clerkId: userId },
-			select: { id: true, role: true },
-		});
-
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
+		const client = await clerkClient();
+		const user = await client.users.getUser(userId);
+		const role = (user.publicMetadata.role as string) || "USER";
 
 		// Only admins can delete reports
-		if (user.role !== "ADMIN") {
+		if (role !== "ADMIN") {
 			return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 		}
 
@@ -212,7 +224,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		return NextResponse.json({ message: "Report deleted successfully" });
 	} catch (error) {
 		console.error("Error deleting report:", error);
-
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 	}
 }

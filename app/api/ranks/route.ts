@@ -97,6 +97,8 @@ export async function GET(req: NextRequest) {
 	}
 }
 
+import { isAdmin, unauthorizedResponse } from "@/lib/auth";
+
 // POST /api/ranks - Create a new rank (admin only)
 export async function POST(req: NextRequest) {
 	try {
@@ -106,16 +108,17 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// TODO: Add admin role check here
+		const isUserAdmin = await isAdmin();
+		if (!isUserAdmin) {
+			return unauthorizedResponse();
+		}
 
 		const body = await req.json();
 		const parsed = CreateRankSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		const rank = await prisma.rank.create({

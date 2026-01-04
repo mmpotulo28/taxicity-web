@@ -116,10 +116,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		const parsed = UpdateRankSchema.safeParse(body);
 
 		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid data", details: parsed.error.issues },
-				{ status: 400 },
-			);
+			console.error("Validation error:", parsed.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parsed.error.issues }, { status: 400 });
 		}
 
 		// Check if rank exists
@@ -184,17 +182,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		// Check if rank has dependencies
-		const hasDependencies =
-			existingRank._count.sourceRoutes > 0 ||
-			existingRank._count.destRoutes > 0 ||
-			existingRank._count.taxiRanks > 0 ||
-			existingRank._count.trips > 0;
+		const hasDependencies = existingRank._count.sourceRoutes > 0 || existingRank._count.destRoutes > 0 || existingRank._count.taxiRanks > 0 || existingRank._count.trips > 0;
 
 		if (hasDependencies) {
-			return NextResponse.json(
-				{ error: "Cannot delete rank with existing routes, taxis, or trips" },
-				{ status: 400 },
-			);
+			return NextResponse.json({ error: "Cannot delete rank with existing routes, taxis, or trips" }, { status: 400 });
 		}
 
 		await prisma.rank.delete({

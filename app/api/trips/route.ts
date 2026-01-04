@@ -1,47 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
-import prisma from "@/lib/prisma/generated";
+import prisma from "@/lib/prisma";
 
-const TripSchema = z.object({
-	route: z.string(),
-	date: z.string(),
-	time: z.string(),
-	pickup: z.string(),
-	dropoff: z.string(),
-	driver: z.string(),
-	taxi: z.string(),
-	fare: z.string(),
-	status: z.string(),
+const CreateTripSchema = z.object({
+	routeId: z.string(),
+	taxiId: z.string(),
+	rankId: z.string(),
+	pickupAddress: z.string(),
+	pickupLat: z.number(),
+	pickupLng: z.number(),
+	dropoffAddress: z.string(),
+	dropoffLat: z.number(),
+	dropoffLng: z.number(),
+	fare: z.number().positive(),
+	paymentMethod: z.enum(["CASH", "QR_CODE", "MOBILE_MONEY"]).default("CASH"),
 });
 
 export async function GET(req: NextRequest) {
 	const { userId } = getAuth(req);
 	if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-	// Only return trips for the current user
-	const trips = await prisma.trip.findMany({
-		where: { userId },
-		orderBy: { date: "desc" },
-	});
-	return NextResponse.json(trips);
+	try {
+		// Only return trips for the current user
+		const trips = await prisma.trip.findMany({
+			where: { userId },
+			orderBy: { requestTime: "desc" },
+			include: {
+				route: true,
+				taxi: {
+					include: {
+						driver: true,
+					},
+				},
+				rank: true,
+			},
+		});
+		return NextResponse.json(trips);
+	} catch (error) {
+		console.error("Error fetching trips:", error);
+		return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+	}
 }
 
 export async function POST(req: NextRequest) {
 	const { userId } = getAuth(req);
 	if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-	const body = await req.json();
-	const parse = TripSchema.safeParse(body);
-	if (!parse.success) {
-		return NextResponse.json(
-			{ error: "Invalid data", details: parse.error.issues },
-			{ status: 400 },
-		);
-	}
+	try {
+		const body = await req.json();
+		const parse = CreateTripSchema.safeParse(body);
 
-	const trip = await prisma.trips.create({
-		data: { ...parse.data, userId },
-	});
-	return NextResponse.json(trip, { status: 201 });
+		if (!parse.success) {
+			console.error("Validation error:", parse.error.issues);
+			return NextResponse.json({ error: "Invalid data", details: parse.error.issues }, { status: 400 });
+		}
+
+		const trip = await prisma.trip.create({
+			data: {
+				...parse.data,
+				userId,
+				status: "REQUESTED",
+				paymentStatus: "PENDING",
+			},
+			include: {
+				route: true,
+				taxi: true,
+			},
+		});
+
+		return NextResponse.json(trip, { status: 201 });
+	} catch (error) {
+		console.error("Error creating trip:", error);
+		return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+	}
 }

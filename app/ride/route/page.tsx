@@ -1,10 +1,10 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Input, Tabs, Tab, Select, SelectItem } from "@heroui/react";
+import { Input, Tabs, Tab, Select, SelectItem, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-import { ranks, routes } from "@/lib/data";
+import { useRide } from "@/context/RideContext";
 import RouteCard from "@/components/RouteCard";
 
 // Helper to extract fare min for sorting
@@ -18,6 +18,7 @@ const getFareMin = (fare?: string) => {
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 const RouteSelector: React.FC = () => {
+	const { routes, ranks, isLoading } = useRide();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
 	const [sortBy, setSortBy] = useState<"name" | "fare" | "status">("name");
@@ -74,11 +75,10 @@ const RouteSelector: React.FC = () => {
 					{alphabet.map((letter) => (
 						<button
 							key={letter}
-							className={`w-7 h-7 rounded text-xs font-bold transition ${
-								selectedLetter === letter
+							className={`w-7 h-7 rounded text-xs font-bold transition ${selectedLetter === letter
 									? "bg-primary text-white"
 									: "bg-default-100 text-default-500 hover:bg-primary/10"
-							}`}
+								}`}
 							type="button"
 							onClick={() =>
 								setSelectedLetter(selectedLetter === letter ? null : letter)
@@ -111,27 +111,33 @@ const RouteSelector: React.FC = () => {
 			</div>
 
 			<div className="flex-1 overflow-y-auto p-4 scrollbar-hidden">
-				<div className="space-y-6">
-					{filteredRoutes.map((route) => {
-						const rank = ranks.find((r) => r.id === route.rankId);
+				{isLoading ? (
+					<div className="flex justify-center items-center h-full">
+						<Spinner size="lg" />
+					</div>
+				) : (
+					<div className="space-y-6">
+						{filteredRoutes.map((route) => {
+							const rank = ranks.find((r) => r.id === route.rankId);
 
-						if (!rank) return null; // Skip if no matching rank found
+							if (!rank) return null; // Skip if no matching rank found
 
-						return <RouteCard key={route.id} rank={rank} route={route} />;
-					})}
+							return <RouteCard key={route.id} rank={rank} route={route} />;
+						})}
 
-					{filteredRoutes.length === 0 && (
-						<div className="text-center py-8">
-							<Icon
-								className="text-4xl text-default-300 mx-auto mb-2"
-								icon="lucide:search-x"
-							/>
-							<p className="text-default-500">
-								No routes found matching &quot;{searchQuery}&quot;
-							</p>
-						</div>
-					)}
-				</div>
+						{filteredRoutes.length === 0 && (
+							<div className="text-center py-8">
+								<Icon
+									className="text-4xl text-default-300 mx-auto mb-2"
+									icon="lucide:search-x"
+								/>
+								<p className="text-default-500">
+									No routes found matching &quot;{searchQuery}&quot;
+								</p>
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 		</motion.div>
 	);

@@ -4,6 +4,15 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 	size?: number;
 };
 
+export interface iPopularLocation {
+	id: string;
+	name: string;
+	address: string;
+	lat: number;
+	lng: number;
+	type?: string;
+}
+
 export interface iRoute {
 	id: string;
 	name: string;
@@ -13,6 +22,7 @@ export interface iRoute {
 	estimatedFare: string;
 	distance: string;
 	status: "active" | "inactive" | "busy";
+	popularLocations?: iPopularLocation[];
 }
 
 export interface iRank {
@@ -56,7 +66,7 @@ export interface iTrip {
 	vehicle: string;
 	licensePlate: string;
 	fare: string;
-	status: "completed" | "cancelled" | "in-progress";
+	status: "completed" | "cancelled" | "in-progress" | "requested";
 	paymentMethod: string;
 	rating?: number;
 }

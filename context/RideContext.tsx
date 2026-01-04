@@ -1,15 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { addToast } from "@heroui/toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 import { iTrip, iRoute, iRank, iTaxi } from "@/types";
-import {
-	trips as mockTrips,
-	routes as mockRoutes,
-	ranks as mockRanks,
-	taxis as mockTaxis,
-} from "@/lib/data";
+import { useMap } from "./MapContext";
 
 interface RideContextType {
 	tripHistory: iTrip[];
@@ -30,29 +27,150 @@ interface RideContextType {
 	setDropoffLocation: (location: string) => void;
 	requestRide: () => void;
 	cancelRide: () => void;
+	isLoading: boolean;
 }
 
 const RideContext = createContext<RideContextType | undefined>(undefined);
 
+// API Fetch Functions
+const fetchRoutes = async (): Promise<iRoute[]> => {
+	const { data } = await axios.get("/api/routes");
+	return data.routes.map((r: any) => ({
+		id: r.id,
+		name: r.name,
+		rankId: r.sourceRankId,
+		destinationRankId: r.destRankId,
+		estimatedDuration: `${r.estimatedDuration} min`,
+		estimatedFare: `R${r.baseFare}`,
+		distance: `${r.distance} km`,
+		status: r.status.toLowerCase(),
+		popularLocations: r.popularLocations
+	}));
+};
+
+const fetchRanks = async (): Promise<iRank[]> => {
+	const { data } = await axios.get("/api/ranks");
+	return data.ranks.map((r: any) => ({
+		id: r.id,
+		name: r.name,
+		coordinates: { lat: r.lat, lng: r.lng },
+		address: r.address,
+		phone: r.phone || "",
+		region: r.region
+	}));
+};
+
+const fetchTaxis = async (): Promise<iTaxi[]> => {
+	const { data } = await axios.get("/api/taxis");
+	return data.taxis.map((t: any) => ({
+		id: t.id,
+		driver: t.driver ? (t.driver.fullName || `${t.driver.firstName} ${t.driver.lastName}`) : "Unknown",
+		model: t.model,
+		licensePlate: t.licensePlate,
+		capacity: t.capacity,
+		rating: 4.5, // Placeholder
+		status: t.status.toLowerCase(),
+		location: t.currentLocation ? { lat: t.currentLocation.lat, lng: t.currentLocation.lng } : undefined,
+		eta: "5 min", // Placeholder
+		routeId: t.routes?.[0]?.routeId,
+		phone: t.driver?.phone
+	}));
+};
+
+const fetchTrips = async (): Promise<iTrip[]> => {
+	const { data } = await axios.get("/api/trips");
+	return data.map((t: any) => ({
+		id: t.id,
+		route: t.route?.name || "Unknown Route",
+		date: new Date(t.requestTime).toISOString().split('T')[0],
+		time: new Date(t.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+		pickup: t.pickupAddress,
+		dropoff: t.dropoffAddress,
+		driver: t.taxi?.driver ? t.taxi.driver.fullName : "Unknown",
+		vehicle: t.taxi?.model || "Unknown",
+		licensePlate: t.taxi?.licensePlate || "Unknown",
+		fare: `R${t.fare}`,
+		status: t.status.toLowerCase(),
+		paymentMethod: t.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
+		rating: t.rating?.rating
+	}));
+};
+
 export function RideProvider({ children }: { children: React.ReactNode }) {
+	const queryClient = useQueryClient();
+	const { pickupMarker, dropoffMarker } = useMap();
+
 	// State
-	const [tripHistory, setTripHistory] = useState<iTrip[]>([]);
-	const [routes, setRoutes] = useState<iRoute[]>([]);
-	const [ranks, setRanks] = useState<iRank[]>([]);
-	const [taxis, setTaxis] = useState<iTaxi[]>([]);
 	const [activeTrip, setActiveTrip] = useState<iTrip | null>(null);
 	const [selectedRoute, setSelectedRoute] = useState<iRoute | null>(null);
 	const [selectedTaxi, setSelectedTaxi] = useState<iTaxi | null>(null);
 	const [pickupLocation, setPickupLocation] = useState<string>("");
 	const [dropoffLocation, setDropoffLocation] = useState<string>("");
 
-	// Load mock data on mount
-	useEffect(() => {
-		setTripHistory(mockTrips);
-		setRoutes(mockRoutes);
-		setRanks(mockRanks);
-		setTaxis(mockTaxis);
-	}, []);
+	// Queries
+	const { data: routes = [], isLoading: isLoadingRoutes } = useQuery({
+		queryKey: ["routes"],
+		queryFn: fetchRoutes
+	});
+
+	const { data: ranks = [], isLoading: isLoadingRanks } = useQuery({
+		queryKey: ["ranks"],
+		queryFn: fetchRanks
+	});
+
+	const { data: taxis = [], isLoading: isLoadingTaxis } = useQuery({
+		queryKey: ["taxis"],
+		queryFn: fetchTaxis
+	});
+
+	const { data: tripHistory = [], isLoading: isLoadingTrips } = useQuery({
+		queryKey: ["trips"],
+		queryFn: fetchTrips
+	});
+
+	// Mutations
+	const createTripMutation = useMutation({
+		mutationFn: async (tripData: any) => {
+			const { data } = await axios.post("/api/trips", tripData);
+			return data;
+		},
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({ queryKey: ["trips"] });
+
+			// Find the taxi used for this trip
+			const taxi = taxis.find(t => t.id === data.taxiId);
+
+			const newTrip: iTrip = {
+				id: data.id,
+				route: selectedRoute?.name || "Unknown",
+				date: new Date(data.requestTime).toISOString().split('T')[0],
+				time: new Date(data.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+				pickup: data.pickupAddress,
+				dropoff: data.dropoffAddress,
+				driver: taxi?.driver || "Unknown",
+				vehicle: taxi?.model || "Unknown",
+				licensePlate: taxi?.licensePlate || "Unknown",
+				fare: `R${data.fare}`,
+				status: "requested",
+				paymentMethod: "Cash"
+			};
+
+			setActiveTrip(newTrip);
+			addToast({
+				title: "Ride Requested",
+				description: `Your taxi (${taxi?.licensePlate}) is on the way!`,
+				color: "success",
+			});
+		},
+		onError: (error) => {
+			console.error("Error requesting ride:", error);
+			addToast({
+				title: "Error",
+				description: "Failed to request ride. Please try again.",
+				color: "danger",
+			});
+		}
+	});
 
 	// Request a new ride
 	const requestRide = () => {
@@ -66,7 +184,6 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 					"Please ensure you have selected a route, pickup, and drop-off locations.",
 				color: "danger",
 			});
-
 			return;
 		}
 
@@ -74,7 +191,6 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		const availableTaxi = taxis.find((taxi) => {
 			const isAvailable = taxi.status === "available";
 			const servesRoute = taxi.routeId === selectedRoute.id;
-
 			return isAvailable && servesRoute;
 		});
 
@@ -85,7 +201,6 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				description: "Sorry, there are no available taxis for this route at the moment.",
 				color: "danger",
 			});
-
 			return;
 		}
 
@@ -94,58 +209,47 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 
 		if (!rank) {
 			console.error("Invalid rank information");
-
 			return;
 		}
 
-		// Create a new trip
-		const newTrip: iTrip = {
-			id: `trip${Date.now()}`,
-			route: selectedRoute.name,
-			date: new Date().toISOString().split("T")[0],
-			time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-			pickup: pickupLocation || rank.name,
-			dropoff: dropoffLocation,
-			fare: selectedRoute.estimatedFare.split(" - ")[0], // Take the lower fare estimate
-			status: "in-progress",
-			driver: availableTaxi.driver,
-			vehicle: availableTaxi.model,
-			licensePlate: availableTaxi.licensePlate,
-			paymentMethod: "Cash",
-		};
+		// Use actual coordinates from map context if available, otherwise fallback to rank/defaults
+		const pickupLat = pickupMarker?.lat || rank.coordinates.lat;
+		const pickupLng = pickupMarker?.lng || rank.coordinates.lng;
 
-		// Update the active trip and add to history
-		setActiveTrip(newTrip);
-		setTripHistory((prev) => [newTrip, ...prev]);
-		setSelectedTaxi(availableTaxi);
+		// For dropoff, if no marker, we might need to geocode the address string or fail
+		// For now, if no marker, we'll use the rank coordinates as a fallback but this isn't ideal
+		const dropoffLat = dropoffMarker?.lat || rank.coordinates.lat;
+		const dropoffLng = dropoffMarker?.lng || rank.coordinates.lng;
 
-		// Update taxi status
-		setTaxis((prev) =>
-			prev.map((taxi) => (taxi.id === availableTaxi.id ? { ...taxi, status: "busy" } : taxi)),
-		);
+		if (!pickupMarker && !rank) {
+			addToast({
+				title: "Location Error",
+				description: "Could not determine pickup coordinates.",
+				color: "danger",
+			});
+			return;
+		}
+
+		createTripMutation.mutate({
+			routeId: selectedRoute.id,
+			taxiId: availableTaxi.id,
+			rankId: rank.id,
+			pickupAddress: pickupLocation,
+			pickupLat: pickupLat,
+			pickupLng: pickupLng,
+			dropoffAddress: dropoffLocation,
+			dropoffLat: dropoffLat,
+			dropoffLng: dropoffLng,
+			fare: parseFloat(selectedRoute.estimatedFare.replace("R", "")),
+			paymentMethod: "CASH"
+		});
 	};
 
 	// Cancel the current active ride
 	const cancelRide = () => {
-		if (!activeTrip || !selectedTaxi) return;
-
-		// Update the trip status
-		const updatedTrip = { ...activeTrip, status: "cancelled" as const };
-
-		setTripHistory((prev) =>
-			prev.map((trip) => (trip.id === activeTrip.id ? updatedTrip : trip)),
-		);
-
-		// Reset active trip
+		if (!activeTrip) return;
+		// TODO: Implement cancel API endpoint
 		setActiveTrip(null);
-
-		// Update taxi status back to available
-		setTaxis((prev) =>
-			prev.map((taxi) =>
-				taxi.id === selectedTaxi.id ? { ...taxi, status: "available" } : taxi,
-			),
-		);
-
 		setSelectedTaxi(null);
 	};
 
@@ -159,6 +263,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		selectedTaxi,
 		pickupLocation,
 		dropoffLocation,
+		isLoading: isLoadingRoutes || isLoadingRanks || isLoadingTaxis || isLoadingTrips,
 
 		setActiveTrip,
 		setSelectedRoute,

@@ -16,12 +16,6 @@ interface LocationSelectorProps {
 	value: string;
 }
 
-// Popular locations for quick selection
-const POPULAR_LOCATIONS = {
-	pickup: ["Johannesburg CBD", "Sandton City", "Rosebank Mall", "Soweto", "Park Station"],
-	dropoff: ["Pretoria Central", "Mall of Africa", "East Rand Mall", "Fourways Mall", "Midrand"],
-};
-
 const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, value }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const { userLocation, getAddressFromLatLng, setPickupMarker, setDropoffMarker } = useMap();
@@ -37,9 +31,17 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 	}, [value]);
 
 	// Handler for popular location selection
-	const handlePopularLocation = (location: string) => {
-		setInputValue(location);
-		onSelect(location);
+	const handlePopularLocation = (location: any) => {
+		const fullAddress = `${location.name} - ${location.address}`;
+
+		setInputValue(fullAddress);
+		onSelect(fullAddress);
+
+		if (type === "pickup") {
+			setPickupMarker({ lat: location.lat, lng: location.lng });
+		} else {
+			setDropoffMarker({ lat: location.lat, lng: location.lng });
+		}
 	};
 
 	// Handler for rank selection
@@ -176,16 +178,16 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 				<p className="text-xs text-default-500 mb-2">Popular locations:</p>
 				<div className="flex flex-wrap gap-2">
 					{/* Popular locations */}
-					{POPULAR_LOCATIONS[type].map((location) => (
+					{selectedRoute?.popularLocations?.map((location) => (
 						<Chip
-							key={location}
+							key={location.id}
 							className="cursor-pointer"
 							color={type === "pickup" ? "primary" : "danger"}
 							radius="sm"
 							size="sm"
 							variant="flat"
 							onClick={() => handlePopularLocation(location)}>
-							{location}
+							{location.name}
 						</Chip>
 					))}
 

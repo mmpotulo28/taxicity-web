@@ -1,0 +1,13 @@
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
+  - vue-demi
+
+onlyBuiltDependencies:
+  - '@clerk/shared'
+  - '@heroui/shared-utils'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@sentry/cli'
+  - '@tailwindcss/oxide'
+  - prisma
