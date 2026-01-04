@@ -22,10 +22,11 @@ const UpdateRankSchema = z.object({
 });
 
 // GET /api/ranks/[id] - Get specific rank
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
+		const { id } = await params;
 		const rank = await prisma.rank.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				sourceRoutes: {
 					select: {
@@ -102,9 +103,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/ranks/[id] - Update rank (admin only)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -122,7 +124,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 		// Check if rank exists
 		const existingRank = await prisma.rank.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!existingRank) {
@@ -130,7 +132,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		const rank = await prisma.rank.update({
-			where: { id: params.id },
+			where: { id },
 			data: parsed.data,
 			include: {
 				_count: {
@@ -152,9 +154,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/ranks/[id] - Delete rank (admin only)
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -164,7 +167,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 		// Check if rank exists and has dependencies
 		const existingRank = await prisma.rank.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				_count: {
 					select: {
@@ -189,7 +192,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		await prisma.rank.delete({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		return NextResponse.json({ message: "Rank deleted successfully" });

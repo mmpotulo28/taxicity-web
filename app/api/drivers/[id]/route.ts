@@ -24,16 +24,17 @@ const UpdateDriverSchema = z.object({
 });
 
 // GET /api/drivers/[id] - Get specific driver
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const driver = await prisma.driver.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				taxis: {
 					include: {
@@ -159,9 +160,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/drivers/[id] - Update driver (admin only)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -179,7 +181,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 		// Check if driver exists
 		const existingDriver = await prisma.driver.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!existingDriver) {
@@ -223,7 +225,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		const driver = await prisma.driver.update({
-			where: { id: params.id },
+			where: { id },
 			data: updateData,
 			select: {
 				id: true,
@@ -250,9 +252,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/drivers/[id] - Delete driver (admin only)
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -262,7 +265,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 		// Check if driver exists and has taxis or active trips
 		const existingDriver = await prisma.driver.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				taxis: {
 					include: {
@@ -294,7 +297,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		await prisma.driver.delete({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		return NextResponse.json({ message: "Driver deleted successfully" });

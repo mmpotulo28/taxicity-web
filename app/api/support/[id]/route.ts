@@ -19,9 +19,10 @@ const UpdateSupportTicketSchema = z.object({
 });
 
 // GET /api/support/[id] - Get specific support ticket with messages
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 		const role = (user.publicMetadata.role as string) || "USER";
 
 		const ticket = await prisma.supportTicket.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				messages: {
 					orderBy: { createdAt: "asc" },
@@ -99,9 +100,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/support/[id] - Update support ticket (staff only)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -127,7 +129,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 		// Check if ticket exists
 		const existingTicket = await prisma.supportTicket.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!existingTicket) {
@@ -158,7 +160,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		// resolution is ignored for now as it's not in schema
 
 		const updatedTicket = await prisma.supportTicket.update({
-			where: { id: params.id },
+			where: { id },
 			data: {
 				...updateData,
 				updatedAt: new Date(),
@@ -208,9 +210,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // POST /api/support/[id] - Add message to support ticket
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -231,7 +234,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
 		// Check if ticket exists
 		const ticket = await prisma.supportTicket.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!ticket) {
@@ -251,7 +254,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 		// Create the message
 		const message = await prisma.supportMessage.create({
 			data: {
-				ticketId: params.id,
+				ticketId: id,
 				senderId: userId,
 				message: parsed.data.message,
 				attachments: parsed.data.attachments || [],
@@ -262,12 +265,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 		// Update ticket status if needed (e.g., reopen if closed)
 		if (ticket.status === "RESOLVED" || ticket.status === "CLOSED") {
 			await prisma.supportTicket.update({
-				where: { id: params.id },
+				where: { id },
 				data: { status: "OPEN", updatedAt: new Date() },
 			});
 		} else {
 			await prisma.supportTicket.update({
-				where: { id: params.id },
+				where: { id },
 				data: { updatedAt: new Date() },
 			});
 		}

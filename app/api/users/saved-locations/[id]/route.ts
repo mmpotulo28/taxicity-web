@@ -14,9 +14,10 @@ const UpdateSavedLocationSchema = z.object({
 });
 
 // GET /api/users/saved-locations/[id] - Get specific saved location
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 		const location = await prisma.savedLocation.findFirst({
 			where: {
-				id: params.id,
+				id,
 				userId, // Ensure user can only access their own locations
 			},
 		});
@@ -42,9 +43,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/users/saved-locations/[id] - Update saved location
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -61,7 +63,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		// Verify location belongs to user
 		const existingLocation = await prisma.savedLocation.findFirst({
 			where: {
-				id: params.id,
+				id,
 				userId,
 			},
 		});
@@ -71,7 +73,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		const location = await prisma.savedLocation.update({
-			where: { id: params.id },
+			where: { id },
 			data: parsed.data,
 		});
 
@@ -84,9 +86,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/users/saved-locations/[id] - Delete saved location
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -95,7 +98,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		// Verify location belongs to user
 		const existingLocation = await prisma.savedLocation.findFirst({
 			where: {
-				id: params.id,
+				id,
 				userId,
 			},
 		});
@@ -105,7 +108,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		await prisma.savedLocation.delete({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		return NextResponse.json({ message: "Location deleted successfully" });

@@ -24,10 +24,11 @@ const UpdateLocationSchema = z.object({
 });
 
 // GET /api/taxis/[id] - Get specific taxi
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
+		const { id } = await params;
 		const taxi = await prisma.taxi.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				driver: {
 					select: {
@@ -159,9 +160,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/taxis/[id] - Update taxi (admin only)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -179,7 +181,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 		// Check if taxi exists
 		const existingTaxi = await prisma.taxi.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!existingTaxi) {
@@ -187,7 +189,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		const taxi = await prisma.taxi.update({
-			where: { id: params.id },
+			where: { id },
 			data: parsed.data,
 			include: {
 				driver: {
@@ -212,9 +214,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/taxis/[id] - Delete taxi (admin only)
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -224,7 +227,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 		// Check if taxi exists and has active trips
 		const existingTaxi = await prisma.taxi.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				trips: {
 					where: {
@@ -245,7 +248,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		await prisma.taxi.delete({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		return NextResponse.json({ message: "Taxi deleted successfully" });

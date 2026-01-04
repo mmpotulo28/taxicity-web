@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
+		const { id } = await params;
 		const body = await req.json();
 		const { taxiId } = body;
 
@@ -11,7 +12,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 		}
 
 		const trip = await prisma.trip.update({
-			where: { id: params.id },
+			where: { id },
 			data: {
 				status: "ACCEPTED",
 				taxiId: taxiId,

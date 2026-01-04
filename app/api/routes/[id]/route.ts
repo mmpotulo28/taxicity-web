@@ -15,10 +15,11 @@ const UpdateRouteSchema = z.object({
 });
 
 // GET /api/routes/[id] - Get specific route
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
+		const { id } = await params;
 		const route = await prisma.route.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				sourceRank: {
 					select: {
@@ -85,9 +86,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/routes/[id] - Update route (admin only)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -105,7 +107,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 		// Check if route exists
 		const existingRoute = await prisma.route.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!existingRoute) {
@@ -113,7 +115,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		const route = await prisma.route.update({
-			where: { id: params.id },
+			where: { id },
 			data: parsed.data,
 			include: {
 				sourceRank: {
@@ -146,9 +148,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/routes/[id] - Delete route (admin only)
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -158,7 +161,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 		// Check if route exists
 		const existingRoute = await prisma.route.findUnique({
-			where: { id: params.id },
+			where: { id },
 			include: {
 				_count: {
 					select: {
@@ -179,7 +182,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 		}
 
 		await prisma.route.delete({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		return NextResponse.json({ message: "Route deleted successfully" });

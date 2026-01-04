@@ -11,9 +11,10 @@ const UpdateReportSchema = z.object({
 });
 
 // GET /api/reports/[id] - Get specific report
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 		const role = (user.publicMetadata.role as string) || "USER";
 
 		const report = await prisma.report.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!report) {
@@ -81,9 +82,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/reports/[id] - Update report (admin/support only)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -109,7 +111,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 		// Check if report exists
 		const existingReport = await prisma.report.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!existingReport) {
@@ -141,7 +143,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 		}
 
 		const updatedReport = await prisma.report.update({
-			where: { id: params.id },
+			where: { id },
 			data: updateData,
 		});
 
@@ -189,9 +191,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/reports/[id] - Delete report (admin only)
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
+		const { id } = await params;
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -209,7 +212,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 		// Check if report exists
 		const existingReport = await prisma.report.findUnique({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		if (!existingReport) {
@@ -218,7 +221,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
 		// Delete the report
 		await prisma.report.delete({
-			where: { id: params.id },
+			where: { id },
 		});
 
 		return NextResponse.json({ message: "Report deleted successfully" });

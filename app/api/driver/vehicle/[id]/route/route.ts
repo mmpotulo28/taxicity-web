@@ -8,14 +8,14 @@ const UpdateRouteSchema = z.object({
 	permitDoc: z.string().url(),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const taxiId = params.id;
+		const { id: taxiId } = await params;
 		const body = await req.json();
 
 		const validationResult = UpdateRouteSchema.safeParse(body);
