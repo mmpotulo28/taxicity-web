@@ -37,6 +37,9 @@ const tabs = [
 
 const MobileTabs = () => {
 	const pathname = usePathname();
+
+	if (pathname?.startsWith("/driver")) return null;
+
 	const [currentPage, setCurrentPage] = useState<
 		"home" | "settings" | "trip-history" | "support" | "route"
 	>("home");
@@ -52,7 +55,7 @@ const MobileTabs = () => {
 
 		handleRouteChange(pathname || "");
 
-		return () => {};
+		return () => { };
 	}, [pathname]);
 
 	return (

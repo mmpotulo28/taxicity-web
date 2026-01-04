@@ -63,10 +63,13 @@ model Driver {
   profileImage     String?
   licenseNumber    String           @unique
   licenseExpiry    DateTime
+  licenseImageFront String?
+  licenseImageBack  String?
   dateOfBirth      DateTime?
   address          String?
   status           DriverStatus     @default(ACTIVE)
   verificationDate DateTime?
+  userId           String?          @unique // Link to Clerk User ID
   taxis            Taxi[]
   reports          Report[]
   tripRatings      TripRating[]
@@ -88,6 +91,7 @@ model Taxi {
   status          TaxiStatus     @default(AVAILABLE)
   registrationDoc String? // URL to registration document
   insuranceDoc    String? // URL to insurance document
+  permitDoc       String? // URL to route permit/operating license
   driver          Driver         @relation(fields: [driverId], references: [id])
   driverId        String
   taxiRanks       TaxiRank[]

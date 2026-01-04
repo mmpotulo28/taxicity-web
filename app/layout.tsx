@@ -8,6 +8,7 @@ import { Main } from "./Main";
 import { fontSans } from "@/lib/config/fonts";
 import { siteConfig } from "@/lib/config/site";
 import MobileTabs from "@/components/MobileTabs";
+import DriverTabs from "@/components/DriverTabs";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					<div className="flex flex-col h-screen  mx-auto text-foreground bg-background">
 						<Main>{children}</Main>
 						<MobileTabs />
+						<DriverTabs />
 					</div>
 				</Providers>
 			</body>

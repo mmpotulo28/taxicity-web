@@ -318,6 +318,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		if (!activeTrip) return;
 		try {
 			await axios.patch(`/api/trips/${activeTrip.id}/status`, { status });
+			// Invalidate trips query to update history
+			queryClient.invalidateQueries({ queryKey: ["trips"] });
 		} catch (error) {
 			console.error("Failed to update trip status", error);
 			addToast({

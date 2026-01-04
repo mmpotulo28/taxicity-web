@@ -16,8 +16,10 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 
 const Settings: React.FC = () => {
+	const router = useRouter();
 	const { setTheme, theme } = useTheme();
 	const [activeTab, setActiveTab] = useState("profile");
 	const [profileForm, setProfileForm] = useState({
@@ -129,6 +131,25 @@ const Settings: React.FC = () => {
 									color="primary"
 									onPress={handleSaveProfile}>
 									Save Changes
+								</Button>
+							</div>
+
+							<div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-900/50">
+								<div className="flex items-center gap-3 mb-3">
+									<div className="p-2 bg-primary text-white rounded-lg">
+										<Icon icon="lucide:car-taxi-front" className="text-xl" />
+									</div>
+									<div>
+										<h3 className="font-bold text-primary-900 dark:text-primary-100">Driver Mode</h3>
+										<p className="text-xs text-primary-600 dark:text-primary-300">Earn money by driving with TaxiCity</p>
+									</div>
+								</div>
+								<Button
+									className="w-full font-semibold"
+									color="primary"
+									onPress={() => router.push("/driver")}
+								>
+									Switch to Driver App
 								</Button>
 							</div>
 
