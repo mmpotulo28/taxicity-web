@@ -174,7 +174,7 @@ export function DriverConsole() {
 													<div>
 														<span className="font-semibold text-sm">New Passenger</span>
 														<div className="flex items-center gap-1 text-xs text-default-400 mt-0.5">
-															<Icon icon="lucide:clock" size={12} />
+															<Icon icon="lucide:clock" width={12} />
 															<span>2 mins away</span>
 														</div>
 													</div>
@@ -314,7 +314,7 @@ function PassengerCard({
 							</Chip>
 						</div>
 						<div className="flex items-center gap-1 text-xs text-default-500">
-							<Icon icon="lucide:map-pin" size={10} />
+							<Icon icon="lucide:map-pin" width={10} />
 							<span className="truncate">{passenger.dropoffAddress}</span>
 						</div>
 					</div>
@@ -327,7 +327,7 @@ function PassengerCard({
 							onPress={action.action}
 							isIconOnly
 							className="min-w-[32px] w-8 h-8">
-							<Icon icon={action.icon} size={16} />
+							<Icon icon={action.icon} width={16} />
 						</Button>
 					)}
 				</div>
