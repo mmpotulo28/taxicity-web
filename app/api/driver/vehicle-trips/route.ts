@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
 			include: {
 				route: true,
 				taxi: true,
+				passengers: true,
 			},
 		});
 

@@ -220,6 +220,10 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
  const acceptRequest = async (tripId: string) => {
   if (!activeVehicleTrip) return;
+
+  // Find the request to get user info
+  const request = incomingRequests.find((r) => r.id === tripId);
+
   try {
    const res = await fetch(`/api/driver/vehicle-trips/${activeVehicleTrip.id}/passengers/${tripId}/accept`, {
     method: "POST",
@@ -229,9 +233,11 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Update local state
     setActiveVehicleTrip((prev) => {
      if (!prev) return null;
+     // Merge user info from request if available
+     const tripWithUser = request?.user ? { ...trip, user: request.user } : trip;
      return {
       ...prev,
-      passengers: [...prev.passengers, trip],
+      passengers: [...prev.passengers, tripWithUser],
      };
     });
     setIncomingRequests((prev) => prev.filter((r) => r.id !== tripId));
@@ -272,7 +278,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
      if (!prev) return null;
      return {
       ...prev,
-      passengers: prev.passengers.map((p) => (p.id === tripId ? updatedTrip : p)),
+      passengers: prev.passengers.map((p) => (p.id === tripId ? { ...p, ...updatedTrip } : p)),
      };
     });
    }
