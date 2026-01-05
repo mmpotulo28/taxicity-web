@@ -24,22 +24,19 @@ export async function POST(req: NextRequest) {
 
 		const { lat, lng, heading, speed } = parse.data;
 
-		// 1. Find the driver and their active taxi
-		const driver = await prisma.driver.findUnique({
-			where: { userId },
-			include: {
-				taxis: {
-					where: { status: { in: ["ACTIVE", "BUSY", "ON_ROUTE"] } },
-					take: 1,
-				},
+		// 1. Find the active taxi for the driver
+		const taxi = await prisma.taxi.findFirst({
+			where: {
+				driver: { userId },
+				status: { in: ["AVAILABLE", "BUSY"] },
 			},
 		});
 
-		if (!driver || !driver.taxis[0]) {
+		if (!taxi) {
 			return NextResponse.json({ error: "No active taxi found" }, { status: 404 });
 		}
 
-		const taxiId = driver.taxis[0].id;
+		const taxiId = taxi.id;
 
 		// 2. Update Taxi Location
 		// We use upsert to either create a new location record or update the existing one for this taxi

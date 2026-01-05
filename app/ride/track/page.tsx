@@ -32,6 +32,8 @@ const TrackRide: React.FC = () => {
 		if (isRestoring) return;
 		if (!activeTrip) {
 			router.push("/");
+		} else if (activeTrip.status === "completed") {
+			router.push("/ride/trip/details");
 		}
 	}, [activeTrip, router, isRestoring]);
 
