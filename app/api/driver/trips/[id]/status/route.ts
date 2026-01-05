@@ -51,6 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 		} else if (status === "COMPLETED") {
 			updateData.dropoffTime = new Date();
 			updateData.paymentStatus = "PAID"; // Assume cash paid on completion for now
+			// Note: This only completes the passenger's trip, not the vehicle trip.
 		}
 
 		// Update trip

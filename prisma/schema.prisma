@@ -74,6 +74,7 @@ model Driver {
   reports          Report[]
   tripRatings      TripRating[]
   favoriteOfUsers  FavoriteDriver[]
+  vehicleTrips     VehicleTrip[]
 
   @@map("drivers")
 }
@@ -101,6 +102,7 @@ model Taxi {
   currentLocation TaxiLocation?  @relation("current_location")
   locationHistory TaxiLocation[] @relation("history")
   maintenanceLog  Maintenance[]
+  vehicleTrips    VehicleTrip[]
 
   @@map("taxis")
 }
@@ -191,6 +193,7 @@ model Route {
   trips             Trip[]
   userPreferences   RoutePreference[]
   popularLocations  PopularLocation[]
+  vehicleTrips      VehicleTrip[]
 
   @@map("routes")
 }
@@ -279,8 +282,29 @@ model Trip {
   cancelReason   String?
   rating         TripRating?
   events         TripEvent[]
+  vehicleTrip    VehicleTrip?  @relation(fields: [vehicleTripId], references: [id])
+  vehicleTripId  String?
 
   @@map("trips")
+}
+
+model VehicleTrip {
+  id          String            @id @default(uuid())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  driver      Driver            @relation(fields: [driverId], references: [id])
+  driverId    String
+  taxi        Taxi              @relation(fields: [taxiId], references: [id])
+  taxiId      String
+  route       Route             @relation(fields: [routeId], references: [id])
+  routeId     String
+  status      VehicleTripStatus @default(SCHEDULED)
+  startTime   DateTime?
+  endTime     DateTime?
+  capacity    Int
+  passengers  Trip[]
+
+  @@map("vehicle_trips")
 }
 
 model TripRating {
@@ -480,4 +504,12 @@ enum TicketStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+enum VehicleTripStatus {
+  SCHEDULED
+  BOARDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }

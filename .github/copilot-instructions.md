@@ -13,6 +13,11 @@
 - **API routes:** Place under `/app/api/` using RESTful conventions (e.g., `/api/trips`, `/api/taxis`).
     - Each route: validate input (Zod or similar), authenticate with Clerk, use Prisma for DB, return only necessary data.
     - Example: see `docs/backend-integration-plan.md` and `/app/api/trips/route.ts`.
+- **Shared Vehicle Model:**
+    - The system uses a "Shared Vehicle" (minibus) model, not a 1-to-1 ride-hailing model.
+    - **VehicleTrip:** Represents the driver's run on a route.
+    - **Trip:** Represents a passenger's journey on a VehicleTrip.
+    - See `docs/shared-vehicle-flow.md` for detailed logic.
 - **Prisma:**
     - Schema: `/prisma/schema.prisma`
     - Generated client: `/lib/prisma/generated/`

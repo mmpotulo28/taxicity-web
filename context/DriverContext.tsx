@@ -37,22 +37,39 @@ export interface Trip {
  dropoffAddress: string;
  fare: number;
  status: string;
- distance?: string; // Not in DB, calculated or mocked
+ distance?: string;
  user?: {
   firstName: string;
   rating?: number;
  };
 }
 
+export interface VehicleTrip {
+ id: string;
+ status: string;
+ capacity: number;
+ passengers: Trip[];
+ route: {
+  id: string;
+  name: string;
+ };
+ taxi: {
+  id: string;
+  licensePlate: string;
+ };
+}
+
 interface DriverContextType {
  driver: Driver | null;
  isOnline: boolean;
- activeRequest: Trip | null;
+ activeVehicleTrip: VehicleTrip | null;
  incomingRequests: Trip[];
  isLoading: boolean;
  toggleOnline: () => Promise<void>;
+ startShift: (taxiId: string, routeId: string) => Promise<void>;
+ endShift: () => Promise<void>;
  acceptRequest: (tripId: string) => Promise<void>;
- updateTripStatus: (tripId: string, status: string) => Promise<void>;
+ updatePassengerStatus: (tripId: string, status: string) => Promise<void>;
  refreshRequests: () => Promise<void>;
  refreshDriver: () => Promise<void>;
 }
@@ -63,7 +80,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
  const { user, isLoaded } = useUser();
  const [driver, setDriver] = useState<Driver | null>(null);
  const [isOnline, setIsOnline] = useState(false);
- const [activeRequest, setActiveRequest] = useState<Trip | null>(null);
+ const [activeVehicleTrip, setActiveVehicleTrip] = useState<VehicleTrip | null>(null);
  const [incomingRequests, setIncomingRequests] = useState<Trip[]>([]);
  const [isLoading, setIsLoading] = useState(true);
 
@@ -74,10 +91,6 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
    if (res.ok) {
     const data = await res.json();
     setDriver(data);
-    // Restore online status if persisted or from DB
-    if (data.status === "ACTIVE") {
-     // setIsOnline(true); // Maybe don't auto-online
-    }
    }
   } catch (error) {
    console.error("Failed to fetch driver:", error);
@@ -86,23 +99,47 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }
  }, [user]);
 
+ const fetchActiveVehicleTrip = React.useCallback(async () => {
+  if (!driver) return;
+  try {
+   const res = await fetch("/api/driver/vehicle-trips");
+   if (res.ok) {
+    const trips = await res.json();
+    // Assuming we only handle one active trip at a time for now
+    const active = trips.find((t: VehicleTrip) => ["BOARDING", "IN_PROGRESS"].includes(t.status));
+    setActiveVehicleTrip(active || null);
+    if (active) setIsOnline(true);
+   }
+  } catch (error) {
+   console.error("Failed to fetch active vehicle trip:", error);
+  }
+ }, [driver]);
+
  // Fetch driver profile
  useEffect(() => {
   if (!isLoaded || !user) return;
   fetchDriver();
  }, [isLoaded, user, fetchDriver]);
 
- // Poll for requests when online
+ // Fetch active vehicle trip when driver is loaded
+ useEffect(() => {
+  if (driver) {
+   fetchActiveVehicleTrip();
+  }
+ }, [driver, fetchActiveVehicleTrip]);
+
+ // Poll for requests when online (active vehicle trip)
  useEffect(() => {
   let interval: NodeJS.Timeout;
 
   const fetchRequests = async () => {
-   if (!isOnline || !driver) return;
+   if (!activeVehicleTrip) return;
    try {
     const res = await fetch("/api/driver/requests");
     if (res.ok) {
      const data = await res.json();
-     // Filter out active request if any
+     // Filter requests relevant to current route
+     // Note: API should ideally filter this, but we can double check
      setIncomingRequests(data);
     }
    } catch (error) {
@@ -110,7 +147,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
    }
   };
 
-  if (isOnline) {
+  if (activeVehicleTrip) {
    fetchRequests(); // Initial fetch
    interval = setInterval(fetchRequests, 5000); // Poll every 5s
   } else {
@@ -118,38 +155,89 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   return () => clearInterval(interval);
- }, [isOnline, driver]);
+ }, [activeVehicleTrip]);
 
  const toggleOnline = async () => {
-  const newStatus = !isOnline;
-  setIsOnline(newStatus);
+  // This is now mostly controlled by start/end shift
+  // But we can keep it for "Break" mode if needed
+  setIsOnline(!isOnline);
+ };
 
-  // Update status in DB
-  if (driver) {
-   try {
-    await fetch("/api/driver/me", {
-     method: "PATCH",
-     headers: { "Content-Type": "application/json" },
-     body: JSON.stringify({ status: newStatus ? "ACTIVE" : "INACTIVE" }),
+ const startShift = async (taxiId: string, routeId: string) => {
+  try {
+   const res = await fetch("/api/driver/vehicle-trips", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ taxiId, routeId }),
+   });
+
+   if (res.ok) {
+    const trip = await res.json();
+    setActiveVehicleTrip(trip);
+    setIsOnline(true);
+    addToast({
+     title: "Shift Started",
+     description: "You are now active on the route.",
+     color: "success",
     });
-   } catch (error) {
-    console.error("Failed to update status:", error);
+   } else {
+    const error = await res.json();
+    throw new Error(error.error);
    }
+  } catch (error) {
+   const message = error instanceof Error ? error.message : "Failed to start shift";
+   addToast({
+    title: "Error",
+    description: message,
+    color: "danger",
+   });
+   throw error;
+  }
+ };
+
+ const endShift = async () => {
+  if (!activeVehicleTrip) return;
+  try {
+   const res = await fetch(`/api/driver/vehicle-trips/${activeVehicleTrip.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "COMPLETED" }),
+   });
+
+   if (res.ok) {
+    setActiveVehicleTrip(null);
+    setIsOnline(false);
+    addToast({
+     title: "Shift Ended",
+     description: "Your run has been completed.",
+     color: "success",
+    });
+   }
+  } catch (error) {
+   console.error("Failed to end shift:", error);
   }
  };
 
  const acceptRequest = async (tripId: string) => {
+  if (!activeVehicleTrip) return;
   try {
-   const res = await fetch(`/api/driver/trips/${tripId}/accept`, {
+   const res = await fetch(`/api/driver/vehicle-trips/${activeVehicleTrip.id}/passengers/${tripId}/accept`, {
     method: "POST",
    });
    if (res.ok) {
     const trip = await res.json();
-    setActiveRequest(trip);
+    // Update local state
+    setActiveVehicleTrip((prev) => {
+     if (!prev) return null;
+     return {
+      ...prev,
+      passengers: [...prev.passengers, trip],
+     };
+    });
     setIncomingRequests((prev) => prev.filter((r) => r.id !== tripId));
     addToast({
-     title: "Trip Accepted",
-     description: "You have successfully accepted the trip.",
+     title: "Passenger Accepted",
+     description: "Passenger added to manifest.",
      color: "success",
     });
    } else {
@@ -170,7 +258,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }
  };
 
- const updateTripStatus = async (tripId: string, status: string) => {
+ const updatePassengerStatus = async (tripId: string, status: string) => {
   try {
    const res = await fetch(`/api/driver/trips/${tripId}/status`, {
     method: "POST",
@@ -179,19 +267,22 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
    });
    if (res.ok) {
     const updatedTrip = await res.json();
-    if (status === "COMPLETED" || status === "CANCELLED") {
-     setActiveRequest(null);
-    } else {
-     setActiveRequest(updatedTrip);
-    }
+    // Update local state
+    setActiveVehicleTrip((prev) => {
+     if (!prev) return null;
+     return {
+      ...prev,
+      passengers: prev.passengers.map((p) => (p.id === tripId ? updatedTrip : p)),
+     };
+    });
    }
   } catch (error) {
-   console.error("Failed to update trip status:", error);
+   console.error("Failed to update passenger status:", error);
   }
  };
 
  const refreshRequests = async () => {
-  if (!isOnline) return;
+  if (!activeVehicleTrip) return;
   const res = await fetch("/api/driver/requests");
   if (res.ok) {
    const data = await res.json();
@@ -204,12 +295,14 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
    value={{
     driver,
     isOnline,
-    activeRequest,
+    activeVehicleTrip,
     incomingRequests,
     isLoading,
     toggleOnline,
+    startShift,
+    endShift,
     acceptRequest,
-    updateTripStatus,
+    updatePassengerStatus,
     refreshRequests,
     refreshDriver: fetchDriver,
    }}

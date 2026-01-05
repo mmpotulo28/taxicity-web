@@ -64,12 +64,24 @@ export async function GET(req: NextRequest) {
 
 		// Filter by route
 		if (routeId) {
-			where.routes = {
-				some: {
-					routeId,
-					isActive: true,
+			where.OR = [
+				{
+					vehicleTrips: {
+						some: {
+							routeId,
+							status: { in: ["BOARDING", "IN_PROGRESS"] },
+						},
+					},
 				},
-			};
+				{
+					routes: {
+						some: {
+							routeId,
+							isActive: true,
+						},
+					},
+				},
+			];
 		}
 
 		// Filter by rank
@@ -120,6 +132,22 @@ export async function GET(req: NextRequest) {
 							},
 						},
 					},
+					vehicleTrips: {
+						where: {
+							status: { in: ["BOARDING", "IN_PROGRESS"] },
+						},
+						include: {
+							route: {
+								select: {
+									id: true,
+									name: true,
+									baseFare: true,
+									estimatedDuration: true,
+								},
+							},
+						},
+						take: 1,
+					},
 					_count: {
 						select: {
 							trips: true,
@@ -133,8 +161,27 @@ export async function GET(req: NextRequest) {
 			prisma.taxi.count({ where }),
 		]);
 
+		const transformedTaxis = taxis.map((taxi) => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const activeTrip = (taxi as any).vehicleTrips?.[0];
+			if (activeTrip) {
+				return {
+					...taxi,
+					status: "AVAILABLE", // Override status for frontend
+					routes: [
+						{
+							routeId: activeTrip.routeId,
+							isActive: true,
+							route: activeTrip.route,
+						},
+					],
+				};
+			}
+			return taxi;
+		});
+
 		return NextResponse.json({
-			taxis,
+			taxis: transformedTaxis,
 			pagination: {
 				page,
 				limit,

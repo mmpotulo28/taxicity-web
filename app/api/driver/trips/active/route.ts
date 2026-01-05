@@ -21,8 +21,8 @@ export async function GET(req: NextRequest) {
 
 		const taxiIds = driver.taxis.map((t: { id: string }) => t.id);
 
-		// Fetch active trip for this driver's taxis
-		const activeTrip = await prisma.trip.findFirst({
+		// Fetch active trips for this driver's taxis
+		const activeTrips = await prisma.trip.findMany({
 			where: {
 				taxiId: { in: taxiIds },
 				status: { in: ["ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS"] },
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 			},
 		});
 
-		return NextResponse.json({ trip: activeTrip });
+		return NextResponse.json({ trips: activeTrips });
 	} catch (error) {
 		console.error("Error fetching active trip:", error);
 		return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

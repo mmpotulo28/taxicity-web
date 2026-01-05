@@ -52,7 +52,7 @@ const RouteSelector: React.FC = () => {
 		}
 
 		return filtered;
-	}, [searchQuery, selectedLetter, sortBy]);
+	}, [routes, searchQuery, selectedLetter, sortBy]);
 
 	return (
 		<motion.div
@@ -76,8 +76,8 @@ const RouteSelector: React.FC = () => {
 						<button
 							key={letter}
 							className={`w-7 h-7 rounded text-xs font-bold transition ${selectedLetter === letter
-									? "bg-primary text-white"
-									: "bg-default-100 text-default-500 hover:bg-primary/10"
+								? "bg-primary text-white"
+								: "bg-default-100 text-default-500 hover:bg-primary/10"
 								}`}
 							type="button"
 							onClick={() =>

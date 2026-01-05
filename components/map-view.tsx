@@ -156,7 +156,7 @@ export const MapView: React.FC<MapViewProps> = ({
 		[mapRef, setIsMapLoaded],
 	);
 
-	const mapContainerStyle = fullscreen
+	const mapContainerStyle = useMemo(() => (fullscreen
 		? {
 			position: "absolute" as const,
 			top: 0,
@@ -171,7 +171,7 @@ export const MapView: React.FC<MapViewProps> = ({
 			width: "100%",
 			height: height,
 			position: "relative" as const,
-		};
+		}), [fullscreen, zIndex, height]);
 
 	// Render map
 	const renderMap = useCallback(() => {
@@ -322,6 +322,11 @@ export const MapView: React.FC<MapViewProps> = ({
 		taxis,
 		userLocation,
 		modalMap,
+		directions,
+		directionsError,
+		routePoints,
+		selectedRoute,
+		showRoute,
 	]);
 
 	if (loadError) return <div className="text-danger">Failed to load maps</div>;
