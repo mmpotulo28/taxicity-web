@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Select, SelectItem } from "@heroui/select";
@@ -26,6 +26,59 @@ export function DriverConsole() {
 	const [selectedTaxi, setSelectedTaxi] = useState("");
 	const [selectedRoute, setSelectedRoute] = useState("");
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+	// Calculate sorted passengers and map stops
+	const { sortedPassengers, mapStops, routePoints } = useMemo(() => {
+		if (!activeVehicleTrip) return { sortedPassengers: [], mapStops: [], routePoints: [] };
+
+		const points = activeVehicleTrip.route.popularLocations || [];
+		const stops: { lat: number; lng: number; type: 'pickup' | 'dropoff'; label: string; sortIndex: number }[] = [];
+
+		// Sort passengers by next stop
+		const sorted = [...activeVehicleTrip.passengers].sort((a, b) => {
+			const getNextStopIndex = (p: Trip) => {
+				// If completed, push to bottom
+				if (p.status === 'COMPLETED') return Infinity;
+
+				const targetLat = p.status === 'IN_PROGRESS' ? p.dropoffLat : p.pickupLat;
+				const targetLng = p.status === 'IN_PROGRESS' ? p.dropoffLng : p.pickupLng;
+
+				let minIdx = 0;
+				let minDist = Infinity;
+				points.forEach((pt, idx) => {
+					const d = Math.hypot(pt.lat - targetLat, pt.lng - targetLng);
+					if (d < minDist) { minDist = d; minIdx = idx; }
+				});
+				return minIdx;
+			};
+
+			return getNextStopIndex(a) - getNextStopIndex(b);
+		});
+
+		// Generate map markers for stops
+		activeVehicleTrip.passengers.forEach(p => {
+			if (p.status === 'ACCEPTED' || p.status === 'ARRIVED_AT_PICKUP') {
+				stops.push({
+					lat: p.pickupLat,
+					lng: p.pickupLng,
+					type: 'pickup',
+					label: `Pickup: ${p.user?.firstName}`,
+					sortIndex: -1 // Not used for sorting here
+				});
+			}
+			if (['ACCEPTED', 'ARRIVED_AT_PICKUP', 'IN_PROGRESS'].includes(p.status)) {
+				stops.push({
+					lat: p.dropoffLat,
+					lng: p.dropoffLng,
+					type: 'dropoff',
+					label: `Dropoff: ${p.user?.firstName}`,
+					sortIndex: -1
+				});
+			}
+		});
+
+		return { sortedPassengers: sorted, mapStops: stops, routePoints: points };
+	}, [activeVehicleTrip]);
 
 	if (!driver) return null;
 
@@ -103,7 +156,12 @@ export function DriverConsole() {
 		<div className="relative h-[calc(100vh-64px)] w-full overflow-hidden flex flex-col lg:flex-row">
 			{/* Map Layer */}
 			<div className="absolute inset-0 lg:relative lg:flex-grow lg:h-full z-0">
-				<MapView />
+				<MapView
+					showRoute={true}
+					customRoutePoints={routePoints}
+					passengerStops={mapStops}
+					isDriver={true}
+				/>
 			</div>
 
 			{/* Overlay / Sidebar Panel */}
@@ -232,7 +290,7 @@ export function DriverConsole() {
 					{/* Passenger Manifest */}
 					<div className="space-y-3">
 						<h3 className="font-semibold text-sm text-default-600">Passenger Manifest</h3>
-						{activeVehicleTrip.passengers.length === 0 ? (
+						{sortedPassengers.length === 0 ? (
 							<div className="text-center py-8 border-2 border-dashed border-default-200 rounded-lg">
 								<Icon
 									icon="lucide:users"
@@ -242,7 +300,7 @@ export function DriverConsole() {
 							</div>
 						) : (
 							<div className="space-y-2">
-								{activeVehicleTrip.passengers.map((p) => (
+								{sortedPassengers.map((p) => (
 									<PassengerCard
 										key={p.id}
 										passenger={p}

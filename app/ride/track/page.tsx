@@ -17,13 +17,15 @@ import TripModal from "@/components/TripModal";
 
 const TrackRide: React.FC = () => {
 	const router = useRouter();
-	const { activeTrip, selectedRoute, cancelRide, startRide, completeRide, isRestoring, shareRide } = useRide();
+	const { activeTrip, selectedRoute, cancelRide, startRide, completeRide, isRestoring, shareRide, taxis } = useRide();
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 	const { isOpen: isScannerOpen, onOpen: onScannerOpen, onOpenChange: onScannerOpenChange } = useDisclosure();
 
 	const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
 	const [isScanning, setIsScanning] = useState(false);
 	const [useSimulation, setUseSimulation] = useState(false);
+
+	const activeTaxi = activeTrip ? taxis.find(t => t.id === activeTrip.taxiId) : null;
 
 	// If no active trip, redirect to home
 	useEffect(() => {
@@ -262,6 +264,7 @@ const TrackRide: React.FC = () => {
 					showTaxis={activeTrip.status !== "in-progress"}
 					showRoute={activeTrip.status === "in-progress"}
 					zIndex={0}
+					taxiLocation={activeTaxi?.location}
 				/>
 			</div>
 

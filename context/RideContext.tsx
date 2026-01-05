@@ -31,6 +31,7 @@ interface RideContextType {
 	completeRide: () => Promise<void>;
 	cancelRide: () => void;
 	resetRide: () => void;
+	clearAppData: () => void;
 	shareRide: () => Promise<void>;
 	isLoading: boolean;
 	isRestoring: boolean;
@@ -142,8 +143,12 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	// Persist state changes
 	React.useEffect(() => {
 		if (isRestoring) return;
-		if (activeTrip) localStorage.setItem("activeTrip", JSON.stringify(activeTrip));
-		else localStorage.removeItem("activeTrip");
+		// Don't persist completed trips to allow for fresh start on reload
+		if (activeTrip && activeTrip.status !== 'completed') {
+			localStorage.setItem("activeTrip", JSON.stringify(activeTrip));
+		} else {
+			localStorage.removeItem("activeTrip");
+		}
 	}, [activeTrip, isRestoring]);
 
 	React.useEffect(() => {
@@ -199,10 +204,23 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			const { data } = await axios.get(`/api/trips/${activeTrip.id}`);
 			return data;
 		},
-		enabled: !!activeTrip?.id && ["requested", "accepted", "arrived_at_pickup", "in_progress"].includes(activeTrip.status),
+		enabled: !!activeTrip?.id && ["requested", "accepted", "driver-arrived", "arrived_at_pickup", "in-progress", "in_progress"].includes(activeTrip.status),
 		refetchInterval: 3000, // Poll every 3 seconds
 		refetchIntervalInBackground: true,
 	});
+
+	// Helper to determine status precedence
+	const getStatusWeight = (status: string) => {
+		switch (status.toLowerCase()) {
+			case 'requested': return 1;
+			case 'accepted': return 2;
+			case 'driver-arrived': return 3;
+			case 'in-progress': return 4;
+			case 'completed': return 5;
+			case 'cancelled': return 6;
+			default: return 0;
+		}
+	};
 
 	// Sync polled trip data with activeTrip state
 	React.useEffect(() => {
@@ -214,6 +232,12 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			// Map backend status to frontend status
 			let mappedStatus = polledTrip.status.toLowerCase();
 			if (mappedStatus === 'arrived_at_pickup') mappedStatus = 'driver-arrived';
+			if (mappedStatus === 'in_progress') mappedStatus = 'in-progress';
+
+			// Calculate passenger count from vehicle trip
+			const passengerCount = polledTrip.vehicleTrip?.passengers?.filter((p: any) =>
+				['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(p.status)
+			).length || 0;
 
 			const updatedTrip: iTrip = {
 				id: polledTrip.id,
@@ -229,14 +253,25 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				status: mappedStatus,
 				paymentMethod: polledTrip.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
 				rating: polledTrip.rating?.rating,
-				taxiId: polledTrip.taxiId
+				taxiId: polledTrip.taxiId,
+				passengerCount: passengerCount
 			};
 
 			// Check if status changed or driver was assigned
 			const statusChanged = updatedTrip.status !== activeTrip.status;
 			const driverAssigned = activeTrip.driver === "Pending Assignment" && updatedTrip.driver !== "Pending Assignment";
+			const passengersChanged = updatedTrip.passengerCount !== activeTrip.passengerCount;
 
-			if (statusChanged || driverAssigned) {
+			// Prevent backward status transitions (race condition fix)
+			const currentWeight = getStatusWeight(activeTrip.status);
+			const newWeight = getStatusWeight(updatedTrip.status);
+
+			if (statusChanged && newWeight < currentWeight && activeTrip.status !== 'cancelled') {
+				// Ignore backward transition (e.g. polling says 'driver-arrived' but we are 'in-progress')
+				return;
+			}
+
+			if (statusChanged || driverAssigned || passengersChanged) {
 				setActiveTrip(updatedTrip);
 
 				if (statusChanged && updatedTrip.status === 'accepted') {
@@ -263,7 +298,6 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 						description: "You have arrived at your destination.",
 						color: "success",
 					});
-					// If completed, we can stop polling or handle cleanup here if needed
 				}
 			}
 		}
@@ -452,6 +486,28 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		// LocalStorage is handled by useEffects
 	};
 
+	// Clear all app data (Reset App)
+	const clearAppData = () => {
+		// Clear state
+		resetRide();
+
+		// Clear LocalStorage
+		localStorage.clear();
+
+		// Clear SessionStorage
+		sessionStorage.clear();
+
+		// Clear Cookies (simple implementation for non-HttpOnly cookies)
+		document.cookie.split(";").forEach((c) => {
+			document.cookie = c
+				.replace(/^ +/, "")
+				.replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+		});
+
+		// Reload to ensure fresh state
+		window.location.href = "/";
+	};
+
 	// Cancel the current active ride
 	const cancelRide = async () => {
 		if (!activeTrip) return;
@@ -544,6 +600,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		completeRide,
 		cancelRide,
 		resetRide,
+		clearAppData,
 		shareRide,
 	};
 

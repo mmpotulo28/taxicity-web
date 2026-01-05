@@ -28,7 +28,13 @@ export async function GET(req: NextRequest) {
 				status: { in: ["SCHEDULED", "BOARDING", "IN_PROGRESS"] },
 			},
 			include: {
-				route: true,
+				route: {
+					include: {
+						popularLocations: {
+							orderBy: { createdAt: "asc" }, // Assuming creation order implies route order, or add an 'order' field
+						},
+					},
+				},
 				taxi: true,
 				passengers: {
 					where: { status: { in: ["ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS"] } },

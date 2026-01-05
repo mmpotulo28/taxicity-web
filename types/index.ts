@@ -70,4 +70,5 @@ export interface iTrip {
 	paymentMethod: string;
 	rating?: number;
 	taxiId?: string;
+	passengerCount?: number;
 }

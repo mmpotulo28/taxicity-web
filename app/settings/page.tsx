@@ -21,9 +21,12 @@ import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
+import { useRide } from "@/context/RideContext";
+
 const Settings: React.FC = () => {
 	const router = useRouter();
 	const { setTheme, theme } = useTheme();
+	const { clearAppData } = useRide();
 	const [activeTab, setActiveTab] = useState("profile");
 	const [profileForm, setProfileForm] = useState({
 		name: "John Doe",
@@ -347,6 +350,31 @@ const Settings: React.FC = () => {
 											Zulu
 										</SelectItem>
 									</Select>
+								</CardBody>
+							</Card>
+
+							<Card className="bg-danger/5 backdrop-blur-md border border-danger/20 shadow-sm">
+								<CardBody className="p-4 gap-4">
+									<div className="flex items-center gap-3 mb-2">
+										<div className="p-2 rounded-xl bg-danger/10 text-danger">
+											<Icon icon="lucide:alert-triangle" className="w-5 h-5" />
+										</div>
+										<div>
+											<p className="font-medium text-danger">Danger Zone</p>
+											<p className="text-xs text-default-500">Reset application data</p>
+										</div>
+									</div>
+									<Button
+										color="danger"
+										variant="flat"
+										onPress={() => {
+											if (confirm("Are you sure you want to reset the app? This will clear all data and log you out.")) {
+												clearAppData();
+											}
+										}}
+									>
+										Reset App Data
+									</Button>
 								</CardBody>
 							</Card>
 						</motion.div>

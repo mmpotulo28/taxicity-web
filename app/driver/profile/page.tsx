@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
@@ -20,6 +21,7 @@ interface DriverProfile {
 }
 
 export default function DriverProfilePage() {
+    const router = useRouter();
     const { user } = useUser();
     const { signOut } = useClerk();
     const [profile, setProfile] = useState<DriverProfile | null>(null);
@@ -168,8 +170,18 @@ export default function DriverProfilePage() {
                 </CardBody>
             </Card>
 
-            <div className="text-center">
+            <div className="flex flex-col gap-3">
                 <Button
+                    className="w-full font-medium"
+                    color="secondary"
+                    variant="flat"
+                    onPress={() => router.push("/")}
+                >
+                    Switch to User Mode
+                </Button>
+
+                <Button
+                    className="w-full"
                     color="danger"
                     variant="light"
                     onPress={() => signOut()}

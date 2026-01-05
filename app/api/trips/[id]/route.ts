@@ -20,6 +20,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 						driver: true,
 					},
 				},
+				vehicleTrip: {
+					include: {
+						passengers: {
+							select: {
+								id: true,
+								status: true,
+							},
+						},
+					},
+				},
 			},
 		});
 

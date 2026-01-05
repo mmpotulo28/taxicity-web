@@ -34,7 +34,11 @@ export interface Driver {
 export interface Trip {
  id: string;
  pickupAddress: string;
+ pickupLat: number;
+ pickupLng: number;
  dropoffAddress: string;
+ dropoffLat: number;
+ dropoffLng: number;
  fare: number;
  status: string;
  distance?: string;
@@ -52,6 +56,12 @@ export interface VehicleTrip {
  route: {
   id: string;
   name: string;
+  popularLocations?: {
+   id: string;
+   lat: number;
+   lng: number;
+   name: string;
+  }[];
  };
  taxi: {
   id: string;

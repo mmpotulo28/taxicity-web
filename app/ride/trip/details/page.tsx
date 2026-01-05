@@ -106,6 +106,12 @@ const TripDetails: React.FC = () => {
 									<div className="flex-1">
 										<p className="text-sm font-medium">{selectedTaxi.driver}</p>
 										<p className="text-xs text-default-500">{selectedTaxi.model} • {selectedTaxi.licensePlate}</p>
+										{activeTrip.passengerCount !== undefined && (
+											<p className="text-xs text-default-400 mt-0.5 flex items-center gap-1">
+												<Icon icon="lucide:users" className="w-3 h-3" />
+												{activeTrip.passengerCount} Passengers
+											</p>
+										)}
 									</div>
 									<div className="flex flex-col items-end">
 										<div className="flex items-center gap-1 text-warning">

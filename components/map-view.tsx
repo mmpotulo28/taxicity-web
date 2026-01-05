@@ -14,6 +14,10 @@ interface MapViewProps {
 	modalMap?: boolean;
 	selectionModeOverride?: "pickup" | "dropoff" | null;
 	showRoute?: boolean;
+	customRoutePoints?: { lat: number; lng: number }[];
+	passengerStops?: { lat: number; lng: number; type: 'pickup' | 'dropoff'; label?: string }[];
+	taxiLocation?: { lat: number; lng: number };
+	isDriver?: boolean;
 }
 
 const defaultCenter = {
@@ -30,6 +34,10 @@ export const MapView: React.FC<MapViewProps> = ({
 	modalMap = false,
 	selectionModeOverride = null,
 	showRoute = false,
+	customRoutePoints,
+	passengerStops,
+	taxiLocation,
+	isDriver = false,
 }) => {
 	const { isLoaded, loadError } = useLoadScript({
 		googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -55,6 +63,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
 	// Calculate route points for fallback
 	const routePoints = useMemo(() => {
+		if (customRoutePoints) return customRoutePoints;
 		if (!selectedRoute || ranks.length === 0) return null;
 
 		const originRank = ranks.find((r) => r.id === selectedRoute.rankId);
@@ -71,11 +80,11 @@ export const MapView: React.FC<MapViewProps> = ({
 			})) || [];
 
 		return [origin, ...waypoints, destination];
-	}, [selectedRoute, ranks, dropoffMarker]);
+	}, [selectedRoute, ranks, dropoffMarker, customRoutePoints]);
 
 	// Fetch directions when showRoute is true
 	useEffect(() => {
-		if (isLoaded && showRoute && routePoints) {
+		if (isLoaded && showRoute && routePoints && routePoints.length >= 2) {
 			const origin = routePoints[0];
 			const destination = routePoints[routePoints.length - 1];
 			const waypoints = routePoints.slice(1, -1).map((loc) => ({
@@ -91,6 +100,7 @@ export const MapView: React.FC<MapViewProps> = ({
 					destination,
 					waypoints,
 					travelMode: google.maps.TravelMode.DRIVING,
+					optimizeWaypoints: false, // Respect the order of waypoints
 				},
 				(result, status) => {
 					if (status === google.maps.DirectionsStatus.OK) {
@@ -228,7 +238,7 @@ export const MapView: React.FC<MapViewProps> = ({
 				)}
 
 				{/* Route Stops (Popular Locations) */}
-				{showRoute && selectedRoute?.popularLocations?.map((loc, index) => (
+				{showRoute && !passengerStops && selectedRoute?.popularLocations?.map((loc, index) => (
 					<Marker
 						key={loc.id}
 						icon={{
@@ -247,14 +257,46 @@ export const MapView: React.FC<MapViewProps> = ({
 					/>
 				))}
 
-				{/* User location marker */}
+				{/* Passenger Stops */}
+				{passengerStops?.map((stop, index) => (
+					<Marker
+						key={`stop-${index}`}
+						icon={{
+							url: stop.type === 'pickup'
+								? 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2322c55e" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/></svg>'
+								: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ef4444" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/></svg>',
+							scaledSize: new google.maps.Size(24, 24),
+							anchor: new google.maps.Point(12, 12),
+						}}
+						position={{ lat: stop.lat, lng: stop.lng }}
+						title={stop.label}
+						label={{
+							text: (index + 1).toString(),
+							color: "white",
+							fontSize: "12px",
+							fontWeight: "bold"
+						}}
+					/>
+				))}
+
+				{/* User location marker - Show as Taxi if isDriver */}
 				{userLocation && (
 					<Marker
-						icon={{
+						icon={isDriver ? getTaxiIcon() : {
 							url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234f46e5" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/></svg>',
 							scaledSize: new google.maps.Size(24, 24),
 						}}
 						position={userLocation}
+						zIndex={100}
+					/>
+				)}
+
+				{/* Specific Taxi Location (for Passenger view) */}
+				{taxiLocation && !isDriver && (
+					<Marker
+						icon={getTaxiIcon()}
+						position={taxiLocation}
+						zIndex={100}
 					/>
 				)}
 
@@ -284,10 +326,12 @@ export const MapView: React.FC<MapViewProps> = ({
 					/>
 				)}
 
-				{/* Taxi markers */}
+				{/* Taxi markers (other taxis) */}
 				{showTaxis &&
 					taxis
 						.filter((taxi) => taxi.location)
+						// Don't show the active taxi again if we are already showing it via taxiLocation
+						.filter((taxi) => !taxiLocation || (Math.abs(taxi.location!.lat - taxiLocation.lat) > 0.0001 || Math.abs(taxi.location!.lng - taxiLocation.lng) > 0.0001))
 						.map((taxi) => (
 							<Marker
 								key={taxi.id}

@@ -55,9 +55,17 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onSelect }) => {
 				<Divider className="my-3 mt-8" />
 
 				<div className="flex justify-between items-center">
-					<div className="flex items-center gap-2 text-xs text-default-500">
-						<Icon className="text-default-400" icon="lucide:user" />
-						<span>{trip.driver}</span>
+					<div className="flex items-center gap-4">
+						<div className="flex items-center gap-2 text-xs text-default-500">
+							<Icon className="text-default-400" icon="lucide:user" />
+							<span>{trip.driver}</span>
+						</div>
+						{trip.passengerCount !== undefined && (
+							<div className="flex items-center gap-2 text-xs text-default-500">
+								<Icon className="text-default-400" icon="lucide:users" />
+								<span>{trip.passengerCount} Passengers</span>
+							</div>
+						)}
 					</div>
 					<Button
 						color="primary"
