@@ -60,6 +60,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 			data: updateData,
 		});
 
+		// If the trip is completed, we should ensure the driver context updates
+		// The polling mechanism in DriverContext will fetch the updated trip status
+		// and the UI will move it to history or remove it from active list.
+
 		return NextResponse.json(updatedTrip);
 	} catch (error) {
 		console.error("Error updating trip status:", error);

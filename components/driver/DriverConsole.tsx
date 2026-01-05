@@ -110,7 +110,7 @@ export function DriverConsole() {
 			<div className="absolute bottom-0 left-0 right-0 lg:relative lg:w-96 lg:h-full bg-background/95 backdrop-blur-md border-t lg:border-t-0 lg:border-l border-default-200 z-10 flex flex-col max-h-[60vh] lg:max-h-full shadow-2xl transition-all">
 				{/* Header */}
 				<div className="p-4 border-b border-default-100 bg-background/50 sticky top-0 z-20">
-					<div className="flex justify-between items-start mb-2">
+					<div className="flex justify-between items-start mb-2 flex-wrap gap-2">
 						<div>
 							<p className="text-xs font-bold text-primary uppercase tracking-wider">
 								Current Route
@@ -119,25 +119,8 @@ export function DriverConsole() {
 								{activeVehicleTrip.route.name}
 							</h3>
 						</div>
-						<div className="flex gap-2">
-							<Button
-								color="primary"
-								size="sm"
-								onPress={onOpen}
-								startContent={<Icon icon="lucide:qr-code" />}>
-								QR Code
-							</Button>
-							<Button
-								color="danger"
-								variant="light"
-								size="sm"
-								onPress={endShift}
-								startContent={<Icon icon="lucide:power" />}>
-								End Shift
-							</Button>
-						</div>
 					</div>
-					<div className="flex gap-4 text-sm text-default-500">
+					<div className="flex gap-4 text-sm text-default-500 mt-4">
 						<div className="flex items-center gap-1">
 							<Icon icon="lucide:users" />
 							<span>
@@ -147,6 +130,23 @@ export function DriverConsole() {
 						<div className="flex items-center gap-1">
 							<Icon icon="lucide:clock" />
 							<span>On Time</span>
+						</div>
+						<div className="flex gap-2 justify-end ml-auto">
+							<Button
+								color="primary"
+								size="sm"
+								onPress={onOpen}
+								startContent={<Icon icon="lucide:qr-code" />}>
+								QR Code
+							</Button>
+							<Button
+								color="danger"
+								variant="bordered"
+								size="sm"
+								onPress={endShift}
+								startContent={<Icon icon="lucide:power" />}>
+								End Shift
+							</Button>
 						</div>
 					</div>
 				</div>

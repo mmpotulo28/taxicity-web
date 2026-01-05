@@ -37,7 +37,7 @@ function Providers({ children, themeProps }: ProvidersProps) {
 					<NextThemesProvider {...themeProps}>
 						<MapProvider>
 							<RideProvider>
-								<ToastProvider />
+								<ToastProvider placement="top-center" />
 								{children}
 							</RideProvider>
 						</MapProvider>

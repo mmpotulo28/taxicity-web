@@ -405,6 +405,19 @@ model SupportMessage {
   @@map("support_messages")
 }
 
+model Notification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean  @default(false)
+  data      Json?
+
+  @@map("notifications")
+}
+
 // ENUMS
 enum Role {
   USER
@@ -512,4 +525,13 @@ enum VehicleTripStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  TRIP_UPDATE
+  PAYMENT
 }

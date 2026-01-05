@@ -86,17 +86,18 @@ export async function PATCH(req: NextRequest) {
 		if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 		const body = await req.json();
-		const { status, isOnline } = body;
+		const { status, isOnline, phone, email, address, firstName, lastName } = body;
 
-		// Update driver status
-		// Note: We might want to add an 'isOnline' field to the schema later
-		// For now we map isOnline to status if needed, or just handle status
-
+		// Update driver status and profile
 		const driver = await prisma.driver.update({
 			where: { userId },
 			data: {
 				status: status || undefined,
-				// Add other fields as needed
+				phone: phone || undefined,
+				email: email || undefined,
+				address: address || undefined,
+				firstName: firstName || undefined,
+				lastName: lastName || undefined,
 			},
 		});
 

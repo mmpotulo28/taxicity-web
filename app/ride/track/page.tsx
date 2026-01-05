@@ -71,7 +71,19 @@ const TrackRide: React.FC = () => {
 			const scannedValue = result[0].rawValue;
 			console.log("QR Code scanned:", scannedValue);
 
-			if (activeTrip?.taxiId && scannedValue === activeTrip.taxiId) {
+			let scannedTaxiId = scannedValue;
+
+			// Try to parse JSON if it's a JSON string (DriverConsole generates JSON)
+			try {
+				const parsed = JSON.parse(scannedValue);
+				if (parsed.taxiId) {
+					scannedTaxiId = parsed.taxiId;
+				}
+			} catch {
+				// Not JSON, assume it's the ID directly
+			}
+
+			if (activeTrip?.taxiId && scannedTaxiId === activeTrip.taxiId) {
 				startRide();
 				onScannerOpenChange();
 			} else {

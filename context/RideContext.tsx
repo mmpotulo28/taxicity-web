@@ -263,6 +263,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 						description: "You have arrived at your destination.",
 						color: "success",
 					});
+					// If completed, we can stop polling or handle cleanup here if needed
 				}
 			}
 		}
