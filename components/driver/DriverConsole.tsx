@@ -9,6 +9,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure
 import { Icon } from "@iconify/react";
 import QRCode from "react-qr-code";
 import { motion, AnimatePresence } from "framer-motion";
+import { addToast } from "@heroui/toast";
 import { useDriver, Trip } from "@/context/DriverContext";
 import { MapView } from "@/components/map-view";
 
@@ -21,11 +22,13 @@ export function DriverConsole() {
 		endShift,
 		acceptRequest,
 		updatePassengerStatus,
+		currentLocation,
 	} = useDriver();
 
 	const [selectedTaxi, setSelectedTaxi] = useState("");
 	const [selectedRoute, setSelectedRoute] = useState("");
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+	const hasNotifiedRef = React.useRef<string | null>(null);
 
 	// Calculate sorted passengers and map stops
 	const { sortedPassengers, mapStops, routePoints } = useMemo(() => {
@@ -79,6 +82,29 @@ export function DriverConsole() {
 
 		return { sortedPassengers: sorted, mapStops: stops, routePoints: points };
 	}, [activeVehicleTrip]);
+
+	// Geofencing / Proximity Alert
+	React.useEffect(() => {
+		if (!currentLocation || sortedPassengers.length === 0) return;
+
+		const nextPassenger = sortedPassengers[0];
+		const isPickup = nextPassenger.status !== 'IN_PROGRESS';
+		const targetLat = isPickup ? nextPassenger.pickupLat : nextPassenger.dropoffLat;
+		const targetLng = isPickup ? nextPassenger.pickupLng : nextPassenger.dropoffLng;
+		const stopId = `${nextPassenger.id}-${isPickup ? 'pickup' : 'dropoff'}`;
+
+		// Approx distance in meters (1 deg lat ~ 111km)
+		const dist = Math.hypot(currentLocation.lat - targetLat, currentLocation.lng - targetLng) * 111000;
+
+		if (dist < 150 && hasNotifiedRef.current !== stopId) {
+			addToast({
+				title: "Arriving at Stop",
+				description: `You are near ${nextPassenger.user?.firstName}'s ${isPickup ? 'pickup' : 'dropoff'}.`,
+				color: "primary",
+			});
+			hasNotifiedRef.current = stopId;
+		}
+	}, [currentLocation, sortedPassengers]);
 
 	if (!driver) return null;
 
@@ -161,6 +187,7 @@ export function DriverConsole() {
 					customRoutePoints={routePoints}
 					passengerStops={mapStops}
 					isDriver={true}
+					taxiLocation={currentLocation || undefined}
 				/>
 			</div>
 

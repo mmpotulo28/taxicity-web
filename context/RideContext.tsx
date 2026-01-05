@@ -188,7 +188,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 
 	const { data: taxis = [], isLoading: isLoadingTaxis } = useQuery({
 		queryKey: ["taxis"],
-		queryFn: fetchTaxis
+		queryFn: fetchTaxis,
+		refetchInterval: 5000, // Poll every 5 seconds for live location updates
 	});
 
 	const { data: tripHistory = [], isLoading: isLoadingTrips } = useQuery({

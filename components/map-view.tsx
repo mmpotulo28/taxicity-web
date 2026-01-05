@@ -5,6 +5,57 @@ import { useRide } from "@/context/RideContext";
 import { useMap } from "@/context/MapContext";
 import { getTaxiIcon } from "@/lib/helpers";
 
+// Hook for smooth marker animation
+const useSmoothPosition = (targetPosition: { lat: number; lng: number } | undefined | null, duration = 5000) => {
+	const [currentPosition, setCurrentPosition] = useState(targetPosition);
+	const positionRef = React.useRef(targetPosition);
+	const requestRef = React.useRef<number>();
+	const startTimeRef = React.useRef<number>();
+	const startPositionRef = React.useRef(targetPosition);
+
+	useEffect(() => {
+		if (!targetPosition) return;
+
+		if (!positionRef.current) {
+			positionRef.current = targetPosition;
+			setCurrentPosition(targetPosition);
+			return;
+		}
+
+		if (targetPosition.lat === positionRef.current.lat && targetPosition.lng === positionRef.current.lng) {
+			return;
+		}
+
+		startPositionRef.current = positionRef.current;
+		startTimeRef.current = undefined;
+
+		const animate = (time: number) => {
+			if (!startTimeRef.current) startTimeRef.current = time;
+			const progress = Math.min((time - startTimeRef.current) / duration, 1);
+
+			if (startPositionRef.current) {
+				const lat = startPositionRef.current.lat + (targetPosition.lat - startPositionRef.current.lat) * progress;
+				const lng = startPositionRef.current.lng + (targetPosition.lng - startPositionRef.current.lng) * progress;
+				const newPos = { lat, lng };
+				positionRef.current = newPos;
+				setCurrentPosition(newPos);
+			}
+
+			if (progress < 1) {
+				requestRef.current = requestAnimationFrame(animate);
+			}
+		};
+
+		requestRef.current = requestAnimationFrame(animate);
+
+		return () => {
+			if (requestRef.current) cancelAnimationFrame(requestRef.current);
+		};
+	}, [targetPosition, duration]);
+
+	return currentPosition || targetPosition;
+};
+
 interface MapViewProps {
 	fullscreen?: boolean;
 	showTaxis?: boolean;
@@ -55,6 +106,8 @@ export const MapView: React.FC<MapViewProps> = ({
 		setIsMapLoaded,
 		selectionMode,
 	} = useMap();
+
+	const smoothTaxiLocation = useSmoothPosition(taxiLocation);
 
 	const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
 	const [directionsError, setDirectionsError] = useState(false);
@@ -286,16 +339,16 @@ export const MapView: React.FC<MapViewProps> = ({
 							url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234f46e5" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/></svg>',
 							scaledSize: new google.maps.Size(24, 24),
 						}}
-						position={userLocation}
+						position={isDriver && smoothTaxiLocation ? smoothTaxiLocation : userLocation}
 						zIndex={100}
 					/>
 				)}
 
 				{/* Specific Taxi Location (for Passenger view) */}
-				{taxiLocation && !isDriver && (
+				{smoothTaxiLocation && !isDriver && (
 					<Marker
 						icon={getTaxiIcon()}
-						position={taxiLocation}
+						position={smoothTaxiLocation}
 						zIndex={100}
 					/>
 				)}
