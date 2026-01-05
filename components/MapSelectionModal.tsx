@@ -19,7 +19,7 @@ const MapSelectionModal: React.FC<MapSelectionModalProps> = ({
 	type,
 	onSelect,
 }) => {
-	const { setSelectionMode, selectionMode, pickupMarker, dropoffMarker, getAddressFromLatLng } =
+	const { setSelectionMode, pickupMarker, dropoffMarker, getAddressFromLatLng } =
 		useMap();
 
 	// Set selection mode when modal opens
@@ -80,9 +80,8 @@ const MapSelectionModal: React.FC<MapSelectionModalProps> = ({
 								{/* Instructions overlay */}
 								<div className="absolute bottom-4 left-0 right-0 flex justify-center">
 									<div
-										className={`px-4 py-2 rounded-full ${
-											type === "pickup" ? "bg-primary" : "bg-danger"
-										} text-white font-medium shadow-lg`}>
+										className={`px-4 py-2 rounded-full ${type === "pickup" ? "bg-primary" : "bg-danger"
+											} text-white font-medium shadow-lg`}>
 										Tap on the map to set{" "}
 										{type === "pickup" ? "pickup" : "drop-off"} location
 									</div>

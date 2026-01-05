@@ -7,27 +7,25 @@ export async function GET(req: NextRequest) {
 	if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 	try {
-		// 1. Find the driver and their active vehicle trip
+		// 1. Find the driver
 		const driver = await prisma.driver.findUnique({
 			where: { userId },
-			include: {
-				vehicleTrips: {
-					where: {
-						status: { in: ["BOARDING", "IN_PROGRESS"] },
-					},
-					include: {
-						route: true,
-					},
-				},
-			},
 		});
 
 		if (!driver) {
 			return NextResponse.json({ error: "Driver not found" }, { status: 404 });
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const activeTrip = (driver as any).vehicleTrips[0];
+		// 2. Find active vehicle trip
+		const activeTrip = await prisma.vehicleTrip.findFirst({
+			where: {
+				driverId: driver.id,
+				status: { in: ["BOARDING", "IN_PROGRESS"] },
+			},
+			include: {
+				route: true,
+			},
+		});
 
 		if (!activeTrip) {
 			// No active trip, so no requests relevant to current shift

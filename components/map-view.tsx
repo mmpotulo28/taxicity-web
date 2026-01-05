@@ -150,6 +150,7 @@ export const MapView: React.FC<MapViewProps> = ({
 	// Handle map load
 	const handleMapLoad = useCallback(
 		(map: google.maps.Map) => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			mapRef.current = map as any;
 			setIsMapLoaded(true);
 		},
