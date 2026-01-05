@@ -5,6 +5,7 @@ import { z } from "zod";
 
 const BoardingSchema = z.object({
 	vehicleTripId: z.string(),
+	taxiId: z.string().optional(),
 	lat: z.number().optional(),
 	lng: z.number().optional(),
 });
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Invalid data" }, { status: 400 });
 		}
 
-		const { vehicleTripId, lat, lng } = parse.data;
+		const { vehicleTripId, taxiId, lat, lng } = parse.data;
 
 		// 1. Verify Vehicle Trip exists and is active
 		const vehicleTrip = await prisma.vehicleTrip.findUnique({
@@ -39,6 +40,11 @@ export async function POST(req: NextRequest) {
 
 		if (!["BOARDING", "IN_PROGRESS"].includes(vehicleTrip.status)) {
 			return NextResponse.json({ error: "Trip is not active" }, { status: 400 });
+		}
+
+		// Verify taxiId if provided (Security check)
+		if (taxiId && vehicleTrip.taxiId !== taxiId) {
+			return NextResponse.json({ error: "QR Code does not match this vehicle" }, { status: 400 });
 		}
 
 		// 2. Check if user has an existing request for this trip (or generic request)
