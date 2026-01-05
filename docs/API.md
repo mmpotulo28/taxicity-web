@@ -28,16 +28,17 @@ Authorization: Bearer <your-clerk-jwt-token>
 
 ### Available Endpoints
 
-| Category    | Endpoints        | Description                                         |
-| ----------- | ---------------- | --------------------------------------------------- |
-| **Users**   | `/api/users/*`   | User profile management, locations, saved places    |
-| **Drivers** | `/api/drivers/*` | Driver registration, verification, ratings          |
-| **Taxis**   | `/api/taxis/*`   | Fleet management, status tracking, location updates |
-| **Routes**  | `/api/routes/*`  | Route management between taxi ranks                 |
-| **Ranks**   | `/api/ranks/*`   | Taxi rank (station) management and operations       |
-| **Reports** | `/api/reports/*` | User reports and complaints system                  |
-| **Support** | `/api/support/*` | Support ticket management and messaging             |
-| **Search**  | `/api/search`    | Search across all entities with filters             |
+| Category    | Endpoints        | Description                                          |
+| ----------- | ---------------- | ---------------------------------------------------- |
+| **Users**   | `/api/users/*`   | User profile management, locations, saved places     |
+| **Drivers** | `/api/drivers/*` | Driver registration, verification, ratings           |
+| **Taxis**   | `/api/taxis/*`   | Fleet management, status tracking, location updates  |
+| **Routes**  | `/api/routes/*`  | Route management between taxi ranks                  |
+| **Ranks**   | `/api/ranks/*`   | Taxi rank (station) management and operations        |
+| **Ride**    | `/api/driver/*`  | Shared vehicle flow: runs, requests, passenger trips |
+| **Reports** | `/api/reports/*` | User reports and complaints system                   |
+| **Support** | `/api/support/*` | Support ticket management and messaging              |
+| **Search**  | `/api/search`    | Search across all entities with filters              |
 
 ### Core Features
 

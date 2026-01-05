@@ -74,6 +74,37 @@ This document outlines the recommended structure and best practices for integrat
 - **Map Clerk user IDs** to your `User` model in the DB.
 - **Sync user profile data** (name, email) from Clerk to your DB as needed.
 
+### Handling User Data (Clerk + Prisma Pattern)
+
+Since authentication is handled by Clerk, the Prisma `User` model primarily serves as a foreign key reference.
+
+**Pattern for API Responses:**
+
+1.  **Query Prisma:** Fetch the data (e.g., `Trips`) which contains `userId`.
+2.  **Collect IDs:** Extract unique `userId`s from the result set.
+3.  **Fetch Clerk Users:** Use `clerkClient.users.getUserList({ userId: [...] })` to get profile data (names, images).
+4.  **Merge:** Map the Clerk user data back to the Prisma results before returning the JSON response.
+
+_Example:_
+
+```typescript
+// 1. Get Trips
+const trips = await prisma.trip.findMany({ ... });
+
+// 2. Get User IDs
+const userIds = Array.from(new Set(trips.map(t => t.userId)));
+
+// 3. Fetch from Clerk
+const clerkUsers = await clerkClient.users.getUserList({ userId: userIds });
+const userMap = new Map(clerkUsers.data.map(u => [u.id, u]));
+
+// 4. Merge
+const response = trips.map(trip => ({
+  ...trip,
+  user: userMap.get(trip.userId)
+}));
+```
+
 ---
 
 ## 5. Example API Route (with Clerk & Prisma)

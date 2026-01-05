@@ -52,9 +52,11 @@ Represents a user's booking.
 
 ### 3. Driver Accepts Passenger
 
-**Endpoint:** `POST /api/driver/vehicle-trips/[id]/passengers/[tripId]/accept`
+**Endpoint:** `GET /api/driver/requests` (View) & `POST /api/driver/vehicle-trips/[id]/passengers/[tripId]/accept` (Action)
 
-- Driver sees the request.
+- **View Requests:** Driver polls `GET /api/driver/requests` to see pending `REQUESTED` trips on their current route.
+    - _Note:_ This endpoint merges user data from Clerk (name, rating) so the driver knows who they are picking up.
+- **Accept:** Driver selects a passenger.
 - System checks `VehicleTrip` capacity (`current_passengers < capacity`).
 - If space exists:
     - `Trip` is linked to `VehicleTrip`.

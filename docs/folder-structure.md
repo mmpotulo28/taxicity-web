@@ -1,62 +1,60 @@
 ```
 └── 📁taxicity-web
     └── 📁app
+        └── 📁api
+            └── 📁driver (Driver operations: vehicle trips, requests)
+            └── 📁drivers (Driver entity management)
+            └── 📁ranks
+            └── 📁reports
+            └── 📁routes
+            └── 📁search
+            └── 📁status
+            └── 📁support
+            └── 📁taxis
+            └── 📁trips
+            └── 📁users
         └── 📁auth
-            └── 📁login
-                ├── page.tsx
-            └── 📁register
-                ├── page.tsx
-        └── 📁location
-            ├── index.tsx
+            └── 📁sign-in
+            └── 📁sign-up
         └── 📁ride
             └── 📁route
                 ├── page.tsx
             └── 📁track
                 ├── page.tsx
+            └── 📁trip
+                ├── details
+                ├── history
         └── 📁settings
             ├── page.tsx
         └── 📁support
             ├── page.tsx
-        └── 📁taxi
-            └── 📁list
-                ├── page.tsx
-            └── 📁report
-                ├── page.tsx
-        └── 📁trip
-            └── 📁details
-                ├── page.tsx
-            └── 📁history
-                ├── page.tsx
         ├── error.tsx
         ├── layout.tsx
         ├── page.tsx
         ├── providers.tsx
-        ├── wrapper.tsx
     └── 📁components
         ├── map-view.tsx
-    └── 📁config
-        ├── fonts.ts
-        ├── site.ts
+        ├── ... (Shared UI components)
     └── 📁context
+        ├── MapContext.tsx
         ├── RideContext.tsx
+    └── 📁docs
+        ├── API.md
+        ├── backend-integration-plan.md
+        ├── shared-vehicle-flow.md
+    └── 📁lib
+        └── 📁prisma
+            └── 📁generated
+        ├── prisma.ts
+        ├── utils.ts
+    └── 📁prisma
+        ├── schema.prisma
+        ├── seed.ts
     └── 📁public
-        ├── favicon.ico
-        ├── next.svg
-        ├── vercel.svg
     └── 📁styles
-        ├── globals.css
     └── 📁types
-        ├── index.ts
-    ├── .gitignore
-    ├── .npmrc
-    ├── eslint.config.mjs
-    ├── LICENSE
-    ├── next-env.d.ts
-    ├── next.config.js
-    ├── package-lock.json
+    ├── .env
     ├── package.json
-    ├── postcss.config.js
     ├── README.md
-    ├── tailwind.config.js
-    └── tsconfig.json
+    ├── tsconfig.json
 ```
