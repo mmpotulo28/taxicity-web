@@ -5,7 +5,9 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Select, SelectItem } from "@heroui/select";
 import { Chip } from "@heroui/chip";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/modal";
 import { Icon } from "@iconify/react";
+import QRCode from "react-qr-code";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDriver, Trip } from "@/context/DriverContext";
 import { MapView } from "@/components/map-view";
@@ -23,6 +25,7 @@ export function DriverConsole() {
 
 	const [selectedTaxi, setSelectedTaxi] = useState("");
 	const [selectedRoute, setSelectedRoute] = useState("");
+	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
 	if (!driver) return null;
 
@@ -116,14 +119,23 @@ export function DriverConsole() {
 								{activeVehicleTrip.route.name}
 							</h3>
 						</div>
-						<Button
-							color="danger"
-							variant="light"
-							size="sm"
-							onPress={endShift}
-							startContent={<Icon icon="lucide:power" />}>
-							End Shift
-						</Button>
+						<div className="flex gap-2">
+							<Button
+								color="primary"
+								size="sm"
+								onPress={onOpen}
+								startContent={<Icon icon="lucide:qr-code" />}>
+								QR Code
+							</Button>
+							<Button
+								color="danger"
+								variant="light"
+								size="sm"
+								onPress={endShift}
+								startContent={<Icon icon="lucide:power" />}>
+								End Shift
+							</Button>
+						</div>
 					</div>
 					<div className="flex gap-4 text-sm text-default-500">
 						<div className="flex items-center gap-1">
@@ -242,6 +254,36 @@ export function DriverConsole() {
 					</div>
 				</div>
 			</div>
+
+			<Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
+				<ModalContent>
+					{(onClose) => (
+						<>
+							<ModalHeader className="flex flex-col gap-1">Scan to Board</ModalHeader>
+							<ModalBody className="items-center py-8">
+								<div className="p-4 bg-white rounded-xl shadow-lg">
+									<QRCode
+										value={JSON.stringify({
+											type: "BOARDING",
+											vehicleTripId: activeVehicleTrip.id,
+											taxiId: activeVehicleTrip.taxi.id,
+										})}
+										size={200}
+									/>
+								</div>
+								<p className="text-center text-default-500 mt-4">
+									Ask passengers to scan this code to confirm boarding.
+								</p>
+							</ModalBody>
+							<ModalFooter>
+								<Button color="primary" onPress={onClose}>
+									Close
+								</Button>
+							</ModalFooter>
+						</>
+					)}
+				</ModalContent>
+			</Modal>
 		</div>
 	);
 }
@@ -276,12 +318,8 @@ function PassengerCard({
 			};
 		}
 		if (passenger.status === "ARRIVED_AT_PICKUP") {
-			return {
-				label: "Board",
-				color: "success" as const,
-				action: () => onUpdateStatus(passenger.id, "IN_PROGRESS"),
-				icon: "lucide:log-in",
-			};
+			// Boarding is handled via QR code scan by passenger
+			return null;
 		}
 		if (passenger.status === "IN_PROGRESS") {
 			return {

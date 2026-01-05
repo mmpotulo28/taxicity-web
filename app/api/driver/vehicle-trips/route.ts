@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 
@@ -37,7 +37,39 @@ export async function GET(req: NextRequest) {
 			orderBy: { createdAt: "desc" },
 		});
 
-		return NextResponse.json(trips);
+		// Fetch user details for passengers
+		const client = await clerkClient();
+		const userIds = new Set<string>();
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		trips.forEach((t: any) => t.passengers.forEach((p: any) => userIds.add(p.userId)));
+
+		const usersMap = new Map();
+		if (userIds.size > 0) {
+			try {
+				const usersList = await client.users.getUserList({ userId: Array.from(userIds) });
+				usersList.data.forEach((u) => {
+					usersMap.set(u.id, {
+						firstName: u.firstName,
+						lastName: u.lastName,
+						profileImage: u.imageUrl,
+					});
+				});
+			} catch (e) {
+				console.error("Failed to fetch users", e);
+			}
+		}
+
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const tripsWithUsers = trips.map((t: any) => ({
+			...t,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			passengers: t.passengers.map((p: any) => ({
+				...p,
+				user: usersMap.get(p.userId) || { firstName: "Passenger", lastName: "" },
+			})),
+		}));
+
+		return NextResponse.json(tripsWithUsers);
 	} catch (error) {
 		console.error("Error fetching vehicle trips:", error);
 		return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

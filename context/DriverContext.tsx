@@ -149,13 +149,16 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   if (activeVehicleTrip) {
    fetchRequests(); // Initial fetch
-   interval = setInterval(fetchRequests, 5000); // Poll every 5s
+   interval = setInterval(() => {
+    fetchRequests();
+    fetchActiveVehicleTrip();
+   }, 5000); // Poll every 5s
   } else {
    setIncomingRequests([]);
   }
 
   return () => clearInterval(interval);
- }, [activeVehicleTrip]);
+ }, [activeVehicleTrip, fetchActiveVehicleTrip]);
 
  const toggleOnline = async () => {
   // This is now mostly controlled by start/end shift
