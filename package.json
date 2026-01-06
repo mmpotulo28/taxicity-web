@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"postinstall": "pnpm prisma generate",
+		"postinstall": "pnpm prisma generate --no-engine",
 		"build": "next build",
 		"start": "next start",
 		"check": "tsc --noEmit && eslint --fix"
