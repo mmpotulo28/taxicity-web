@@ -54,13 +54,9 @@ export default function ApiDocsPage() {
 					],
 					authentication: {
 						preferredSecurityScheme: "ClerkAuth",
-						http: {
-							bearer: {
-								token: "your-clerk-jwt-token-here",
-							},
-						},
 					},
-				}}
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				} as any}
 			/>
 		</div>
 	);
