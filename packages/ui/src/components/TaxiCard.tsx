@@ -5,8 +5,8 @@ import { Chip } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { useRide } from "@/context/RideContext";
-import { iTaxi } from "@/types";
+import { useRide } from "../context/RideContext";
+import { iTaxi } from "../types";
 
 interface TaxiCardProps {
 	taxi: iTaxi;

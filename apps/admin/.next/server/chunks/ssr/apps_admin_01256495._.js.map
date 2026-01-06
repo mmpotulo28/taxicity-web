@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
-    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///Users/ManelisiM/Documents/my-projects/nextjs/heroui/taxicity-web/apps/admin/app/page.tsx"],"sourcesContent":["export default function AdminPage() {\n  return (\n    <div className=\"flex min-h-screen flex-col items-center justify-center p-24\">\n      <h1 className=\"text-4xl font-bold\">Admin Dashboard</h1>\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAe,SAAS;IACtB,qBACE,ubAAC;QAAI,WAAU;kBACb,cAAA,ubAAC;YAAG,WAAU;sBAAqB;;;;;;;;;;;AAGzC","debugId":null}}]
-}

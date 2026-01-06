@@ -3,7 +3,7 @@ import { Card, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Icon } from "@iconify/react";
 
-import { iTaxi } from "@/types";
+import { iTaxi } from "../types";
 
 const DriverCard: React.FC<{ taxi: iTaxi; handleCancelRide: () => void; currentCapacity?: number }> = ({
 	taxi,

@@ -3,8 +3,8 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@herou
 import { Button } from "@heroui/button";
 import { Textarea } from "@heroui/input";
 import { Icon } from "@iconify/react";
-import { iTrip } from "@/types";
-import { useRating } from "@/hooks/useRating";
+import { iTrip } from "../types";
+import { useRating } from "../hooks/useRating";
 
 interface RatingModalProps {
     isOpen: boolean;

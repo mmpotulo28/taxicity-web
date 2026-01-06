@@ -11,8 +11,8 @@ import { addToast } from "@heroui/toast";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { iTrip } from "@/types";
-import { useRide } from "@/context/RideContext";
+import { iTrip } from "../types";
+import { useRide } from "../context/RideContext";
 
 export interface TripModalProps {
   isOpen: boolean;

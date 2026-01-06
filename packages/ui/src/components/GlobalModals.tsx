@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
-import { useRide } from '@/context/RideContext';
-import RatingModal from '@/components/RatingModal';
+import { useRide } from '../context/RideContext';
+import RatingModal from './RatingModal';
 
 const GlobalModals = () => {
  const { ratingTrip, setRatingTrip, setActiveTrip } = useRide();
@@ -10,7 +10,7 @@ const GlobalModals = () => {
   <>
    <RatingModal
     isOpen={!!ratingTrip}
-    onOpenChange={(isOpen) => !isOpen && setRatingTrip(null)}
+    onOpenChange={(isOpen: boolean) => !isOpen && setRatingTrip(null)}
     trip={ratingTrip}
     onClose={() => {
      setRatingTrip(null);

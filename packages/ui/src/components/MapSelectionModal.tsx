@@ -3,8 +3,8 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@herou
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
 
-import { useMap } from "@/context/MapContext";
-import { MapView } from "@/components/map-view";
+import { useMap } from "../context/MapContext";
+import { MapView } from "./map-view";
 
 interface MapSelectionModalProps {
 	isOpen: boolean;

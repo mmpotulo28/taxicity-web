@@ -1,9 +1,9 @@
 import React, { useEffect, useCallback, useState, useMemo } from "react";
 import { GoogleMap, useLoadScript, Marker, DirectionsRenderer, Polyline } from "@react-google-maps/api";
 
-import { useRide } from "@/context/RideContext";
-import { useMap } from "@/context/MapContext";
-import { getTaxiIcon } from "@/lib/helpers";
+import { useRide } from "../context/RideContext";
+import { useMap } from "../context/MapContext";
+import { getTaxiIcon } from "../lib/helpers";
 
 // Hook for smooth marker animation
 const useSmoothPosition = (targetPosition: { lat: number; lng: number } | undefined | null, duration = 5000) => {

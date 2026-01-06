@@ -3,9 +3,9 @@ import { Button } from "@heroui/button";
 import { Textarea } from "@heroui/input";
 import { Icon } from "@iconify/react";
 import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
-import { iTrip } from "@/types";
-import { useRating } from "@/hooks/useRating";
-import { useRide } from "@/context/RideContext";
+import { iTrip } from "../types";
+import { useRating } from "../hooks/useRating";
+import { useRide } from "../context/RideContext";
 
 interface TripRatingProps {
     trip: iTrip;
@@ -20,7 +20,7 @@ const TripRating: React.FC<TripRatingProps> = ({ trip, onCompleted }) => {
 
     const handleSubmit = async () => {
         if (!trip) return;
-        
+
         if (rating === 0) {
             return;
         }
@@ -61,15 +61,15 @@ const TripRating: React.FC<TripRatingProps> = ({ trip, onCompleted }) => {
                             className="transition-transform hover:scale-110 focus:outline-none p-1"
                             onClick={() => handleStarClick(star)}
                         >
-                            <Icon 
-                                icon="lucide:star" 
-                                width={32} 
-                                className={star <= rating ? "text-warning fill-current" : "text-default-300"} 
+                            <Icon
+                                icon="lucide:star"
+                                width={32}
+                                className={star <= rating ? "text-warning fill-current" : "text-default-300"}
                             />
                         </button>
                     ))}
                 </div>
-                
+
                 <Textarea
                     label="Leave a comment (optional)"
                     placeholder="Tell us about your experience..."
@@ -81,8 +81,8 @@ const TripRating: React.FC<TripRatingProps> = ({ trip, onCompleted }) => {
                 />
             </CardBody>
             <CardFooter className="flex-col gap-2 pt-0 pb-6">
-                <Button 
-                    color="primary" 
+                <Button
+                    color="primary"
                     onPress={handleSubmit}
                     isLoading={isLoading}
                     isDisabled={rating === 0}
@@ -90,9 +90,9 @@ const TripRating: React.FC<TripRatingProps> = ({ trip, onCompleted }) => {
                 >
                     Submit Rating
                 </Button>
-                <Button 
-                    color="default" 
-                    variant="light" 
+                <Button
+                    color="default"
+                    variant="light"
                     onPress={handleComplete}
                     className="w-full text-default-500"
                     size="sm"

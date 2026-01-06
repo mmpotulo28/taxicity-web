@@ -3,7 +3,7 @@ import { Card, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Icon } from "@iconify/react";
 
-import { iTrip } from "@/types";
+import { iTrip } from "../types";
 
 interface TripCardProps {
 	trip: iTrip;

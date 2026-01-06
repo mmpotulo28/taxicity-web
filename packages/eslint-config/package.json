@@ -2,6 +2,9 @@
 	"name": "@taxicity/eslint-config",
 	"version": "0.0.1",
 	"main": "eslint.config.mts",
+	"exports": {
+		".": "./eslint.config.mts"
+	},
 	"type": "module",
 	"dependencies": {
 		"eslint": "9.25.1",

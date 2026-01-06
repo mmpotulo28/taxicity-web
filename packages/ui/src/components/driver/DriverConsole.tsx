@@ -10,9 +10,9 @@ import { Icon } from "@iconify/react";
 import QRCode from "react-qr-code";
 import { motion, AnimatePresence } from "framer-motion";
 import { addToast } from "@heroui/toast";
-import { useDriver, Trip } from "@/context/DriverContext";
-import { MapView } from "@/components/map-view";
-import { formatCurrency } from "@/lib/utils";
+import { useDriver, Trip } from "../../context/DriverContext";
+import { MapView } from "../../components/map-view";
+import { formatCurrency } from "../../lib/utils";
 import { RankQueue } from "./RankQueue";
 
 export function DriverConsole() {

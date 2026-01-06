@@ -7,8 +7,8 @@ import { useDisclosure } from "@heroui/modal";
 
 import MapSelectionModal from "./MapSelectionModal";
 
-import { useMap } from "@/context/MapContext";
-import { useRide } from "@/context/RideContext";
+import { useMap } from "../context/MapContext";
+import { useRide } from "../context/RideContext";
 
 interface LocationSelectorProps {
 	type: "pickup" | "dropoff";

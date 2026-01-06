@@ -4,8 +4,8 @@ import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from "@react-google-map
 
 import TaxiCard from "./TaxiCard";
 
-import { iTaxi } from "@/types";
-import { getTaxiIcon } from "@/lib/helpers";
+import { iTaxi } from "../types";
+import { getTaxiIcon } from "../lib/helpers";
 
 const containerStyle = {
 	width: "100%",

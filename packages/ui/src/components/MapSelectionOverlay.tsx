@@ -1,7 +1,7 @@
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
 
-import { useMap } from "@/context/MapContext";
+import { useMap } from "../context/MapContext";
 
 const MapSelectionOverlay: React.FC = () => {
 	const { selectionMode, setSelectionMode } = useMap();
