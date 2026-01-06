@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
 		let todayEarnings = 0;
 		let weekEarnings = 0;
 		let monthEarnings = 0;
+		let amountDue = 0;
 
 		const now = new Date();
 		const startOfDay = new Date(now.setHours(0, 0, 0, 0));
@@ -55,8 +56,13 @@ export async function GET(req: NextRequest) {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			vt.passengers.forEach((p: any) => {
 				const fare = Number(p.fare);
+				const fee = Number(p.platformFee || 0);
 				tripTotal += fare;
 				totalEarnings += fare;
+
+				if (p.platformFeeStatus === "PENDING") {
+					amountDue += fee;
+				}
 
 				if (tripDate >= startOfDay) todayEarnings += fare;
 				if (tripDate >= startOfWeek) weekEarnings += fare;
@@ -83,6 +89,7 @@ export async function GET(req: NextRequest) {
 			today: todayEarnings,
 			week: weekEarnings,
 			month: monthEarnings,
+			amountDue: amountDue,
 			trips: recentTrips,
 		});
 	} catch (error) {

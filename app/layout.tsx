@@ -53,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			<head />
 			<body
 				className={clsx(
-					"min-h-screen text-foreground bg-background font-sans antialiased",
+					"min-h-screen text-foreground bg-background font-sans antialiased max-w-lg",
 					fontSans.variable,
 				)}>
 				<Providers

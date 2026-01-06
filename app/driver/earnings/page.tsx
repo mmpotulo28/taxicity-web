@@ -27,6 +27,7 @@ interface EarningStats {
  today: number;
  week: number;
  month: number;
+ amountDue?: number;
  trips: Trip[];
 }
 
@@ -96,6 +97,12 @@ export default function DriverEarningsPage() {
 
    {/* Summary Cards */}
    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <StatsCard
+     title="Fees Due"
+     value={stats.amountDue || 0}
+     icon="solar:card-transfer-bold-duotone"
+     color="danger"
+    />
     <StatsCard
      title="Today"
      value={stats.today}
@@ -211,13 +218,14 @@ function StatsCard({
  title: string;
  value: number;
  icon: string;
- color: "primary" | "secondary" | "success" | "warning";
+ color: "primary" | "secondary" | "success" | "warning" | "danger";
 }) {
  const colorMap = {
   primary: "bg-primary/10 text-primary",
   secondary: "bg-secondary/10 text-secondary",
   success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning"
+  warning: "bg-warning/10 text-warning",
+  danger: "bg-danger/10 text-danger",
  };
 
  return (

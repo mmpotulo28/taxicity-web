@@ -302,6 +302,8 @@ model Trip {
   dropoffLat     Float
   dropoffLng     Float
   fare           Decimal       @db.Decimal(10, 2)
+  platformFee    Decimal?      @db.Decimal(10, 2) // 5% fee
+  platformFeeStatus PlatformFeeStatus @default(PENDING)
   status         TripStatus    @default(REQUESTED)
   paymentMethod  PaymentMethod @default(CASH)
   paymentStatus  PaymentStatus @default(PENDING)
@@ -565,4 +567,10 @@ enum NotificationType {
   ERROR
   TRIP_UPDATE
   PAYMENT
+}
+
+enum PlatformFeeStatus {
+  PENDING
+  PAID
+  WAIVED
 }

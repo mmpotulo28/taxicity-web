@@ -40,14 +40,43 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 		if (!passengerTrip) return NextResponse.json({ error: "Passenger request not found" }, { status: 404 });
 		if (passengerTrip.status !== "REQUESTED") return NextResponse.json({ error: "Request no longer valid" }, { status: 400 });
 
-		// 4. Link Passenger to Vehicle Trip
+		// 4. Calculate Platform Fee
+		// Logic: 5% standard, 3.5% if >100 vehicle trips in last 30 days
+		// Cap at R10.00
+		const thirtyDaysAgo = new Date();
+		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+		const completedTripsCount = await prisma.vehicleTrip.count({
+			where: {
+				driverId: vt.driver.id,
+				status: "COMPLETED",
+				createdAt: { gte: thirtyDaysAgo },
+			},
+		});
+
+		let feeRate = 0.05; // 5%
+		if (completedTripsCount > 100) {
+			feeRate = 0.035; // 3.5%
+		}
+
+		const fare = Number(passengerTrip.fare);
+		const rawFee = fare * feeRate;
+		const platformFee = Math.min(rawFee, 10.0);
+
+		// 5. Link Passenger to Vehicle Trip
 		const updatedPassengerTrip = await prisma.trip.update({
 			where: { id: passengerTripId },
 			data: {
 				status: "ACCEPTED",
-				vehicleTripId: vehicleTrip.id,
-				taxiId: vehicleTrip.taxiId,
+				vehicleTrip: {
+					connect: { id: vehicleTrip.id },
+				},
+				taxi: {
+					connect: { id: vehicleTrip.taxiId },
+				},
 				acceptTime: new Date(),
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				platformFee: platformFee as any,
 			},
 		});
 
