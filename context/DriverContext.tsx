@@ -41,6 +41,7 @@ export interface Trip {
   dropoffLng: number;
   fare: number;
   status: string;
+  paymentMethod: "CASH" | "QR_CODE" | "MOBILE_MONEY";
   distance?: string;
   user?: {
     firstName: string;
@@ -52,10 +53,12 @@ export interface VehicleTrip {
   id: string;
   status: string;
   capacity: number;
+  manualPassengers: number;
   passengers: Trip[];
   route: {
     id: string;
     name: string;
+    baseFare: number;
     popularLocations?: {
       id: string;
       lat: number;
@@ -81,6 +84,7 @@ interface DriverContextType {
   endShift: () => Promise<void>;
   acceptRequest: (tripId: string) => Promise<void>;
   updatePassengerStatus: (tripId: string, status: string) => Promise<void>;
+  updateManualPassengers: (count: number) => Promise<void>;
   refreshRequests: () => Promise<void>;
   refreshDriver: () => Promise<void>;
 }
@@ -360,6 +364,31 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const updateManualPassengers = async (count: number) => {
+    if (!activeVehicleTrip) return;
+    try {
+      const res = await fetch(`/api/driver/vehicle-trips/${activeVehicleTrip.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ manualPassengers: count }),
+      });
+
+      if (res.ok) {
+        const updatedTrip = await res.json();
+        setActiveVehicleTrip(prev => prev ? { ...prev, manualPassengers: updatedTrip.manualPassengers } : null);
+      } else {
+        throw new Error("Failed to update manual passengers");
+      }
+    } catch (error) {
+      console.error("Failed to update manual passengers:", error);
+      addToast({
+        title: "Error",
+        description: "Could not update passenger count.",
+        color: "danger",
+      });
+    }
+  };
+
   const refreshRequests = async () => {
     if (!activeVehicleTrip) return;
     const res = await fetch("/api/driver/requests");
@@ -383,6 +412,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         endShift,
         acceptRequest,
         updatePassengerStatus,
+        updateManualPassengers,
         refreshRequests,
         refreshDriver: fetchDriver,
       }}

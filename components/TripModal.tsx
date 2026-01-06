@@ -12,6 +12,7 @@ import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
 import { iTrip } from "@/types";
+import { useRide } from "@/context/RideContext";
 
 export interface TripModalProps {
   isOpen: boolean;
@@ -25,17 +26,35 @@ const TripModal: React.FC<TripModalProps> = ({
   trip,
 }) => {
   const router = useRouter();
+  const { routes, setSelectedRoute, setPickupLocation, setDropoffLocation } = useRide();
+
   const onBookSimilar = () => {
-    onOpenChange(false);
+    if (!trip) return;
 
-    addToast({
-      title: "Book Similar Trip",
-      description: "This feature is coming soon!",
-      color: "primary",
-    });
+    // Find the matching route from available routes
+    const matchingRoute = routes.find(r => r.name === trip.route);
 
-    // Logic to book a similar trip
-    router.push("/ride/route");
+    if (matchingRoute) {
+      setSelectedRoute(matchingRoute);
+      setPickupLocation(trip.pickup);
+      setDropoffLocation(trip.dropoff);
+
+      onOpenChange(false);
+
+      addToast({
+        title: "Trip Details Loaded",
+        description: "Please confirm your locations.",
+        color: "success",
+      });
+
+      router.push("/ride/location");
+    } else {
+      addToast({
+        title: "Route Unavailable",
+        description: "This route is currently not available for booking.",
+        color: "danger",
+      });
+    }
   };
 
   return (
@@ -85,59 +104,71 @@ const TripModal: React.FC<TripModalProps> = ({
                     </div>
                   </div>
 
-                  <Divider />
+                  <Divider className="my-2" />
 
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">
-                      Driver Information
-                    </h4>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-default-100 rounded-full flex items-center justify-center">
-                        <Icon
-                          className="text-xl text-default-400"
-                          icon="lucide:user"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">{trip.driver}</p>
-                        <p className="text-xs text-default-500">
-                          {trip.vehicle}
-                        </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-xs font-semibold text-default-500 uppercase tracking-wider mb-2">Driver</h4>
+                      <div className="flex items-center gap-2.5 bg-default-50 p-2.5 rounded-lg border border-default-100">
+                        <div className="w-8 h-8 bg-default-200 rounded-full flex items-center justify-center shrink-0">
+                          <Icon className="text-default-500" icon="lucide:user" />
+                        </div>
+                        <div className="flex flex-col overflow-hidden min-h-[50px]">
+                          <span className="text-sm font-medium truncate">{trip.driver}</span>
+                          <div className="flex items-center gap-1">
+                            <Icon icon="lucide:star" className="text-warning text-[10px]" />
+                            <span className="text-[10px] text-default-500">4.8</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <p className="text-xs text-default-500">
-                      License Plate: {trip.licensePlate}
-                    </p>
+
+                    <div>
+                      <h4 className="text-xs font-semibold text-default-500 uppercase tracking-wider mb-2">Vehicle</h4>
+                      <div className="flex flex-col justify-center bg-default-50 p-2.5 rounded-lg border border-default-100 h-[74px]">
+                        <p className="text-sm font-medium truncate capitalize mb-2">{trip.vehicle}</p>
+                        <div className="flex items-center gap-1.5 opacity-70">
+                          <div className="px-1.5 py-0.5 bg-default-200 rounded text-[10px] font-mono border border-default-300">
+                            {trip.licensePlate}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <Divider />
+                  <Divider className="my-2" />
 
                   <div>
-                    <h4 className="text-sm font-medium mb-2">
-                      Payment Details
-                    </h4>
-                    <div className="flex justify-between">
-                      <span className="text-default-500">Total Fare</span>
-                      <span className="font-medium">{trip.fare}</span>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-default-500">Payment Method</span>
-                      <span>{trip.paymentMethod}</span>
+                    <h4 className="text-xs font-semibold text-default-500 uppercase tracking-wider mb-3">Payment</h4>
+                    <div className="bg-default-50 rounded-lg p-3 border border-default-100 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-default-600">Total Fare</span>
+                        <span className="text-base font-bold text-primary">{trip.fare}</span>
+                      </div>
+                      <Divider className="opacity-50" />
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-default-500 flex items-center gap-1">
+                          <Icon icon="lucide:credit-card" /> Method
+                        </span>
+                        <span className="font-medium capitalize">{trip.paymentMethod}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
             </ModalBody>
-            <ModalFooter>
-              <Button color="danger" variant="light" onPress={onClose}>
+            <ModalFooter className="pt-2">
+              <Button color="danger" variant="flat" onPress={onClose} size="sm">
                 Close
               </Button>
               <Button
                 color="primary"
-                startContent={<Icon icon="lucide:repeat" />}
+                startContent={<Icon icon="lucide:rotate-cw" />}
                 onPress={onBookSimilar}
+                size="sm"
+                className="font-medium"
               >
-                Book Similar Trip
+                Book Again
               </Button>
             </ModalFooter>
           </>

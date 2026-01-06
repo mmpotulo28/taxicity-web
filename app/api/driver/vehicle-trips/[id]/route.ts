@@ -4,10 +4,11 @@ import prisma from "@/lib/prisma";
 import { z } from "zod";
 
 const UpdateStatusSchema = z.object({
-	status: z.enum(["BOARDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
+	status: z.enum(["BOARDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
+	manualPassengers: z.number().int().min(0).optional(),
 });
 
-// PATCH /api/driver/vehicle-trips/[id] - Update vehicle trip status
+// PATCH /api/driver/vehicle-trips/[id] - Update vehicle trip status or manual passengers
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { userId } = getAuth(req);
@@ -18,10 +19,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 		const parse = UpdateStatusSchema.safeParse(body);
 
 		if (!parse.success) {
-			return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+			return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
 		}
 
-		const { status } = parse.data;
+		const { status, manualPassengers } = parse.data;
 
 		const vehicleTrip = await prisma.vehicleTrip.findUnique({
 			where: { id },
@@ -36,9 +37,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 			return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 		}
 
-		const updateData: any = { status };
-		if (status === "COMPLETED") {
-			updateData.endTime = new Date();
+		const updateData: any = {};
+		if (status) {
+			updateData.status = status;
+			if (status === "COMPLETED") {
+				updateData.endTime = new Date();
+			}
+		}
+
+		if (manualPassengers !== undefined) {
+			updateData.manualPassengers = manualPassengers;
 		}
 
 		const updatedTrip = await prisma.vehicleTrip.update({

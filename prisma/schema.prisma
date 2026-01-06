@@ -75,6 +75,7 @@ model Driver {
   tripRatings      TripRating[]
   favoriteOfUsers  FavoriteDriver[]
   vehicleTrips     VehicleTrip[]
+  queueEntry       RankQueueEntry?
 
   @@map("drivers")
 }
@@ -103,6 +104,20 @@ model Taxi {
   locationHistory TaxiLocation[] @relation("history")
   maintenanceLog  Maintenance[]
   vehicleTrips    VehicleTrip[]
+  queueEntry      RankQueueEntry[] // A taxi can be in multiple queue entries history? No, wait.
+                                 // The RankQueueEntry has @@unique([driverId]).
+                                 // Does it imply 1:1 on Taxi?
+                                 // RankQueueEntry definition: taxi Taxi? @relation(...)
+                                 // It's optional 1-to-many from Taxi perspective if a Taxi can be used by different drivers...
+                                 // But a queue entry is a specific moment.
+                                 // Actually let's just make it RankQueueEntry[] to be safe (history) or if I delete them, it's fine.
+                                 // Wait, I said `queueEntry RankQueueEntry?` (Singular) on Driver.
+                                 // A taxi can only be in one queue at a time.
+                                 // But if I delete the entry when they leave, it's transient.
+                                 // Let's use `RankQueueEntry[]` to allow for the relation without constraints,
+                                 // OR `RankQueueEntry?` if we enforce unique taxiId.
+                                 // I didn't enforce unique taxiId in RankQueueEntry schema, only driverId.
+                                 // So `RankQueueEntry[]` is safer.
 
   @@map("taxis")
 }
@@ -170,9 +185,24 @@ model Rank {
   sourceRoutes   Route[]    @relation("source_rank")
   destRoutes     Route[]    @relation("destination_rank")
   taxiRanks      TaxiRank[]
+  queueEntries   RankQueueEntry[]
   trips          Trip[]
 
   @@map("ranks")
+}
+
+model RankQueueEntry {
+  id        String   @id @default(uuid())
+  joinedAt  DateTime @default(now())
+  rank      Rank     @relation(fields: [rankId], references: [id], onDelete: Cascade)
+  rankId    String
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  driverId  String
+  taxi      Taxi?    @relation(fields: [taxiId], references: [id])
+  taxiId    String?
+
+  @@unique([driverId]) // A driver can only be in one queue at a time
+  @@map("rank_queue_entries")
 }
 
 model Route {
@@ -302,6 +332,7 @@ model VehicleTrip {
   startTime   DateTime?
   endTime     DateTime?
   capacity    Int
+  manualPassengers Int    @default(0)
   passengers  Trip[]
 
   @@map("vehicle_trips")

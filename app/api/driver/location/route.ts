@@ -6,8 +6,8 @@ import { z } from "zod";
 const UpdateLocationSchema = z.object({
 	lat: z.number(),
 	lng: z.number(),
-	heading: z.number().optional(),
-	speed: z.number().optional(),
+	heading: z.number().nullable().optional(),
+	speed: z.number().nullable().optional(),
 });
 
 export async function POST(req: NextRequest) {

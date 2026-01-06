@@ -123,6 +123,11 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Taxi already has an active trip" }, { status: 409 });
 		}
 
+		// Cleanup: Remove from any queue if exists
+		await prisma.rankQueueEntry.deleteMany({
+			where: { driverId: driver.id },
+		});
+
 		const vehicleTrip = await prisma.vehicleTrip.create({
 			data: {
 				driverId: driver.id,

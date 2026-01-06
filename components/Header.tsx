@@ -7,24 +7,25 @@ const Header: React.FC = () => {
 	const { user } = useUser();
 
 	return (
-		<header className="flex items-center justify-between px-4 pt-4 pb-2 bg-background/90 backdrop-blur-sm">
+		<header className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between pointer-events-none">
 			<SignedIn>
-				<div>
-					<h1 className="text-xl font-bold">Welcome, {user?.firstName || "User"} 👋</h1>
-					<p className="text-xs text-default-500">
-						Ready to travel? Find a taxi or view your recent trips.
-					</p>
+				<div className="bg-background/80 backdrop-blur-md rounded-full px-4 py-2 pointer-events-auto border border-default-100 shadow-sm">
+					<p className="text-sm font-semibold">Hi, {user?.firstName || "Traveler"} 👋</p>
 				</div>
-				<AuthButton />
+				<div className="pointer-events-auto">
+					<AuthButton />
+				</div>
 			</SignedIn>
 			<SignedOut>
-				<div>
-					<h1 className="text-xl font-bold">Welcome to TaxiCity 🚖</h1>
-					<p className="text-xs text-default-500">
-						Sign in to book rides and track your trips.
-					</p>
+				{/* Empty header for signed out state to let the landing page focus on the bottom sheet */}
+				<div className="bg-background/80 backdrop-blur-md rounded-full px-3 py-1.5 pointer-events-auto border border-default-100 shadow-sm flex items-center gap-2">
+					<span className="text-sm font-bold bg-gradient-to-tr from-primary to-secondary bg-clip-text text-transparent">
+						TaxiCity
+					</span>
 				</div>
-				<AuthButton />
+				<div className="pointer-events-auto">
+					<AuthButton />
+				</div>
 			</SignedOut>
 		</header>
 	);

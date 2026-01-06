@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
 				passengers: {
 					where: { status: "COMPLETED" },
 				},
+				route: true,
 			},
 			orderBy: { endTime: "desc" },
 		});
@@ -43,13 +44,8 @@ export async function GET(req: NextRequest) {
 		const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
 		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-		const recentTrips: {
-			id: string;
-			date: Date;
-			route: string;
-			passengers: number;
-			amount: number;
-		}[] = [];
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const recentTrips: any[] = [];
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		vehicleTrips.forEach((vt: any) => {
@@ -70,10 +66,14 @@ export async function GET(req: NextRequest) {
 			if (recentTrips.length < 10) {
 				recentTrips.push({
 					id: vt.id,
-					date: tripDate,
-					route: vt.routeId, // We might want to fetch route name
+					startTime: vt.startTime ? vt.startTime.toISOString() : tripDate.toISOString(),
+					endTime: vt.endTime ? vt.endTime.toISOString() : tripDate.toISOString(),
+					route: {
+						name: vt.route?.name || "Unknown Route",
+					},
+					fare: 0, // Avg fare or N/A
 					passengers: vt.passengers.length,
-					amount: tripTotal,
+					totalAmount: tripTotal,
 				});
 			}
 		});
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
 			today: todayEarnings,
 			week: weekEarnings,
 			month: monthEarnings,
-			recentTrips,
+			trips: recentTrips,
 		});
 	} catch (error) {
 		console.error("Error fetching earnings:", error);

@@ -18,6 +18,7 @@ interface RideContextType {
 	selectedTaxi: iTaxi | null;
 	pickupLocation: string;
 	dropoffLocation: string;
+	ratingTrip: iTrip | null;
 
 	// Actions
 	setActiveTrip: (trip: iTrip | null) => void;
@@ -25,6 +26,7 @@ interface RideContextType {
 	setSelectedTaxi: (taxi: iTaxi | null) => void;
 	setPickupLocation: (location: string) => void;
 	setDropoffLocation: (location: string) => void;
+	setRatingTrip: (trip: iTrip | null) => void;
 	requestRide: () => Promise<void>;
 	driverArrived: () => Promise<void>;
 	startRide: () => Promise<void>;
@@ -72,7 +74,7 @@ const fetchTaxis = async (): Promise<iTaxi[]> => {
 	return data.taxis.map((t: any) => ({
 		id: t.id,
 		driver: t.driver ? (t.driver.fullName || `${t.driver.firstName} ${t.driver.lastName}`) : "Unknown",
-		model: t.model,
+		model: t.make && t.model ? `${t.make} ${t.model}` : t.model,
 		licensePlate: t.licensePlate,
 		capacity: t.capacity,
 		rating: 4.5, // Placeholder
@@ -93,8 +95,10 @@ const fetchTrips = async (): Promise<iTrip[]> => {
 		time: new Date(t.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
 		pickup: t.pickupAddress,
 		dropoff: t.dropoffAddress,
-		driver: t.taxi?.driver ? t.taxi.driver.fullName : "Unknown",
-		vehicle: t.taxi?.model || "Unknown",
+		driver: t.taxi?.driver
+			? (t.taxi.driver.fullName || `${t.taxi.driver.firstName} ${t.taxi.driver.lastName}`)
+			: "Unknown",
+		vehicle: t.taxi ? (t.taxi.make && t.taxi.model ? `${t.taxi.make} ${t.taxi.model}` : t.taxi.model) : "Unknown",
 		licensePlate: t.taxi?.licensePlate || "Unknown",
 		fare: `R${t.fare}`,
 		status: t.status.toLowerCase(),
@@ -113,6 +117,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	const [selectedTaxi, setSelectedTaxi] = useState<iTaxi | null>(null);
 	const [pickupLocation, setPickupLocation] = useState<string>("");
 	const [dropoffLocation, setDropoffLocation] = useState<string>("");
+	const [ratingTrip, setRatingTrip] = useState<iTrip | null>(null);
 	const [isRestoring, setIsRestoring] = useState(true);
 
 	// Restore state from local storage
@@ -248,7 +253,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				pickup: polledTrip.pickupAddress,
 				dropoff: polledTrip.dropoffAddress,
 				driver: driverName,
-				vehicle: polledTrip.taxi?.model || "Pending Assignment",
+				vehicle: polledTrip.taxi ? (polledTrip.taxi.make && polledTrip.taxi.model ? `${polledTrip.taxi.make} ${polledTrip.taxi.model}` : polledTrip.taxi.model) : "Pending Assignment",
 				licensePlate: polledTrip.taxi?.licensePlate || "Pending Assignment",
 				fare: `R${polledTrip.fare}`,
 				status: mappedStatus,
@@ -535,7 +540,10 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			const updatedTrip = { ...activeTrip, status: "completed" as const };
 			setActiveTrip(updatedTrip);
 
-			// Clear other state, but keep activeTrip for the receipt view
+			// We now handle rating inline in the dashboard, so we don't trigger the modal
+			// setRatingTrip(updatedTrip);
+
+			// Clear other state, but keep activeTrip for the receipt view until user dismisses or rates
 			setSelectedRoute(null);
 			setSelectedTaxi(null);
 			setPickupLocation("");
@@ -587,6 +595,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		selectedTaxi,
 		pickupLocation,
 		dropoffLocation,
+		ratingTrip,
 		isLoading: isLoadingRoutes || isLoadingRanks || isLoadingTaxis || isLoadingTrips,
 		isRestoring,
 
@@ -595,6 +604,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		setSelectedTaxi,
 		setPickupLocation,
 		setDropoffLocation,
+		setRatingTrip,
 		requestRide,
 		driverArrived,
 		startRide,

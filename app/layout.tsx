@@ -10,6 +10,7 @@ import { siteConfig } from "@/lib/config/site";
 import MobileTabs from "@/components/MobileTabs";
 import DriverTabs from "@/components/DriverTabs";
 import Header from "@/components/Header";
+import GlobalModals from "@/components/GlobalModals";
 
 export const metadata: Metadata = {
 	title: {
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 						<Main>{children}</Main>
 						<MobileTabs />
 						<DriverTabs />
+						<GlobalModals />
 					</div>
 				</Providers>
 			</body>
