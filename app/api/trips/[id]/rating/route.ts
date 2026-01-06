@@ -8,10 +8,8 @@ const RatingSchema = z.object({
 	comment: z.string().optional(),
 });
 
-export async function POST(
-	req: NextRequest,
-	{ params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+	const params = await props.params;
 	const { userId } = getAuth(req);
 	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,7 +18,7 @@ export async function POST(
 	const tripId = params.id;
 
 	try {
-        const body = await req.json();
+		const body = await req.json();
 		const { rating, comment } = RatingSchema.parse(body);
 
 		// 1. Verify trip exists, belongs to user, and is completed
@@ -29,10 +27,10 @@ export async function POST(
 			include: {
 				taxi: {
 					include: {
-						driver: true
-					}
-				}
-			}
+						driver: true,
+					},
+				},
+			},
 		});
 
 		if (!trip) {
@@ -47,9 +45,9 @@ export async function POST(
 			return NextResponse.json({ error: "Trip must be completed to rate" }, { status: 400 });
 		}
 
-        if (!trip.taxi || !trip.taxi.driver) {
-            return NextResponse.json({ error: "No driver found for this trip" }, { status: 400 }); 
-        }
+		if (!trip.taxi || !trip.taxi.driver) {
+			return NextResponse.json({ error: "No driver found for this trip" }, { status: 400 });
+		}
 
 		// 2. Check if already rated
 		const existingRating = await prisma.tripRating.findUnique({
@@ -72,9 +70,8 @@ export async function POST(
 		});
 
 		return NextResponse.json(newRating, { status: 201 });
-
 	} catch (error) {
-        if (error instanceof z.ZodError) {
+		if (error instanceof z.ZodError) {
 			return NextResponse.json({ error: "Invalid data", details: error.issues }, { status: 400 });
 		}
 		console.error("Error submitting rating:", error);

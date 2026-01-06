@@ -425,6 +425,10 @@ export const MapView: React.FC<MapViewProps> = ({
 		routePoints,
 		selectedRoute,
 		showRoute,
+		isDriver,
+		passengerStops,
+		smoothTaxiLocation,
+		taxiLocation
 	]);
 
 	if (loadError) return <div className="text-danger">Failed to load maps</div>;

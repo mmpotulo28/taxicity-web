@@ -43,7 +43,16 @@ export function DriverConsole() {
 	};
 
 	// Summary State for End of Shift
-	const [lastTripStats, setLastTripStats] = useState<any>(null);
+	interface TripStats {
+		route: string;
+		totalPassengers: number;
+		appPassengers: number;
+		manualPassengers: number;
+		totalRevenue: number;
+		digitalRevenue: number;
+		cashDue: number;
+	}
+	const [lastTripStats, setLastTripStats] = useState<TripStats | null>(null);
 
 	// Manual Boarding State from Context
 	const manualPassengers = activeVehicleTrip?.manualPassengers || 0;
