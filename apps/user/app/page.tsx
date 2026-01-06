@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
-import { useRide } from "@/context/RideContext";
+import { useRide } from "@taxicity/ui";
 import TripCard from "@taxicity/ui/components/TripCard";
 import TripRating from "@taxicity/ui/components/TripRating";
 import { MapView } from "@taxicity/ui/components/map-view";

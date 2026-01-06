@@ -10,8 +10,8 @@ import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { RideProvider } from "@/context/RideContext";
-import { MapProvider } from "@/context/MapContext";
+import { RideProvider } from "@taxicity/ui";
+import { MapProvider } from "@taxicity/ui";
 import { clerkConfig } from "@/lib/config/clerk";
 
 export interface ProvidersProps {

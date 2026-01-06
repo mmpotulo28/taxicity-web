@@ -1,6 +1,7 @@
 {
 	"$schema": "https://turbo.build/schema.json",
 	"ui": "tui",
+	"globalPassThroughEnv": ["SENTRY_AUTH_TOKEN", "CLERK_SECRET_KEY", "DATABASE_URL", "BLOB_READ_WRITE_TOKEN", "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY", "VERCEL_OIDC_TOKEN"],
 	"tasks": {
 		"build": {
 			"dependsOn": ["^build"],

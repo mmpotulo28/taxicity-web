@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Input, Tabs, Tab, Select, SelectItem, Spinner } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-import { useRide } from "@/context/RideContext";
+import { useRide } from "@taxicity/ui";
 import RouteCard from "@taxicity/ui/components/RouteCard";
 
 // Helper to extract fare min for sorting

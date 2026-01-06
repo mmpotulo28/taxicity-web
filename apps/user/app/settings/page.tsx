@@ -21,7 +21,7 @@ import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
-import { useRide } from "@/context/RideContext";
+import { useRide } from "@taxicity/ui";
 
 const Settings: React.FC = () => {
 	const router = useRouter();

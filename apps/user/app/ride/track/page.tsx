@@ -10,7 +10,7 @@ import { Switch, Card, CardBody, Chip } from "@heroui/react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 
-import { useRide } from "@/context/RideContext";
+import { useRide } from "@taxicity/ui";
 import { MapView } from "@taxicity/ui/components/map-view";
 import TripCard from "@taxicity/ui/components/TripCard";
 import TripModal from "@taxicity/ui/components/TripModal";

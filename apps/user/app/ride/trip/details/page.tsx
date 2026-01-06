@@ -5,7 +5,7 @@ import { Button, Card, CardBody, CardHeader, Divider, Chip, useDisclosure } from
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { useRide } from "@/context/RideContext";
+import { useRide } from "@taxicity/ui";
 import TripModal from "@taxicity/ui/components/TripModal";
 import { MapView } from "@taxicity/ui/components/map-view";
 

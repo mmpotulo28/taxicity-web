@@ -5,7 +5,7 @@ import { Button, Card, CardBody } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { useRide } from "@/context/RideContext";
+import { useRide } from "@taxicity/ui";
 import LocationSelector from "@taxicity/ui/components/LocationSelector";
 
 const LocationPage: React.FC = () => {
@@ -71,16 +71,14 @@ const LocationPage: React.FC = () => {
 				{/* Stepper Progress */}
 				<div className="flex items-center gap-2 mb-2">
 					<div
-						className={`w-6 h-6 rounded-full flex items-center justify-center ${
-							step === 1 ? "bg-primary text-white" : "bg-default-200 text-default-500"
-						}`}>
+						className={`w-6 h-6 rounded-full flex items-center justify-center ${step === 1 ? "bg-primary text-white" : "bg-default-200 text-default-500"
+							}`}>
 						1
 					</div>
 					<div className={`h-1 flex-1 ${step === 2 ? "bg-primary" : "bg-default-200"}`} />
 					<div
-						className={`w-6 h-6 rounded-full flex items-center justify-center ${
-							step === 2 ? "bg-primary text-white" : "bg-default-200 text-default-500"
-						}`}>
+						className={`w-6 h-6 rounded-full flex items-center justify-center ${step === 2 ? "bg-primary text-white" : "bg-default-200 text-default-500"
+							}`}>
 						2
 					</div>
 				</div>

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Input, Tabs, Tab, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-import { useRide } from "@/context/RideContext";
+import { useRide } from "@taxicity/ui";
 import TripCard from "@taxicity/ui/components/TripCard";
 import { iTrip } from "@/types";
 import TripModal from "@taxicity/ui/components/TripModal";
