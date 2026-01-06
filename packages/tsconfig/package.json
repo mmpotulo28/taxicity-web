@@ -1,0 +1,7 @@
+{
+	"name": "@taxicity/tsconfig",
+	"version": "0.0.1",
+	"files": [
+		"base.json"
+	]
+}

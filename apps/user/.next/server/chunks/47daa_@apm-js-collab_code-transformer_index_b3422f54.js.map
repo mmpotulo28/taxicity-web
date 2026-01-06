@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":["file:///Users/ManelisiM/Documents/my-projects/nextjs/heroui/taxicity-web/node_modules/.pnpm/%40apm-js-collab%2Bcode-transformer%400.8.2/node_modules/%40apm-js-collab/code-transformer/index.js"],"sourcesContent":["\"use strict\";\nObject.defineProperty(exports, \"__esModule\", { value: true });\nexports.create = create;\n// ./pkg/orchestrion_js.js has a side effect of loading the wasm binary. \n// We only want that if the library is actually used!\nvar cachedCreate;\n/**\n * Create a new instrumentation matcher from an array of instrumentation configs.\n */\nfunction create(configs, dc_module) {\n    if (!cachedCreate) {\n        cachedCreate = require('./pkg/orchestrion_js.js').create;\n    }\n    if (cachedCreate === undefined) {\n        throw new Error(\"Failed to load '@apm-js-collab/code-transformer'\");\n    }\n    return cachedCreate(configs, dc_module);\n}\n"],"names":[],"mappings":"AAAA;AACA,OAAO,cAAc,CAAC,SAAS,cAAc;IAAE,OAAO;AAAK;AAC3D,QAAQ,MAAM,GAAG;AACjB,yEAAyE;AACzE,qDAAqD;AACrD,IAAI;AACJ;;CAEC,GACD,SAAS,OAAO,OAAO,EAAE,SAAS;IAC9B,IAAI,CAAC,cAAc;QACf,eAAe,gMAAmC,MAAM;IAC5D;IACA,IAAI,iBAAiB,WAAW;QAC5B,MAAM,IAAI,MAAM;IACpB;IACA,OAAO,aAAa,SAAS;AACjC","ignoreList":[0],"debugId":null}}]
+}

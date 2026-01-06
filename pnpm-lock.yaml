@@ -297,12 +297,458 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.5.7)(typescript@5.6.3)
+      turbo:
+        specifier: ^2.7.3
+        version: 2.7.3
       typescript:
         specifier: 5.6.3
         version: 5.6.3
       typescript-eslint:
         specifier: ^8.52.0
         version: 8.52.0(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+
+  apps/admin:
+    dependencies:
+      '@clerk/nextjs':
+        specifier: ^6.36.5
+        version: 6.36.5(next@15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@sentry/nextjs':
+        specifier: ^10.32.1
+        version: 10.32.1(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.104.1)
+      '@tanstack/react-query':
+        specifier: ^5.90.16
+        version: 5.90.16(react@18.3.1)
+      '@taxicity/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@taxicity/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@taxicity/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      axios:
+        specifier: ^1.13.2
+        version: 1.13.2
+      next:
+        specifier: 15.3.8
+        version: 15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@taxicity/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@taxicity/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: 20.5.7
+        version: 20.5.7
+      '@types/react':
+        specifier: 18.3.3
+        version: 18.3.3
+      postcss:
+        specifier: 8.5.6
+        version: 8.5.6
+      tailwindcss:
+        specifier: 4.1.11
+        version: 4.1.11
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  apps/driver:
+    dependencies:
+      '@clerk/nextjs':
+        specifier: ^6.36.5
+        version: 6.36.5(next@15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@sentry/nextjs':
+        specifier: ^10.32.1
+        version: 10.32.1(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.104.1)
+      '@tanstack/react-query':
+        specifier: ^5.90.16
+        version: 5.90.16(react@18.3.1)
+      '@taxicity/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@taxicity/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@taxicity/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      axios:
+        specifier: ^1.13.2
+        version: 1.13.2
+      next:
+        specifier: 15.3.8
+        version: 15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@taxicity/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@taxicity/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: 20.5.7
+        version: 20.5.7
+      '@types/react':
+        specifier: 18.3.3
+        version: 18.3.3
+      postcss:
+        specifier: 8.5.6
+        version: 8.5.6
+      tailwindcss:
+        specifier: 4.1.11
+        version: 4.1.11
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  apps/user:
+    dependencies:
+      '@clerk/nextjs':
+        specifier: ^6.36.5
+        version: 6.36.5(next@15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/react':
+        specifier: ^2.8.7
+        version: 2.8.7(@types/react@18.3.3)(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@4.1.11)
+      '@sentry/nextjs':
+        specifier: ^10.32.1
+        version: 10.32.1(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.104.1)
+      '@tanstack/react-query':
+        specifier: ^5.90.16
+        version: 5.90.16(react@18.3.1)
+      '@taxicity/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@taxicity/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@taxicity/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@vercel/blob':
+        specifier: ^2.0.0
+        version: 2.0.0
+      axios:
+        specifier: ^1.13.2
+        version: 1.13.2
+      framer-motion:
+        specifier: ^11.18.2
+        version: 11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      next:
+        specifier: 15.3.8
+        version: 15.3.8(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@taxicity/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@taxicity/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: 20.5.7
+        version: 20.5.7
+      '@types/react':
+        specifier: 18.3.3
+        version: 18.3.3
+      postcss:
+        specifier: 8.5.6
+        version: 8.5.6
+      tailwindcss:
+        specifier: 4.1.11
+        version: 4.1.11
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  packages/database:
+    dependencies:
+      '@prisma/client':
+        specifier: ^6.19.1
+        version: 6.19.1(prisma@6.19.1(typescript@5.6.3))(typescript@5.6.3)
+      '@prisma/extension-accelerate':
+        specifier: ^2.0.2
+        version: 2.0.2(@prisma/client@6.19.1(prisma@6.19.1(typescript@5.6.3))(typescript@5.6.3))
+    devDependencies:
+      '@types/node':
+        specifier: 20.5.7
+        version: 20.5.7
+      prisma:
+        specifier: ^6.19.1
+        version: 6.19.1(typescript@5.6.3)
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@20.5.7)(typescript@5.6.3)
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  packages/eslint-config:
+    dependencies:
+      '@eslint/js':
+        specifier: ^9.39.2
+        version: 9.39.2
+      '@next/eslint-plugin-next':
+        specifier: 15.3.4
+        version: 15.3.4
+      eslint:
+        specifier: 9.25.1
+        version: 9.25.1(jiti@2.6.1)
+      eslint-config-next:
+        specifier: 15.3.4
+        version: 15.3.4(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+      eslint-config-prettier:
+        specifier: 9.1.0
+        version: 9.1.0(eslint@9.25.1(jiti@2.6.1))
+      eslint-plugin-import:
+        specifier: 2.31.0
+        version: 2.31.0(@typescript-eslint/parser@8.34.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.25.1(jiti@2.6.1))
+      eslint-plugin-jsx-a11y:
+        specifier: 6.10.2
+        version: 6.10.2(eslint@9.25.1(jiti@2.6.1))
+      eslint-plugin-node:
+        specifier: 11.1.0
+        version: 11.1.0(eslint@9.25.1(jiti@2.6.1))
+      eslint-plugin-prettier:
+        specifier: 5.2.1
+        version: 5.2.1(@types/eslint@9.6.1)(eslint-config-prettier@9.1.0(eslint@9.25.1(jiti@2.6.1)))(eslint@9.25.1(jiti@2.6.1))(prettier@3.5.3)
+      eslint-plugin-react:
+        specifier: 7.37.5
+        version: 7.37.5(eslint@9.25.1(jiti@2.6.1))
+      eslint-plugin-react-hooks:
+        specifier: 5.2.0
+        version: 5.2.0(eslint@9.25.1(jiti@2.6.1))
+      eslint-plugin-unused-imports:
+        specifier: 4.1.4
+        version: 4.1.4(@typescript-eslint/eslint-plugin@8.52.0(@typescript-eslint/parser@8.34.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1))
+      globals:
+        specifier: 16.0.0
+        version: 16.0.0
+      typescript:
+        specifier: ^5.6.3
+        version: 5.6.3
+      typescript-eslint:
+        specifier: ^8.52.0
+        version: 8.52.0(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+
+  packages/tsconfig: {}
+
+  packages/ui:
+    dependencies:
+      '@heroui/accordion':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/alert':
+        specifier: 2.2.26
+        version: 2.2.26(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/autocomplete':
+        specifier: 2.3.28
+        version: 2.3.28(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(@types/react@18.3.3)(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/avatar':
+        specifier: 2.2.21
+        version: 2.2.21(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/badge':
+        specifier: 2.2.16
+        version: 2.2.16(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/button':
+        specifier: 2.2.26
+        version: 2.2.26(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/card':
+        specifier: 2.2.24
+        version: 2.2.24(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/chip':
+        specifier: 2.2.21
+        version: 2.2.21(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/code':
+        specifier: 2.2.20
+        version: 2.2.20(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/divider':
+        specifier: 2.2.19
+        version: 2.2.19(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/drawer':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/dropdown':
+        specifier: 2.3.26
+        version: 2.3.26(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/form':
+        specifier: 2.1.26
+        version: 2.1.26(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/framer-utils':
+        specifier: 2.1.22
+        version: 2.1.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/image':
+        specifier: 2.2.16
+        version: 2.2.16(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/input':
+        specifier: 2.4.27
+        version: 2.4.27(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/kbd':
+        specifier: 2.2.21
+        version: 2.2.21(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/link':
+        specifier: 2.2.22
+        version: 2.2.22(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/listbox':
+        specifier: 2.3.25
+        version: 2.3.25(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/modal':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/navbar':
+        specifier: 2.2.24
+        version: 2.2.24(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/pagination':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/popover':
+        specifier: 2.3.26
+        version: 2.3.26(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/progress':
+        specifier: 2.2.21
+        version: 2.2.21(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/radio':
+        specifier: 2.3.26
+        version: 2.3.26(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/react':
+        specifier: ^2.8.7
+        version: 2.8.7(@types/react@18.3.3)(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@4.1.11)
+      '@heroui/react-utils':
+        specifier: 2.1.13
+        version: 2.1.13(react@18.3.1)
+      '@heroui/scroll-shadow':
+        specifier: 2.3.17
+        version: 2.3.17(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/select':
+        specifier: 2.4.27
+        version: 2.4.27(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/skeleton':
+        specifier: 2.2.16
+        version: 2.2.16(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/snippet':
+        specifier: 2.2.27
+        version: 2.2.27(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/spacer':
+        specifier: 2.2.20
+        version: 2.2.20(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/spinner':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/switch':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/system':
+        specifier: 2.4.22
+        version: 2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/table':
+        specifier: 2.2.26
+        version: 2.2.26(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/tabs':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/theme':
+        specifier: 2.4.22
+        version: 2.4.22(tailwindcss@4.1.11)
+      '@heroui/toast':
+        specifier: 2.0.16
+        version: 2.0.16(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/tooltip':
+        specifier: 2.2.23
+        version: 2.2.23(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@heroui/use-theme':
+        specifier: ^2.1.10
+        version: 2.1.10(react@18.3.1)
+      '@heroui/user':
+        specifier: 2.2.21
+        version: 2.2.21(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@iconify/react':
+        specifier: ^6.0.2
+        version: 6.0.2(react@18.3.1)
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
+      framer-motion:
+        specifier: ^11.18.2
+        version: 11.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      lucide-react:
+        specifier: ^0.545.0
+        version: 0.545.0(react@18.3.1)
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      tailwind-merge:
+        specifier: ^3.4.0
+        version: 3.4.0
+      tailwind-variants:
+        specifier: 3.1.1
+        version: 3.1.1(tailwind-merge@3.4.0)(tailwindcss@4.1.11)
+      tailwindcss:
+        specifier: 4.1.11
+        version: 4.1.11
+    devDependencies:
+      '@tailwindcss/postcss':
+        specifier: 4.1.11
+        version: 4.1.11
+      '@types/react':
+        specifier: 18.3.3
+        version: 18.3.3
+      '@types/react-dom':
+        specifier: 18.3.0
+        version: 18.3.0
+      postcss:
+        specifier: 8.5.6
+        version: 8.5.6
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
+  packages/utils:
+    dependencies:
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
+      intl-messageformat:
+        specifier: 10.7.16
+        version: 10.7.16
+      tailwind-merge:
+        specifier: ^3.4.0
+        version: 3.4.0
+    devDependencies:
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
 
 packages:
 
@@ -6166,6 +6612,40 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  turbo-darwin-64@2.7.3:
+    resolution: {integrity: sha512-aZHhvRiRHXbJw1EcEAq4aws1hsVVUZ9DPuSFaq9VVFAKCup7niIEwc22glxb7240yYEr1vLafdQ2U294Vcwz+w==}
+    cpu: [x64]
+    os: [darwin]
+
+  turbo-darwin-arm64@2.7.3:
+    resolution: {integrity: sha512-CkVrHSq+Bnhl9sX2LQgqQYVfLTWC2gvI74C4758OmU0djfrssDKU9d4YQF0AYXXhIIRZipSXfxClQziIMD+EAg==}
+    cpu: [arm64]
+    os: [darwin]
+
+  turbo-linux-64@2.7.3:
+    resolution: {integrity: sha512-GqDsCNnzzr89kMaLGpRALyigUklzgxIrSy2pHZVXyifgczvYPnLglex78Aj3T2gu+T3trPPH2iJ+pWucVOCC2Q==}
+    cpu: [x64]
+    os: [linux]
+
+  turbo-linux-arm64@2.7.3:
+    resolution: {integrity: sha512-NdCDTfIcIo3dWjsiaAHlxu5gW61Ed/8maah1IAF/9E3EtX0aAHNiBMbuYLZaR4vRJ7BeVkYB6xKWRtdFLZ0y3g==}
+    cpu: [arm64]
+    os: [linux]
+
+  turbo-windows-64@2.7.3:
+    resolution: {integrity: sha512-7bVvO987daXGSJVYBoG8R4Q+csT1pKIgLJYZevXRQ0Hqw0Vv4mKme/TOjYXs9Qb1xMKh51Tb3bXKDbd8/4G08g==}
+    cpu: [x64]
+    os: [win32]
+
+  turbo-windows-arm64@2.7.3:
+    resolution: {integrity: sha512-nTodweTbPmkvwMu/a55XvjMsPtuyUSC+sV7f/SR57K36rB2I0YG21qNETN+00LOTUW9B3omd8XkiXJkt4kx/cw==}
+    cpu: [arm64]
+    os: [win32]
+
+  turbo@2.7.3:
+    resolution: {integrity: sha512-+HjKlP4OfYk+qzvWNETA3cUO5UuK6b5MSc2UJOKyvBceKucQoQGb2g7HlC2H1GHdkfKrk4YF1VPvROkhVZDDLQ==}
+    hasBin: true
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -11383,6 +11863,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/eslint-plugin@8.52.0(@typescript-eslint/parser@8.34.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)':
+    dependencies:
+      '@eslint-community/regexpp': 4.12.2
+      '@typescript-eslint/parser': 8.34.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+      '@typescript-eslint/scope-manager': 8.52.0
+      '@typescript-eslint/type-utils': 8.52.0(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+      '@typescript-eslint/utils': 8.52.0(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+      '@typescript-eslint/visitor-keys': 8.52.0
+      eslint: 9.25.1(jiti@2.6.1)
+      ignore: 7.0.5
+      natural-compare: 1.4.0
+      ts-api-utils: 2.4.0(typescript@5.6.3)
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
+
   '@typescript-eslint/eslint-plugin@8.52.0(@typescript-eslint/parser@8.52.0(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -12561,6 +13058,12 @@ snapshots:
       eslint: 9.25.1(jiti@2.6.1)
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.34.1(@typescript-eslint/parser@8.34.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
+
+  eslint-plugin-unused-imports@4.1.4(@typescript-eslint/eslint-plugin@8.52.0(@typescript-eslint/parser@8.34.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1)):
+    dependencies:
+      eslint: 9.25.1(jiti@2.6.1)
+    optionalDependencies:
+      '@typescript-eslint/eslint-plugin': 8.52.0(@typescript-eslint/parser@8.34.1(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3))(eslint@9.25.1(jiti@2.6.1))(typescript@5.6.3)
 
   eslint-scope@5.1.1:
     dependencies:
@@ -14587,6 +15090,33 @@ snapshots:
       strip-bom: 3.0.0
 
   tslib@2.8.1: {}
+
+  turbo-darwin-64@2.7.3:
+    optional: true
+
+  turbo-darwin-arm64@2.7.3:
+    optional: true
+
+  turbo-linux-64@2.7.3:
+    optional: true
+
+  turbo-linux-arm64@2.7.3:
+    optional: true
+
+  turbo-windows-64@2.7.3:
+    optional: true
+
+  turbo-windows-arm64@2.7.3:
+    optional: true
+
+  turbo@2.7.3:
+    optionalDependencies:
+      turbo-darwin-64: 2.7.3
+      turbo-darwin-arm64: 2.7.3
+      turbo-linux-64: 2.7.3
+      turbo-linux-arm64: 2.7.3
+      turbo-windows-64: 2.7.3
+      turbo-windows-arm64: 2.7.3
 
   type-check@0.4.0:
     dependencies:

@@ -1,0 +1,6 @@
+[{"name":"hot-reloader","duration":43,"timestamp":29762175108,"id":3,"tags":{"version":"15.3.8"},"startTime":1767715054186,"traceId":"d1883570afc63ed9"},{"name":"compile-path","duration":555722,"timestamp":29762283687,"id":4,"tags":{"trigger":"instrumentation Node.js"},"startTime":1767715054294,"traceId":"d1883570afc63ed9"}]
+[{"name":"compile-path","duration":192717,"timestamp":29762839646,"id":5,"tags":{"trigger":"instrumentation Edge"},"startTime":1767715054850,"traceId":"d1883570afc63ed9"}]
+[{"name":"compile-path","duration":216790,"timestamp":29763037246,"id":6,"tags":{"trigger":"middleware"},"startTime":1767715055048,"traceId":"d1883570afc63ed9"}]
+[{"name":"hot-reloader","duration":44,"timestamp":29824326662,"id":3,"tags":{"version":"15.3.8"},"startTime":1767715116337,"traceId":"d1883570afc63ed9"},{"name":"compile-path","duration":835565,"timestamp":29824437258,"id":4,"tags":{"trigger":"instrumentation Node.js"},"startTime":1767715116448,"traceId":"d1883570afc63ed9"}]
+[{"name":"compile-path","duration":245010,"timestamp":29825273096,"id":5,"tags":{"trigger":"instrumentation Edge"},"startTime":1767715117284,"traceId":"d1883570afc63ed9"}]
+[{"name":"compile-path","duration":394433,"timestamp":29825537521,"id":6,"tags":{"trigger":"middleware"},"startTime":1767715117548,"traceId":"d1883570afc63ed9"}]

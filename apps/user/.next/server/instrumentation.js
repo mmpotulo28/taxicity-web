@@ -1,0 +1,16 @@
+const CHUNK_PUBLIC_PATH = "server/instrumentation.js";
+const runtime = require("./chunks/[turbopack]_runtime.js");
+runtime.loadChunk("server/chunks/[root-of-the-server]__da6540a3._.js");
+runtime.loadChunk("server/chunks/18ae3_@sentry_core_build_cjs_1648f3ed._.js");
+runtime.loadChunk("server/chunks/ef66a_@opentelemetry_core_build_esm_b5721cf6._.js");
+runtime.loadChunk("server/chunks/37f27_@opentelemetry_semantic-conventions_build_esm_f201e8ff._.js");
+runtime.loadChunk("server/chunks/1820b_@sentry_node-core_build_cjs_be7b77da._.js");
+runtime.loadChunk("server/chunks/861d1_@opentelemetry_sdk-trace-base_build_esm_a7f21393._.js");
+runtime.loadChunk("server/chunks/47daa_@apm-js-collab_code-transformer_pkg_orchestrion_js_3723c1ea.js");
+runtime.loadChunk("server/chunks/47daa_@apm-js-collab_code-transformer_index_b3422f54.js");
+runtime.loadChunk("server/chunks/763f6_@sentry_node_build_cjs_0315f539._.js");
+runtime.loadChunk("server/chunks/5f23f_@sentry_nextjs_build_cjs_348ff0fa._.js");
+runtime.loadChunk("server/chunks/node_modules__pnpm_97c951ab._.js");
+runtime.loadChunk("server/chunks/[root-of-the-server]__0af5e74e._.js");
+runtime.getOrInstantiateRuntimeModule("[project]/apps/user/instrumentation.ts [instrumentation] (ecmascript)", CHUNK_PUBLIC_PATH);
+module.exports = runtime.getOrInstantiateRuntimeModule("[project]/apps/user/instrumentation.ts [instrumentation] (ecmascript)", CHUNK_PUBLIC_PATH).exports;

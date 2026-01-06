@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/ManelisiM/Documents/my-projects/nextjs/heroui/taxicity-web/apps/admin/app/layout.tsx"],"sourcesContent":["import \"@/styles/globals.css\";\nimport { Metadata } from \"next\";\n\nexport const metadata: Metadata = {\n  title: \"Admin Dashboard - TaxiCity\",\n};\n\nexport default function RootLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return (\n    <html lang=\"en\">\n      <body>{children}</body>\n    </html>\n  );\n}\n"],"names":[],"mappings":";;;;;;;AAGO,MAAM,WAAqB;IAChC,OAAO;AACT;AAEe,SAAS,WAAW,EACjC,QAAQ,EAGT;IACC,qBACE,ubAAC;QAAK,MAAK;kBACT,cAAA,ubAAC;sBAAM;;;;;;;;;;;AAGb","debugId":null}},
+    {"offset": {"line": 38, "column": 0}, "map": {"version":3,"sources":["file:///Users/ManelisiM/Documents/my-projects/nextjs/heroui/taxicity-web/node_modules/.pnpm/next%4015.3.8_%40babel%2Bcore%407.28.5_%40opentelemetry%2Bapi%401.9.0_react-dom%4018.3.1_react%4018.3.1__react%4018.3.1/node_modules/next/src/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.ts"],"sourcesContent":["module.exports = require('../../module.compiled').vendored[\n  'react-rsc'\n].ReactJsxDevRuntime\n"],"names":["module","exports","require","vendored","ReactJsxDevRuntime"],"mappings":";AAAAA,OAAOC,OAAO,GAAGC,QAAQ,mPAAyBC,QAAQ,CACxD,YACD,CAACC,kBAAkB","ignoreList":[0],"debugId":null}}]
+}

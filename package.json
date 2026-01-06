@@ -1,14 +1,15 @@
 {
 	"name": "next-app-template",
 	"version": "0.0.1",
+	"packageManager": "pnpm@10.23.0",
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "next dev --turbopack",
-		"postinstall": "pnpm prisma generate --no-engine",
-		"build": "next build",
-		"start": "next start",
-		"check": "tsc --noEmit && eslint --fix"
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"start": "turbo start",
+		"lint": "turbo lint",
+		"db:generate": "pnpm --filter @taxicity/database generate"
 	},
 	"prisma": {
 		"seed": "node --loader ts-node/esm prisma/seed.ts"
@@ -112,6 +113,7 @@
 		"tailwind-variants": "3.1.1",
 		"tailwindcss": "4.1.11",
 		"ts-node": "^10.9.2",
+		"turbo": "^2.7.3",
 		"typescript": "5.6.3",
 		"typescript-eslint": "^8.52.0"
 	}
