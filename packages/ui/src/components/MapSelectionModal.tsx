@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import { Button } from "@heroui/button";
