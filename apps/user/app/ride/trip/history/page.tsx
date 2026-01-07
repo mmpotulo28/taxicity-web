@@ -4,10 +4,8 @@ import { motion } from "framer-motion";
 import { Input, Tabs, Tab, useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
-import { useRide } from "@taxicity/ui";
-import TripCard from "@taxicity/ui/components/TripCard";
-import { iTrip } from "@/types";
-import TripModal from "@taxicity/ui/components/TripModal";
+import { useRide, TripCard, iTrip, TripModal } from "@taxicity/ui";
+
 
 const TripHistory: React.FC = () => {
 	const [searchQuery, setSearchQuery] = useState("");

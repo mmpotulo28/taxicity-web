@@ -2,7 +2,7 @@ import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@taxicity/database";
 
 const CreateSupportTicketSchema = z.object({
 	category: z.enum(["ACCOUNT_ISSUE", "PAYMENT_PROBLEM", "TECHNICAL_SUPPORT", "BOOKING_ISSUE", "DRIVER_COMPLAINT", "FEATURE_REQUEST", "BUG_REPORT", "OTHER"]),

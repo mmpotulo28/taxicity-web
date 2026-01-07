@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
 import { z } from "zod";
-import prisma from "@/lib/prisma";
+import { prisma } from "@taxicity/database";
 
 const statusSchema = z.object({
 	status: z.enum(["REQUESTED", "ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),

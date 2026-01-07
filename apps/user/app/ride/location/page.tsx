@@ -5,8 +5,8 @@ import { Button, Card, CardBody } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { useRide } from "@taxicity/ui";
-import LocationSelector from "@taxicity/ui/components/LocationSelector";
+import { useRide, LocationSelector } from "@taxicity/ui";
+
 
 const LocationPage: React.FC = () => {
 	const router = useRouter();

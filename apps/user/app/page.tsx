@@ -6,11 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
-import { useRide } from "@taxicity/ui";
-import TripCard from "@taxicity/ui/components/TripCard";
-import TripRating from "@taxicity/ui/components/TripRating";
-import { MapView } from "@taxicity/ui/components/map-view";
-import Header from "@taxicity/ui/components/Header";
+import { useRide, TripCard, TripRating, MapView, Header } from "@taxicity/ui";
+
 
 export default function Home() {
 	const router = useRouter();

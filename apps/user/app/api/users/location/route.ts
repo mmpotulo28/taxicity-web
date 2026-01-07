@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@taxicity/database";
 
 // Validation schemas
 const UpdateLocationSchema = z.object({

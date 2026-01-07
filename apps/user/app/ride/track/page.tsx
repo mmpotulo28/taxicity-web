@@ -10,10 +10,8 @@ import { Switch, Card, CardBody, Chip } from "@heroui/react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 
-import { useRide } from "@taxicity/ui";
-import { MapView } from "@taxicity/ui/components/map-view";
-import TripCard from "@taxicity/ui/components/TripCard";
-import TripModal from "@taxicity/ui/components/TripModal";
+import { useRide, MapView, TripCard, TripModal } from "@taxicity/ui";
+
 
 const TrackRide: React.FC = () => {
 	const router = useRouter();

@@ -7,8 +7,7 @@ import { Main } from "./Main";
 
 import { fontSans } from "@/lib/config/fonts";
 import { siteConfig } from "@/lib/config/site";
-import MobileTabs from "@taxicity/ui/components/MobileTabs";
-import GlobalModals from "@taxicity/ui/components/GlobalModals";
+import { MobileTabs, GlobalModals } from "@taxicity/ui";
 
 export const metadata: Metadata = {
 	title: {

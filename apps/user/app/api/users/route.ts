@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@taxicity/database";
 import { isAdmin, unauthorizedResponse } from "@/lib/auth";
 
 // Validation schemas

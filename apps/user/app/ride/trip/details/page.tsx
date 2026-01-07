@@ -5,9 +5,8 @@ import { Button, Card, CardBody, CardHeader, Divider, Chip, useDisclosure } from
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { useRide } from "@taxicity/ui";
-import TripModal from "@taxicity/ui/components/TripModal";
-import { MapView } from "@taxicity/ui/components/map-view";
+import { useRide, TripModal, MapView } from "@taxicity/ui";
+
 
 const TripDetails: React.FC = () => {
 	const router = useRouter();
