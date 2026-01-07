@@ -8,8 +8,6 @@ import { Main } from "./Main";
 import { fontSans } from "@/lib/config/fonts";
 import { siteConfig } from "@/lib/config/site";
 import MobileTabs from "@taxicity/ui/components/MobileTabs";
-import DriverTabs from "@taxicity/ui/components/DriverTabs";
-import Header from "@taxicity/ui/components/Header";
 import GlobalModals from "@taxicity/ui/components/GlobalModals";
 
 export const metadata: Metadata = {
@@ -68,7 +66,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					<div className="flex flex-col h-screen  mx-auto text-foreground bg-background">
 						<Main>{children}</Main>
 						<MobileTabs />
-						<DriverTabs />
 						<GlobalModals />
 					</div>
 				</Providers>

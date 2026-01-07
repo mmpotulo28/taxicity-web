@@ -5,8 +5,8 @@ import { Spinner } from "@heroui/spinner";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
 import { useDriver } from "@/context/DriverContext";
-import { DriverConsole } from "@taxicity/ui/components/driver/DriverConsole";
-import { VehicleRegistration } from "@taxicity/ui/components/driver/VehicleRegistration";
+import { DriverConsole } from "@/components/DriverConsole";
+import { VehicleRegistration } from "@/components/VehicleRegistration";
 import { motion } from "framer-motion";
 
 export default function DriverPage() {

@@ -9,12 +9,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@taxicity/ui/*": [
-        "../../packages/ui/src/*"
-      ],
-      "@taxicity/utils": [
-        "../../packages/utils/src/index.ts"
       ]
     }
   },

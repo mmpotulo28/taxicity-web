@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Card, CardBody } from "@heroui/card";
 import { Icon } from "@iconify/react";
 import { Select, SelectItem } from "@heroui/select";
 import { motion, AnimatePresence } from "framer-motion";
+import { Header } from "@taxicity/ui";
 import { useDriver } from "@/context/DriverContext";
-import Header from "@taxicity/ui/components/Header";
 
 export default function DriverApplicationPage() {
   const router = useRouter();

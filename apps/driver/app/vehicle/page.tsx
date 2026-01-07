@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardBody } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
 import { useDriver } from "@/context/DriverContext";
-import { VehicleRegistration } from "@taxicity/ui/components/driver/VehicleRegistration";
-import { VehicleCard } from "@taxicity/ui/components/driver/VehicleCard";
-import { RouteManagementModal } from "@taxicity/ui/components/driver/RouteManagementModal";
+import { VehicleRegistration } from "@/components/VehicleRegistration";
+import { VehicleCard } from "@/components/VehicleCard";
+import { RouteManagementModal } from "@/components/RouteManagementModal";
 import { addToast } from "@heroui/toast";
 
 export default function DriverVehiclePage() {
