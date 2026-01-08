@@ -32,28 +32,30 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
+import { useRanks } from "@/hooks/useRanks";
+import { useTaxis } from "@/hooks/useTaxis";
+import { useRoutes } from "@/hooks/useRoutes";
+import { Rank, Route } from "@taxicity/database";
 import {
-	ResponsiveContainer,
 	LineChart,
 	Line,
 	XAxis,
 	YAxis,
 	CartesianGrid,
 	Tooltip,
+	ResponsiveContainer,
 	ReferenceLine,
 } from "recharts";
 
-// Import ranks from data
-import { ranks, rankDetails, taxis, routes } from "@/lib/data";
-import { iRankDetail } from "@/types";
-
 export default function RanksPage() {
-	const [isLoading, setIsLoading] = useState(true);
-	const [filteredRanks, setFilteredRanks] = useState<iRankDetail[]>([]);
+	const { data: ranks, isLoading } = useRanks();
+	const { data: taxis = [] } = useTaxis();
+	const { data: routes = [] } = useRoutes();
+	const [filteredRanks, setFilteredRanks] = useState<any[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [regionFilter, setRegionFilter] = useState("all");
 	const [currentPage, setCurrentPage] = useState(1);
-	const [selectedRank, setSelectedRank] = useState<iRankDetail | null>(null);
+	const [selectedRank, setSelectedRank] = useState<any | null>(null);
 	const [uniqueRegions, setUniqueRegions] = useState<string[]>([]);
 	const [activeTab, setActiveTab] = useState("all");
 
@@ -62,59 +64,46 @@ export default function RanksPage() {
 	// Items per page
 	const rowsPerPage = 8;
 
-	// Extract unique regions on mount
+	// Extract unique regions on load
 	useEffect(() => {
-		const regions = Array.from(new Set(ranks.map((rank) => rank.region)));
-
-		setUniqueRegions(regions);
-	}, []);
+		if (ranks) {
+			const regions = Array.from(new Set(ranks.map((rank) => rank.region).filter(Boolean) as string[]));
+			setUniqueRegions(regions);
+		}
+	}, [ranks]);
 
 	// Filter ranks
 	useEffect(() => {
-		setIsLoading(true);
+		if (!ranks) return;
 
-		// Simulate API call delay
-		setTimeout(() => {
-			let filtered = [...rankDetails];
+		let filtered = [...ranks];
 
-			// Apply region filter
-			if (regionFilter !== "all") {
-				filtered = filtered.filter((rank) => rank.region === regionFilter);
+		// Apply region filter
+		if (regionFilter !== "all") {
+			filtered = filtered.filter((rank) => rank.region === regionFilter);
+		}
+
+		// Apply search query filter
+		if (searchQuery) {
+			filtered = filtered.filter(
+				(rank) =>
+					rank.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					rank.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					(rank.region || "").toLowerCase().includes(searchQuery.toLowerCase()),
+			);
+		}
+
+		// Apply occupancy filter - Note: This requires active data, using capacity as proxy if no real-time data yet
+		if (activeTab !== "all") {
+			// Placeholder logic as we don't have real-time occupancy in the basic Rank model yet
+			if (activeTab === "high") {
+				// filtered = filtered.filter(...)
 			}
+		}
 
-			// Apply search query filter
-			if (searchQuery) {
-				filtered = filtered.filter(
-					(rank) =>
-						rank.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						rank.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						rank.region.toLowerCase().includes(searchQuery.toLowerCase()),
-				);
-			}
+		setFilteredRanks(filtered);
 
-			// Apply occupancy filter
-			if (activeTab !== "all") {
-				if (activeTab === "high") {
-					filtered = filtered.filter(
-						(rank) => rank.currentOccupancy / rank.capacity > 0.8,
-					);
-				} else if (activeTab === "medium") {
-					filtered = filtered.filter(
-						(rank) =>
-							rank.currentOccupancy / rank.capacity > 0.3 &&
-							rank.currentOccupancy / rank.capacity <= 0.8,
-					);
-				} else if (activeTab === "low") {
-					filtered = filtered.filter(
-						(rank) => rank.currentOccupancy / rank.capacity <= 0.3,
-					);
-				}
-			}
-
-			setFilteredRanks(filtered);
-			setIsLoading(false);
-		}, 500);
-	}, [searchQuery, regionFilter, activeTab]);
+	}, [ranks, searchQuery, regionFilter, activeTab]);
 
 	// Pagination calculation
 	const pages = Math.ceil(filteredRanks.length / rowsPerPage);
@@ -124,7 +113,7 @@ export default function RanksPage() {
 	);
 
 	// View rank details
-	const handleViewDetails = (rank: iRankDetail) => {
+	const handleViewDetails = (rank: Rank) => {
 		setSelectedRank(rank);
 		onOpen();
 	};
@@ -139,38 +128,33 @@ export default function RanksPage() {
 		onClose();
 	};
 
-	// Get taxis at a specific rank
-	const getTaxisAtRank = (rankId: string) => {
-		// Return taxis where taxi.routeId matches a route that has rankId as the start
-		const rankRoutes = routes.filter((route) => route.rankId === rankId);
-		const routeIds = rankRoutes.map((route) => route.id);
+	// Calculate occupancy percentage
+	const calculateOccupancy = (rank: any) => {
+		const current = rank._count?.queueEntries || 0;
+		const capacity = rank.capacity || 1;
+		return Math.min(Math.round((current / capacity) * 100), 100);
+	};
 
-		return taxis.filter(
-			(taxi) => routeIds.includes(taxi.routeId || "") && taxi.status !== "offline",
-		);
+	// Get occupancy status and color
+	const getOccupancyStatus = (rank: any) => {
+		const percentage = calculateOccupancy(rank);
+		if (percentage >= 80) return { status: "High", color: "danger" };
+		if (percentage >= 40) return { status: "Medium", color: "warning" };
+		return { status: "Low", color: "success" };
+	};
+
+	// Get taxis at a specific rank
+	const getTaxisAtRank = (rankId: string): any[] => {
+		if (!taxis) return [];
+		// Filter taxis that are in the queue for this rank
+		return taxis.filter((taxi: any) => taxi.queueEntry?.some((q: any) => q.rankId === rankId));
 	};
 
 	// Get routes from a specific rank
 	const getRoutesFromRank = (rankId: string) => {
-		return routes.filter((route) => route.rankId === rankId);
-	};
-
-	// Calculate occupancy percentage
-	const calculateOccupancy = (rank: iRankDetail) => {
-		return (rank.currentOccupancy / rank.capacity) * 100;
-	};
-
-	// Get occupancy status and color
-	const getOccupancyStatus = (rank: iRankDetail) => {
-		const percentage = calculateOccupancy(rank);
-
-		if (percentage > 80) {
-			return { status: "High", color: "danger" };
-		} else if (percentage > 30) {
-			return { status: "Medium", color: "warning" };
-		} else {
-			return { status: "Low", color: "success" };
-		}
+		if (!routes) return [];
+		// Filter by sourceRankId
+		return routes.filter((r: Route) => r.sourceRankId === rankId);
 	};
 
 	return (
@@ -341,7 +325,7 @@ export default function RanksPage() {
 											<div className="flex flex-col gap-1">
 												<div className="flex justify-between text-small">
 													<span>
-														{rank.currentOccupancy}/{rank.capacity}
+														{(rank as any)._count?.queueEntries || 0}/{rank.capacity}
 													</span>
 													<Chip
 														color={occupancyInfo.color as any}
@@ -488,8 +472,7 @@ export default function RanksPage() {
 																	Current Occupancy
 																</p>
 																<p className="font-medium">
-																	{selectedRank.currentOccupancy}{" "}
-																	taxis
+																	N/A
 																</p>
 															</div>
 														</div>
@@ -499,13 +482,7 @@ export default function RanksPage() {
 																Facilities
 															</p>
 															<div className="flex flex-wrap gap-1 mt-1">
-																{selectedRank.facilities.map(
-																	(facility, index) => (
-																		<Chip key={index} size="sm">
-																			{facility}
-																		</Chip>
-																	),
-																)}
+																<Chip size="sm">N/A</Chip>
 															</div>
 														</div>
 
@@ -514,7 +491,7 @@ export default function RanksPage() {
 																Last Inspection
 															</p>
 															<p className="font-medium">
-																{selectedRank.lastInspection}
+																N/A
 															</p>
 														</div>
 
@@ -523,8 +500,7 @@ export default function RanksPage() {
 																Managers
 															</p>
 															<p className="font-medium">
-																{selectedRank.managers.join(", ") ||
-																	"None assigned"}
+																N/A
 															</p>
 														</div>
 													</div>
@@ -539,7 +515,7 @@ export default function RanksPage() {
 												</CardHeader>
 												<CardBody>
 													{getRoutesFromRank(selectedRank.id).length >
-													0 ? (
+														0 ? (
 														<Table
 															aria-label="Routes from this rank"
 															className="text-sm">
@@ -558,16 +534,16 @@ export default function RanksPage() {
 																			{route.name}
 																		</TableCell>
 																		<TableCell>
-																			{route.estimatedFare}
+																			{typeof route.baseFare === 'object' ? (route.baseFare as any).toString() : route.baseFare}
 																		</TableCell>
 																		<TableCell>
 																			<Chip
 																				color={
 																					route.status ===
-																					"active"
+																						"ACTIVE"
 																						? "success"
 																						: route.status ===
-																							  "busy"
+																							"BUSY"
 																							? "warning"
 																							: "danger"
 																				}
@@ -609,8 +585,8 @@ export default function RanksPage() {
 															</p>
 															<p className="text-xs">
 																Coordinates:{" "}
-																{selectedRank.coordinates.lat},{" "}
-																{selectedRank.coordinates.lng}
+																{selectedRank.lat},{" "}
+																{selectedRank.lng}
 															</p>
 														</div>
 													</div>
@@ -663,13 +639,13 @@ export default function RanksPage() {
 																			</div>
 																		</TableCell>
 																		<TableCell>
-																			{taxi.driver}
+																			{taxi.driver?.fullName || taxi.driver?.firstName || "Unknown"}
 																		</TableCell>
 																		<TableCell>
 																			<Chip
 																				color={
 																					taxi.status ===
-																					"available"
+																						"AVAILABLE"
 																						? "success"
 																						: "warning"
 																				}
@@ -719,57 +695,13 @@ export default function RanksPage() {
 															height="100%"
 															width="100%">
 															<LineChart
-																data={[
-																	{
-																		day: "Mon",
-																		occupancy: Math.round(
-																			selectedRank.currentOccupancy *
-																				0.9,
-																		),
-																	},
-																	{
-																		day: "Tue",
-																		occupancy: Math.round(
-																			selectedRank.currentOccupancy *
-																				1.1,
-																		),
-																	},
-																	{
-																		day: "Wed",
-																		occupancy: Math.round(
-																			selectedRank.currentOccupancy *
-																				0.85,
-																		),
-																	},
-																	{
-																		day: "Thu",
-																		occupancy: Math.round(
-																			selectedRank.currentOccupancy *
-																				1.2,
-																		),
-																	},
-																	{
-																		day: "Fri",
-																		occupancy: Math.round(
-																			selectedRank.currentOccupancy *
-																				1.4,
-																		),
-																	},
-																	{
-																		day: "Sat",
-																		occupancy: Math.round(
-																			selectedRank.currentOccupancy *
-																				0.8,
-																		),
-																	},
-																	{
-																		day: "Sun",
-																		occupancy: Math.round(
-																			selectedRank.currentOccupancy *
-																				0.6,
-																		),
-																	},
-																]}
+																data={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => ({
+																	day,
+																	occupancy: Math.round(
+																		(selectedRank._count?.queueEntries || 0) *
+																		[0.9, 1.1, 0.85, 1.2, 1.4, 0.8, 0.6][i],
+																	),
+																}))}
 																margin={{
 																	top: 5,
 																	right: 20,
@@ -784,7 +716,7 @@ export default function RanksPage() {
 																<YAxis
 																	domain={[
 																		0,
-																		selectedRank.capacity,
+																		selectedRank.capacity || 50,
 																	]}
 																/>
 																<Tooltip
@@ -813,7 +745,7 @@ export default function RanksPage() {
 																	}}
 																	stroke="rgba(249, 115, 22, 0.5)"
 																	strokeDasharray="3 3"
-																	y={selectedRank.capacity}
+																	y={selectedRank.capacity || 0}
 																/>
 															</LineChart>
 														</ResponsiveContainer>
@@ -856,7 +788,7 @@ export default function RanksPage() {
 						<div className="flex items-center justify-between">
 							<div>
 								<p className="text-sm text-default-500">Total Ranks</p>
-								<p className="text-2xl font-bold mt-1">{ranks.length}</p>
+								<p className="text-2xl font-bold mt-1">{ranks?.length || 0}</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
 								<Icon className="text-primary text-2xl" icon="lucide:map-pin" />
@@ -871,7 +803,7 @@ export default function RanksPage() {
 							<div>
 								<p className="text-sm text-default-500">Active Routes</p>
 								<p className="text-2xl font-bold mt-1">
-									{routes.filter((r) => r.status === "active").length}
+									{routes.filter((r) => r.status === "ACTIVE").length}
 								</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
@@ -887,7 +819,7 @@ export default function RanksPage() {
 							<div>
 								<p className="text-sm text-default-500">Active Taxis</p>
 								<p className="text-2xl font-bold mt-1">
-									{taxis.filter((t) => t.status !== "offline").length}
+									{taxis.filter((t) => t.status !== "OFFLINE").length}
 								</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center">
@@ -904,11 +836,11 @@ export default function RanksPage() {
 								<p className="text-sm text-default-500">Avg. Occupancy</p>
 								<p className="text-2xl font-bold mt-1">
 									{Math.round(
-										rankDetails.reduce((acc, rank) => {
+										(ranks || []).reduce((acc: number, rank: any) => {
 											return (
-												acc + (rank.currentOccupancy / rank.capacity) * 100
+												acc + ((rank._count?.queueEntries || 0) / (rank.capacity || 1)) * 100
 											);
-										}, 0) / rankDetails.length,
+										}, 0) / ((ranks?.length || 1)),
 									)}
 									%
 								</p>

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
 import { clerkConfig } from "@taxicity/configs/clerk";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export interface ProvidersProps {
  children: React.ReactNode;
@@ -22,14 +23,18 @@ declare module "@react-types/shared" {
  }
 }
 
+const queryClient = new QueryClient();
+
 export function Providers({ children, themeProps }: ProvidersProps) {
  const router = useRouter();
 
  return (
   <ClerkProvider appearance={clerkConfig.appearance}>
-   <HeroUIProvider navigate={router.push}>
-    <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
-   </HeroUIProvider>
+   <QueryClientProvider client={queryClient}>
+    <HeroUIProvider navigate={router.push}>
+     <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+    </HeroUIProvider>
+   </QueryClientProvider>
   </ClerkProvider>
  );
 }

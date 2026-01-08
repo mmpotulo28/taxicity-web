@@ -28,63 +28,67 @@ import {
 	ModalHeader,
 	ModalBody,
 	ModalFooter,
+	Avatar,
 } from "@heroui/react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 
-// Import taxis from data
-import { taxis, taxiDocuments, drivers } from "@/lib/data";
-import { iTaxi } from "@/types";
+import { useTaxis } from "@/hooks/useTaxis";
+import { Taxi, Driver, TaxiOnRoute, TaxiLocation } from "@taxicity/database";
+
+type TaxiWithRelations = Taxi & {
+	driver: Driver | null;
+	routes: TaxiOnRoute[];
+	currentLocation: TaxiLocation | null;
+};
 
 export default function TaxisPage() {
-	const [isLoading, setIsLoading] = useState(true);
-	const [filteredTaxis, setFilteredTaxis] = useState<iTaxi[]>([]);
+	const { data: taxisRaw, isLoading } = useTaxis();
+	const taxis = (taxisRaw || []) as unknown as TaxiWithRelations[];
+
 	const [searchQuery, setSearchQuery] = useState("");
-	const [statusFilter] = useState("all");
-	const [currentPage, setCurrentPage] = useState(1);
-	const [selectedTaxi, setSelectedTaxi] = useState<iTaxi | null>(null);
 	const [activeTab, setActiveTab] = useState("all");
+	const [page, setPage] = useState(1);
+	const [selectedTaxi, setSelectedTaxi] = useState<TaxiWithRelations | null>(null);
 
 	const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
 	// Items per page
 	const rowsPerPage = 8;
 
-	// Filter and sort taxis
-	useEffect(() => {
-		setIsLoading(true);
+	const filteredTaxis = React.useMemo(() => {
+		let filtered = [...taxis];
 
-		// Simulate API call delay
-		setTimeout(() => {
-			let filtered = [...taxis];
+		if (searchQuery) {
+			const query = searchQuery.toLowerCase();
+			filtered = filtered.filter(
+				(taxi) =>
+					taxi.licensePlate.toLowerCase().includes(query) ||
+					taxi.model.toLowerCase().includes(query) ||
+					(taxi.driver?.fullName || "").toLowerCase().includes(query)
+			);
+		}
 
-			// Apply tab filter
-			if (activeTab !== "all") {
-				filtered = filtered.filter((taxi) => taxi.status === activeTab);
-			}
+		if (activeTab !== "all") {
+			filtered = filtered.filter((taxi) => {
+				const s = taxi.status.toLowerCase();
+				if (activeTab === "available") return s === "available";
+				if (activeTab === "busy") return s === "on_trip" || s === "busy";
+				if (activeTab === "offline") return s === "offline";
+				return true;
+			});
+		}
 
-			// Apply search query filter
-			if (searchQuery) {
-				filtered = filtered.filter(
-					(taxi) =>
-						taxi.driver.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						taxi.licensePlate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						taxi.model.toLowerCase().includes(searchQuery.toLowerCase()),
-				);
-			}
+		return filtered;
+	}, [taxis, searchQuery, activeTab]);
 
-			setFilteredTaxis(filtered);
-			setIsLoading(false);
-		}, 500);
-	}, [searchQuery, statusFilter, activeTab]);
-
-	// Pagination calculation
 	const pages = Math.ceil(filteredTaxis.length / rowsPerPage);
-	const paginatedTaxis = filteredTaxis.slice(
-		(currentPage - 1) * rowsPerPage,
-		currentPage * rowsPerPage,
-	);
+	const paginatedTaxis = React.useMemo(() => {
+		const start = (page - 1) * rowsPerPage;
+		const end = start + rowsPerPage;
+		return filteredTaxis.slice(start, end);
+	}, [filteredTaxis, page]);
 
 	// Handle taxi status change
 	const handleStatusChange = (taxiId: string, newStatus: string) => {
@@ -96,7 +100,7 @@ export default function TaxisPage() {
 	};
 
 	// Handle view taxi details
-	const handleViewDetails = (taxi: iTaxi) => {
+	const handleViewDetails = (taxi: TaxiWithRelations) => {
 		setSelectedTaxi(taxi);
 		onOpen();
 	};
@@ -104,16 +108,21 @@ export default function TaxisPage() {
 	// Status chip renderer
 	const renderStatusChip = (status: string) => {
 		let color;
+		const s = status.toLowerCase();
 
-		switch (status) {
+		switch (s) {
 			case "available":
 				color = "success";
 				break;
+			case "on_trip":
 			case "busy":
 				color = "warning";
 				break;
 			case "offline":
 				color = "danger";
+				break;
+			case "maintenance":
+				color = "secondary";
 				break;
 			default:
 				color = "default";
@@ -121,19 +130,9 @@ export default function TaxisPage() {
 
 		return (
 			<Chip color={color as any} size="sm">
-				{status}
+				{s.toUpperCase()}
 			</Chip>
 		);
-	};
-
-	// Get related documents for a taxi
-	const getTaxiDocuments = (taxiId: string) => {
-		return taxiDocuments.filter((doc) => doc.taxiId === taxiId);
-	};
-
-	// Get driver info for a taxi
-	const getDriverInfo = (driverName: string) => {
-		return drivers.find((driver) => driver.name === driverName);
 	};
 
 	return (
@@ -200,7 +199,7 @@ export default function TaxisPage() {
 						selectedKey={activeTab}
 						onSelectionChange={(key) => {
 							setActiveTab(key as string);
-							setCurrentPage(1);
+							setPage(1);
 						}}>
 						<Tab key="all" title="All Taxis" />
 						<Tab key="available" title="Available" />
@@ -220,9 +219,9 @@ export default function TaxisPage() {
 										showControls
 										showShadow
 										color="primary"
-										page={currentPage}
+										page={page}
 										total={pages}
-										onChange={(page) => setCurrentPage(page)}
+										onChange={(page) => setPage(page)}
 									/>
 								</div>
 							) : null
@@ -242,7 +241,7 @@ export default function TaxisPage() {
 							isLoading={isLoading}
 							items={paginatedTaxis}
 							loadingContent={<div className="text-center">Loading taxis...</div>}>
-							{(taxi) => (
+							{(taxi: TaxiWithRelations) => (
 								<TableRow key={taxi.id}>
 									<TableCell>
 										<div className="flex items-center gap-2">
@@ -251,9 +250,9 @@ export default function TaxisPage() {
 										</div>
 									</TableCell>
 									<TableCell>{taxi.model}</TableCell>
-									<TableCell>{taxi.driver}</TableCell>
+									<TableCell>{taxi.driver?.fullName || "Unassigned"}</TableCell>
 									<TableCell>{taxi.capacity} seats</TableCell>
-									<TableCell>{taxi.routeId || "Not assigned"}</TableCell>
+									<TableCell>{taxi.routes?.length > 0 ? `${taxi.routes.length} Active` : "Not assigned"}</TableCell>
 									<TableCell>{renderStatusChip(taxi.status)}</TableCell>
 									<TableCell>
 										<div className="flex gap-2">
@@ -281,14 +280,14 @@ export default function TaxisPage() {
 													<DropdownItem key="maintenance" color="warning">
 														Schedule Maintenance
 													</DropdownItem>
-													{taxi.status !== "offline" ? (
+													{taxi.status !== "OFFLINE" ? (
 														<DropdownItem
 															key="offline"
 															color="danger"
 															onPress={() =>
 																handleStatusChange(
 																	taxi.id,
-																	"offline",
+																	"OFFLINE",
 																)
 															}>
 															Set Offline
@@ -300,7 +299,7 @@ export default function TaxisPage() {
 															onPress={() =>
 																handleStatusChange(
 																	taxi.id,
-																	"available",
+																	"AVAILABLE",
 																)
 															}>
 															Set Available
@@ -369,23 +368,27 @@ export default function TaxisPage() {
 															</div>
 															<div className="flex justify-between">
 																<span className="text-default-500">
-																	Rating:
+																	Make/Model:
 																</span>
-																<span className="flex items-center gap-1">
-																	<Icon
-																		className="text-yellow-500"
-																		icon="lucide:star"
-																	/>
-																	{selectedTaxi.rating}
+																<span>
+																	{selectedTaxi.make} {selectedTaxi.model}
 																</span>
 															</div>
 															<div className="flex justify-between">
 																<span className="text-default-500">
-																	Route:
+																	Year:
 																</span>
 																<span>
-																	{selectedTaxi.routeId ||
-																		"Not assigned"}
+																	{selectedTaxi.year || "N/A"}
+																</span>
+															</div>
+															<div className="flex justify-between">
+																<span className="text-default-500">
+																	Routes:
+																</span>
+																<span>
+																	{selectedTaxi.routes?.length ||
+																		"0"}
 																</span>
 															</div>
 														</div>
@@ -406,31 +409,19 @@ export default function TaxisPage() {
 													}>
 													<Card>
 														<CardBody>
-															{getDriverInfo(selectedTaxi.driver) ? (
+															{selectedTaxi.driver ? (
 																<div className="space-y-4">
 																	<div className="flex items-center gap-3">
-																		<Image
-																			alt={
-																				selectedTaxi.driver
-																			}
-																			className="w-12 h-12 rounded-full"
-																			height={48}
-																			src={
-																				getDriverInfo(
-																					selectedTaxi.driver,
-																				)?.avatar ||
-																				"/default-avatar.png"
-																			}
-																			width={48}
+																		<Avatar
+																			name={selectedTaxi.driver.fullName || "Unassigned"}
+																			src={selectedTaxi.driver.profileImage || undefined}
 																		/>
 																		<div>
 																			<h4 className="font-medium">
-																				{
-																					selectedTaxi.driver
-																				}
+																				{selectedTaxi.driver.fullName}
 																			</h4>
 																			<p className="text-default-500 text-sm">
-																				{selectedTaxi.phone ||
+																				{selectedTaxi.driver.phone ||
 																					"No phone number"}
 																			</p>
 																		</div>
@@ -448,54 +439,15 @@ export default function TaxisPage() {
 																				Status
 																			</p>
 																			<p className="font-medium">
-																				{
-																					getDriverInfo(
-																						selectedTaxi.driver,
-																					)?.status
-																				}
+																				{selectedTaxi.driver.status}
 																			</p>
 																		</div>
 																		<div>
 																			<p className="text-default-500">
-																				Total Trips
+																				License
 																			</p>
 																			<p className="font-medium">
-																				{
-																					getDriverInfo(
-																						selectedTaxi.driver,
-																					)?.totalTrips
-																				}
-																			</p>
-																		</div>
-																		<div>
-																			<p className="text-default-500">
-																				Rating
-																			</p>
-																			<div className="flex items-center gap-1">
-																				<Icon
-																					className="text-yellow-500"
-																					icon="lucide:star"
-																				/>
-																				<span>
-																					{
-																						getDriverInfo(
-																							selectedTaxi.driver,
-																						)?.rating
-																					}
-																				</span>
-																			</div>
-																		</div>
-																		<div>
-																			<p className="text-default-500">
-																				Join Date
-																			</p>
-																			<p className="font-medium">
-																				{new Date(
-																					getDriverInfo(
-																						selectedTaxi.driver,
-																					)?.joinDate ||
-																						"",
-																				).toLocaleDateString()}
+																				{selectedTaxi.driver.licenseNumber}
 																			</p>
 																		</div>
 																	</div>
@@ -526,80 +478,38 @@ export default function TaxisPage() {
 													}>
 													<Card>
 														<CardBody>
-															{getTaxiDocuments(selectedTaxi.id)
-																.length > 0 ? (
-																<Table aria-label="Taxi documents">
-																	<TableHeader>
-																		<TableColumn>
-																			DOCUMENT TYPE
-																		</TableColumn>
-																		<TableColumn>
-																			FILENAME
-																		</TableColumn>
-																		<TableColumn>
-																			EXPIRY DATE
-																		</TableColumn>
-																		<TableColumn>
-																			STATUS
-																		</TableColumn>
-																		<TableColumn>
-																			ACTION
-																		</TableColumn>
-																	</TableHeader>
-																	<TableBody
-																		items={getTaxiDocuments(
-																			selectedTaxi.id,
-																		)}>
-																		{(doc) => (
-																			<TableRow key={doc.id}>
-																				<TableCell className="capitalize">
-																					{doc.type}
-																				</TableCell>
-																				<TableCell>
-																					{doc.fileName}
-																				</TableCell>
-																				<TableCell>
-																					{new Date(
-																						doc.expiryDate,
-																					).toLocaleDateString()}
-																				</TableCell>
-																				<TableCell>
-																					<Chip
-																						color={
-																							doc.status ===
-																							"verified"
-																								? "success"
-																								: doc.status ===
-																									  "pending"
-																									? "warning"
-																									: "danger"
-																						}
-																						size="sm">
-																						{doc.status}
-																					</Chip>
-																				</TableCell>
-																				<TableCell>
-																					<Button
-																						size="sm"
-																						variant="light">
-																						View
-																					</Button>
-																				</TableCell>
-																			</TableRow>
-																		)}
-																	</TableBody>
-																</Table>
-															) : (
-																<div className="text-center py-8">
-																	<Icon
-																		className="mx-auto text-4xl text-default-400 mb-2"
-																		icon="lucide:file-x"
-																	/>
-																	<p className="text-default-500">
-																		No documents available
-																	</p>
-																</div>
-															)}
+															<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+																{selectedTaxi.registrationDoc && (
+																	<div className="flex items-center justify-between p-3 border rounded-lg">
+																		<div className="flex items-center gap-2">
+																			<Icon icon="lucide:file-text" />
+																			<span>Registration</span>
+																		</div>
+																		<Button size="sm" variant="light" onPress={() => window.open(selectedTaxi.registrationDoc!, '_blank')}>View</Button>
+																	</div>
+																)}
+																{selectedTaxi.insuranceDoc && (
+																	<div className="flex items-center justify-between p-3 border rounded-lg">
+																		<div className="flex items-center gap-2">
+																			<Icon icon="lucide:shield-check" />
+																			<span>Insurance</span>
+																		</div>
+																		<Button size="sm" variant="light" onPress={() => window.open(selectedTaxi.insuranceDoc!, '_blank')}>View</Button>
+																	</div>
+																)}
+																{selectedTaxi.permitDoc && (
+																	<div className="flex items-center justify-between p-3 border rounded-lg">
+																		<div className="flex items-center gap-2">
+																			<Icon icon="lucide:badge-check" />
+																			<span>Permit</span>
+																		</div>
+																		<Button size="sm" variant="light" onPress={() => window.open(selectedTaxi.permitDoc!, '_blank')}>View</Button>
+																	</div>
+																)}
+																{(!selectedTaxi.registrationDoc && !selectedTaxi.insuranceDoc && !selectedTaxi.permitDoc) && (
+																	<div className="col-span-2 text-center py-4 text-default-500">No documents available</div>
+																)}
+															</div>
 
 															<Button
 																className="mt-4"
@@ -623,21 +533,13 @@ export default function TaxisPage() {
 													}>
 													<Card>
 														<CardBody>
-															{selectedTaxi.location ? (
+															{selectedTaxi.currentLocation ? (
 																<div className="space-y-4">
 																	<div className="h-64 bg-default-100 rounded-lg flex items-center justify-center">
 																		<p className="text-default-500">
-																			Map showing current
-																			location at coordinates:
-																			{
-																				selectedTaxi
-																					.location.lat
-																			}
-																			,{" "}
-																			{
-																				selectedTaxi
-																					.location.lng
-																			}
+																			Map coordinates:{" "}
+																			{selectedTaxi.currentLocation.lat.toFixed(4)},{" "}
+																			{selectedTaxi.currentLocation.lng.toFixed(4)}
 																		</p>
 																	</div>
 
@@ -647,16 +549,7 @@ export default function TaxisPage() {
 																				Last Updated
 																			</p>
 																			<p className="font-medium">
-																				Today, 10:35 AM
-																			</p>
-																		</div>
-																		<div>
-																			<p className="text-default-500 text-sm">
-																				ETA to Rank
-																			</p>
-																			<p className="font-medium">
-																				{selectedTaxi.eta ||
-																					"N/A"}
+																				{new Date(selectedTaxi.currentLocation.createdAt).toLocaleTimeString()}
 																			</p>
 																		</div>
 																	</div>
@@ -671,11 +564,10 @@ export default function TaxisPage() {
 																<div className="text-center py-8">
 																	<Icon
 																		className="mx-auto text-4xl text-default-400 mb-2"
-																		icon="lucide:map-off"
+																		icon="lucide:map-pin-off"
 																	/>
 																	<p className="text-default-500">
-																		Location tracking not
-																		available
+																		No location data available
 																	</p>
 																</div>
 															)}
@@ -736,9 +628,12 @@ export default function TaxisPage() {
 										color="danger"
 										variant="flat"
 										onPress={() =>
-											handleStatusChange(selectedTaxi.id, "offline")
+											handleStatusChange(
+												selectedTaxi.id,
+												selectedTaxi.status === "OFFLINE" ? "AVAILABLE" : "OFFLINE"
+											)
 										}>
-										{selectedTaxi.status === "offline"
+										{selectedTaxi.status === "OFFLINE"
 											? "Set Available"
 											: "Set Offline"}
 									</Button>
