@@ -5,6 +5,7 @@
 	"types": "src/index.ts",
 	"exports": {
 		".": "./src/index.ts",
+		"./styles/global.css": "./src/styles/global.css",
 		"./components/*": "./src/components/*",
 		"./tailwind.config": "./tailwind.config.js",
 		"./postcss.config": "./postcss.config.js"

@@ -1,4 +1,4 @@
-import "@/styles/globals.css";
+import "@taxicity/ui/styles/global.css";
 import { Metadata } from "next";
 import { Providers } from "./providers";
 import { DashboardShell } from "@/components/layout/shell";

@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
+import { clerkConfig } from "@/lib/config/clerk";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MapProvider } from "@taxicity/ui";
+import { MapProvider, RideProvider } from "@taxicity/ui";
 import { DriverProvider } from "../context/DriverContext";
 import { type ThemeProviderProps } from "next-themes"; // Correct import for types
 
@@ -28,15 +29,17 @@ export function Providers({ children, themeProps }: ProvidersProps) {
  const router = useRouter();
 
  return (
-  <ClerkProvider>
+  <ClerkProvider {...clerkConfig}>
    <QueryClientProvider client={queryClient}>
     <HeroUIProvider navigate={router.push}>
      <NextThemesProvider {...themeProps}>
       <MapProvider>
-       <DriverProvider>
-        <ToastProvider placement="top-center" />
-        {children}
-       </DriverProvider>
+       <RideProvider>
+        <DriverProvider>
+         <ToastProvider placement="top-center" />
+         {children}
+        </DriverProvider>
+       </RideProvider>
       </MapProvider>
      </NextThemesProvider>
     </HeroUIProvider>

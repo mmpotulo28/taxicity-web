@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Providers } from "./providers";
-import "../styles/globals.css";
+import "@taxicity/ui/styles/global.css";
 
 export const metadata: Metadata = {
  title: "TaxiCity Driver",
