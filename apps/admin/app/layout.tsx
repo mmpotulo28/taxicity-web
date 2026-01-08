@@ -1,25 +1,41 @@
 import "@taxicity/ui/styles/global.css";
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
+import clsx from "clsx";
+
 import { Providers } from "./providers";
-import { DashboardShell } from "@/components/layout/shell";
+
+import { siteConfig } from "@/config/site";
+import { fontSans } from "@/config/fonts";
 
 export const metadata: Metadata = {
- title: "Admin Dashboard - TaxiCity",
- description: "Admin dashboard for TaxiCity management",
+ title: {
+  default: siteConfig.name,
+  template: `%s - ${siteConfig.name}`,
+ },
+ description: siteConfig.description,
+ icons: {
+  icon: "/favicon.ico",
+ },
 };
 
-export default function RootLayout({
- children,
-}: {
- children: React.ReactNode;
-}) {
+export const viewport: Viewport = {
+ themeColor: [
+  { media: "(prefers-color-scheme: light)", color: "white" },
+  { media: "(prefers-color-scheme: dark)", color: "black" },
+ ],
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
  return (
-  <html lang="en" suppressHydrationWarning>
-   <body className="min-h-screen bg-background font-sans antialiased">
-    <Providers>
-     <DashboardShell>
-      {children}
-     </DashboardShell>
+  <html suppressHydrationWarning lang="en">
+   <head />
+   <body
+    className={clsx(
+     "min-h-screen text-foreground bg-background font-sans antialiased",
+     fontSans.variable,
+    )}>
+    <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+     {children}
     </Providers>
    </body>
   </html>

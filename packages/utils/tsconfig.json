@@ -1,7 +1,6 @@
 {
  "extends": "@taxicity/configs/tsconfig",
  "compilerOptions": {
-  "baseUrl": ".",
   "paths": {
    "@/*": [
     "./src/*"

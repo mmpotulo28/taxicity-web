@@ -1,7 +1,6 @@
 {
  "extends": "@taxicity/configs/tsconfig",
  "compilerOptions": {
-  "baseUrl": ".",
   "jsx": "react-jsx",
   "paths": {
    "@/*": [

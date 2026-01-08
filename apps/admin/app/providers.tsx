@@ -1,22 +1,34 @@
 "use client";
 
-import { HeroUIProvider } from "@heroui/react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import type { ThemeProviderProps } from "next-themes";
+
+import * as React from "react";
+import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
-import { ToastProvider } from "@heroui/toast";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
 import { clerkConfig } from "@taxicity/configs/clerk";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export interface ProvidersProps {
+ children: React.ReactNode;
+ themeProps?: ThemeProviderProps;
+}
+
+declare module "@react-types/shared" {
+ interface RouterConfig {
+  routerOptions: NonNullable<
+   Parameters<ReturnType<typeof useRouter>["push"]>[1]
+  >;
+ }
+}
+
+export function Providers({ children, themeProps }: ProvidersProps) {
  const router = useRouter();
 
  return (
-  <ClerkProvider {...clerkConfig}>
+  <ClerkProvider appearance={clerkConfig.appearance}>
    <HeroUIProvider navigate={router.push}>
-    <NextThemesProvider attribute="class" defaultTheme="dark">
-     <ToastProvider />
-     {children}
-    </NextThemesProvider>
+    <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
    </HeroUIProvider>
   </ClerkProvider>
  );
