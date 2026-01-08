@@ -30,3 +30,38 @@ export async function GET(_req: NextRequest) {
 		return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
 	}
 }
+
+export async function POST(req: NextRequest) {
+	try {
+		const { userId } = await auth();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		const body = await req.json();
+		const { firstName, lastName, phone, licenseNumber, licenseExpiry, email, password } = body;
+
+		// Basic validation
+		if (!firstName || !lastName || !phone || !licenseNumber || !licenseExpiry) {
+			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+		}
+
+		const newDriver = await prisma.driver.create({
+			data: {
+				firstName,
+				lastName,
+				phone,
+				email,
+				// password: password || "password123", // Removed as per schema
+				licenseNumber,
+				licenseExpiry: new Date(licenseExpiry),
+				status: "ACTIVE",
+			},
+		});
+
+		return NextResponse.json(newDriver, { status: 201 });
+	} catch (error) {
+		console.error("Error creating driver:", error);
+		return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+	}
+}

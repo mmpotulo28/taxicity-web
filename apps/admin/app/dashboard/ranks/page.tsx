@@ -35,6 +35,7 @@ import { addToast } from "@heroui/toast";
 import { useRanks } from "@/hooks/useRanks";
 import { useTaxis } from "@/hooks/useTaxis";
 import { useRoutes } from "@/hooks/useRoutes";
+import { ranks as mockRanksRaw } from "@/lib/data";
 import { Rank, Route } from "@taxicity/database";
 import {
 	LineChart,
@@ -48,9 +49,33 @@ import {
 } from "recharts";
 
 export default function RanksPage() {
-	const { data: ranks, isLoading } = useRanks();
+	const { data: realRanks, isLoading } = useRanks();
 	const { data: taxis = [] } = useTaxis();
 	const { data: routes = [] } = useRoutes();
+
+	// Use real data if available, otherwise map mock data to match Prisma schema
+	const ranks = React.useMemo(() => {
+		if (realRanks && realRanks.length > 0) return realRanks;
+
+		return mockRanksRaw.map((r) => ({
+			...r,
+			// Map nested coordinates to flat lat/lng
+			lat: r.coordinates.lat,
+			lng: r.coordinates.lng,
+			// Add default values for fields missing in mock
+			_count: { queueEntries: Math.floor(Math.random() * 20), taxiRanks: 0, sourceRoutes: 0, trips: 0 },
+			capacity: 50,
+			isActive: true,
+			city: "Johannesburg",
+			province: "Gauteng",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			description: "Mock Rank Description",
+			operatingHours: "05:00 - 20:00",
+			image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1000&auto=format&fit=crop"
+		}));
+	}, [realRanks]);
+
 	const [filteredRanks, setFilteredRanks] = useState<any[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [regionFilter, setRegionFilter] = useState("all");

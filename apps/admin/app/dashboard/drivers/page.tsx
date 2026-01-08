@@ -33,53 +33,96 @@ import {
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 
-// Import drivers from data
-import { drivers } from "@/lib/data";
+// Import drivers from data (fallback)
+import { drivers as mockDrivers } from "@/lib/data";
 import { iDriver } from "@/types";
+import { useDrivers, useCreateDriver, useUpdateDriver, useDeleteDriver } from "@/hooks/useDrivers";
+import { DriverStatus } from "@taxicity/database";
 
 export default function DriversPage() {
+	const { data: driversData, isLoading: isDriversLoading } = useDrivers();
+	const createDriverMutation = useCreateDriver();
+	const updateDriverMutation = useUpdateDriver();
+	const deleteDriverMutation = useDeleteDriver();
+
 	const [isLoading, setIsLoading] = useState(true);
 	const [filteredDrivers, setFilteredDrivers] = useState<iDriver[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [currentPage, setCurrentPage] = useState(1);
-	const [selectedDriver, setSelectedDriver] = useState<iDriver | null>(null);
+	const [selectedDriver, setSelectedDriver] = useState<any | null>(null);
 
-	const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+	// Modal state for Add/Edit
+	const { isOpen: isDetailsOpen, onOpen: onDetailsOpen, onOpenChange: onDetailsOpenChange, onClose: onDetailsClose } = useDisclosure();
+	const { isOpen: isAddOpen, onOpen: onAddOpen, onOpenChange: onAddOpenChange, onClose: onAddClose } = useDisclosure();
+
+	// Form state
+	const [formData, setFormData] = useState({
+		firstName: "",
+		lastName: "",
+		email: "",
+		phone: "",
+		licenseNumber: "",
+		licenseExpiry: ""
+	});
 
 	// Items per page
 	const rowsPerPage = 8;
 
 	// Filter and sort drivers
 	useEffect(() => {
-		setIsLoading(true);
+		if (isDriversLoading) {
+			setIsLoading(true);
+			return;
+		}
 
-		// Simulate API call delay
-		setTimeout(() => {
-			let filtered: iDriver[] = drivers.map((driver) => ({
+		const sourceData = driversData && driversData.length > 0 ? driversData : null;
+
+		let mappedData: iDriver[] = [];
+
+		if (sourceData) {
+			// Map real data
+			mappedData = sourceData.map((d: any) => ({
+				id: d.id,
+				name: d.fullName || `${d.firstName} ${d.lastName}`,
+				phone: d.phone,
+				licenseNumber: d.licenseNumber || "",
+				licenseExpiry: d.licenseExpiry ? new Date(d.licenseExpiry).toISOString().split('T')[0] : "",
+				status: (d.status?.toLowerCase() === "pending_verification" ? "pending" : d.status?.toLowerCase()) || "inactive",
+				joinDate: d.createdAt ? new Date(d.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+				rating: 5.0, // Default
+				totalTrips: 0, // Default
+				avatar: d.profileImage || `https://i.pravatar.cc/150?u=${d.id}`,
+				taxiId: undefined
+			}));
+		} else {
+			// Fallback to mock data
+			mappedData = mockDrivers.map((driver) => ({
 				...driver,
 				status: driver.status as "active" | "suspended" | "pending" | "inactive",
 			}));
+		}
 
-			// Apply search query filter
-			if (searchQuery) {
-				filtered = filtered.filter(
-					(driver) =>
-						driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						driver.phone.includes(searchQuery) ||
-						driver.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase()),
-				);
-			}
+		let filtered: iDriver[] = mappedData;
 
-			// Apply status filter
-			if (statusFilter !== "all") {
-				filtered = filtered.filter((driver) => driver.status === statusFilter);
-			}
+		// Apply search query filter
+		if (searchQuery) {
+			filtered = filtered.filter(
+				(driver) =>
+					driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					driver.phone.includes(searchQuery) ||
+					driver.licenseNumber.toLowerCase().includes(searchQuery.toLowerCase()),
+			);
+		}
 
-			setFilteredDrivers(filtered);
-			setIsLoading(false);
-		}, 500);
-	}, [searchQuery, statusFilter]);
+		// Apply status filter
+		if (statusFilter !== "all") {
+			filtered = filtered.filter((driver) => driver.status === statusFilter);
+		}
+
+		setFilteredDrivers(filtered);
+		setIsLoading(false);
+	}, [searchQuery, statusFilter, driversData, isDriversLoading]);
 
 	// Pagination calculation
 	const pages = Math.ceil(filteredDrivers.length / rowsPerPage);
@@ -90,17 +133,85 @@ export default function DriversPage() {
 
 	// Handle driver status change
 	const handleStatusChange = (driverId: string, newStatus: string) => {
-		addToast({
-			title: "Driver Status Updated",
-			description: `Driver status changed to ${newStatus}`,
-			color: "success",
+		// Map UI status to DB status
+		let dbStatus: DriverStatus;
+		if (newStatus === 'active') dbStatus = "ACTIVE";
+		else if (newStatus === 'suspended') dbStatus = "SUSPENDED";
+		else if (newStatus === 'pending') dbStatus = "PENDING_VERIFICATION";
+		else dbStatus = "INACTIVE";
+
+		updateDriverMutation.mutate({
+			id: driverId,
+			data: { status: dbStatus }
+		}, {
+			onSuccess: () => {
+				addToast({
+					title: "Driver Status Updated",
+					description: `Driver status changed to ${newStatus}`,
+					color: "success",
+				});
+				onDetailsClose();
+			},
+			onError: (error) => {
+				addToast({
+					title: "Error",
+					description: "Failed to update driver status",
+					color: "danger",
+				});
+			}
 		});
+	};
+
+	const handleAddDriver = () => {
+		createDriverMutation.mutate({
+			...formData,
+			licenseExpiry: new Date(formData.licenseExpiry),
+			status: DriverStatus.ACTIVE
+		}, {
+			onSuccess: () => {
+				addToast({
+					title: "Success",
+					description: "Driver created successfully",
+					color: "success",
+				});
+				onAddClose();
+				setFormData({
+					firstName: "",
+					lastName: "",
+					email: "",
+					phone: "",
+					licenseNumber: "",
+					licenseExpiry: ""
+				});
+			},
+			onError: () => {
+				addToast({
+					title: "Error",
+					description: "Failed to create driver",
+					color: "danger",
+				});
+			}
+		});
+	};
+
+	const handleDeleteDriver = (driverId: string) => {
+		if (confirm("Are you sure you want to delete this driver?")) {
+			deleteDriverMutation.mutate(driverId, {
+				onSuccess: () => {
+					addToast({
+						title: "Success",
+						description: "Driver deleted successfully",
+						color: "success",
+					});
+				}
+			});
+		}
 	};
 
 	// Handle view driver details
 	const handleViewDetails = (driver: iDriver) => {
 		setSelectedDriver(driver);
-		onOpen();
+		onDetailsOpen();
 	};
 
 	// Status chip renderer
@@ -140,7 +251,7 @@ export default function DriversPage() {
 					</Breadcrumbs>
 				</div>
 
-				<Button color="primary" startContent={<Icon icon="lucide:plus" />}>
+				<Button color="primary" startContent={<Icon icon="lucide:plus" />} onPress={onAddOpen}>
 					Add New Driver
 				</Button>
 			</div>
@@ -312,6 +423,9 @@ export default function DriversPage() {
 															Activate Driver
 														</DropdownItem>
 													)}
+													<DropdownItem key="delete" className="text-danger" color="danger" onPress={() => handleDeleteDriver(driver.id)}>
+														Delete Driver
+													</DropdownItem>
 												</DropdownMenu>
 											</Dropdown>
 										</div>
@@ -323,11 +437,74 @@ export default function DriversPage() {
 				</CardBody>
 			</Card>
 
+			{/* Add Driver Modal */}
+			<Modal isOpen={isAddOpen} onOpenChange={onAddOpenChange}>
+				<ModalContent>
+					{(onClose) => (
+						<>
+							<ModalHeader>Add New Driver</ModalHeader>
+							<ModalBody>
+								<div className="space-y-4">
+									<div className="flex gap-4">
+										<Input
+											label="First Name"
+											placeholder="Enter first name"
+											value={formData.firstName}
+											onValueChange={(val) => setFormData({ ...formData, firstName: val })}
+										/>
+										<Input
+											label="Last Name"
+											placeholder="Enter last name"
+											value={formData.lastName}
+											onValueChange={(val) => setFormData({ ...formData, lastName: val })}
+										/>
+									</div>
+									<Input
+										label="Email"
+										placeholder="Enter email"
+										type="email"
+										value={formData.email}
+										onValueChange={(val) => setFormData({ ...formData, email: val })}
+									/>
+									<Input
+										label="Phone Number"
+										placeholder="Enter phone number"
+										value={formData.phone}
+										onValueChange={(val) => setFormData({ ...formData, phone: val })}
+									/>
+									<Input
+										label="License Number"
+										placeholder="Enter license number"
+										value={formData.licenseNumber}
+										onValueChange={(val) => setFormData({ ...formData, licenseNumber: val })}
+									/>
+									<Input
+										label="License Expiry"
+										type="date"
+										placeholder="Select expiry date"
+										value={formData.licenseExpiry}
+										onValueChange={(val) => setFormData({ ...formData, licenseExpiry: val })}
+									/>
+								</div>
+							</ModalBody>
+							<ModalFooter>
+								<Button color="danger" variant="light" onPress={onClose}>
+									Cancel
+								</Button>
+								<Button color="primary" isLoading={createDriverMutation.isPending} onPress={handleAddDriver}>
+									Add Driver
+								</Button>
+							</ModalFooter>
+						</>
+					)}
+				</ModalContent>
+			</Modal>
+
 			{/* Driver Details Modal */}
 			{selectedDriver && (
-				<Modal isOpen={isOpen} size="3xl" onOpenChange={onOpenChange}>
+				<Modal isOpen={isDetailsOpen} size="3xl" onOpenChange={onDetailsOpenChange}>
 					<ModalContent>
-						{() => (
+						{(onClose) => (
 							<>
 								<ModalHeader className="flex flex-col gap-1">
 									Driver Details

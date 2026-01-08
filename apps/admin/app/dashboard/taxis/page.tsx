@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
 	Card,
 	CardBody,
@@ -30,11 +30,11 @@ import {
 	ModalFooter,
 	Avatar,
 } from "@heroui/react";
-import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 
 import { useTaxis } from "@/hooks/useTaxis";
+import { taxis as mockTaxisRaw } from "@/lib/data";
 import { Taxi, Driver, TaxiOnRoute, TaxiLocation } from "@taxicity/database";
 
 type TaxiWithRelations = Taxi & {
@@ -45,7 +45,55 @@ type TaxiWithRelations = Taxi & {
 
 export default function TaxisPage() {
 	const { data: taxisRaw, isLoading } = useTaxis();
-	const taxis = (taxisRaw || []) as unknown as TaxiWithRelations[];
+
+	// Combine real and mock data (fallback if real is empty)
+	const taxis = React.useMemo(() => {
+		if (taxisRaw && taxisRaw.length > 0) {
+			return taxisRaw as unknown as TaxiWithRelations[];
+		}
+
+		// Map mock data to TaxiWithRelations
+		return mockTaxisRaw.map((t: any) => ({
+			id: t.id,
+			licensePlate: t.registrationNumber,
+			model: t.model,
+			make: "Toyota", // Default
+			year: 2018, // Default
+			color: "White", // Default
+			capacity: 15,
+			status: t.status === "active" ? "AVAILABLE" : t.status === "maintenance" ? "MAINTENANCE" : "OFFLINE",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			registrationDoc: null,
+			insuranceDoc: null,
+			permitDoc: null,
+			driverId: t.driverId,
+			driver: {
+				id: t.driverId,
+				fullName: "Mock Driver",
+				phoneNumber: "000-000-0000",
+				email: "mock@example.com",
+				status: "ACTIVE",
+				// ... other fields partial
+			} as any, // Cast specific parts to avoid full Driver shape requirement in mock
+			routes: [],
+			currentLocation: t.currentLocation ? {
+				id: "loc-" + t.id,
+				lat: t.currentLocation.lat,
+				lng: t.currentLocation.lng,
+				createdAt: new Date(),
+				heading: 0,
+				speed: 0,
+				taxiId: t.id,
+				taxiHistoryId: null
+			} : null,
+			locationHistory: [],
+			maintenanceLog: [],
+			vehicleTrips: [],
+			queueEntry: [],
+			taxiRanks: []
+		})) as unknown as TaxiWithRelations[];
+	}, [taxisRaw]);
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [activeTab, setActiveTab] = useState("all");

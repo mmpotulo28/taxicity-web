@@ -15,27 +15,46 @@ import { Pagination } from "@heroui/pagination";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
 
-// Import mock data
-import { routes, ranks } from "@/lib/data";
+// Import mock data (fallback)
+import { routes as mockRoutes, ranks } from "@/lib/data";
+import { useRoutes } from "@/hooks/useRoutes";
 
 export default function RoutesPage() {
+	const { data: realRoutes, isLoading: isRoutesLoading } = useRoutes();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
 	// Combine routes data with rank information
-	const routesWithRanks = routes.map((route) => {
-		const originRank = ranks.find((r) => r.id === route.rankId);
-		const destRank = route.destinationRankId
-			? ranks.find((r) => r.id === route.destinationRankId)
-			: null;
+	const dataToUse = realRoutes && realRoutes.length > 0 ? realRoutes : null;
+	let routesWithRanks: any[] = [];
 
-		return {
-			...route,
-			originRank,
-			destRank,
-		};
-	});
+	if (dataToUse) {
+		routesWithRanks = dataToUse.map(r => ({
+			id: r.id,
+			name: r.name,
+			originRank: r.sourceRank,
+			destRank: r.destRank,
+			estimatedDuration: r.estimatedDuration ? `${r.estimatedDuration} min` : "N/A",
+			estimatedFare: r.baseFare ? `R${Number(r.baseFare).toFixed(2)}` : "N/A",
+			distance: r.distance ? `${r.distance} km` : "N/A",
+			status: r.status.toLowerCase()
+		}));
+	} else {
+		// Fallback to mock
+		routesWithRanks = mockRoutes.map((route) => {
+			const originRank = ranks.find((r) => r.id === route.rankId);
+			const destRank = route.destinationRankId
+				? ranks.find((r) => r.id === route.destinationRankId)
+				: null;
+
+			return {
+				...route,
+				originRank,
+				destRank,
+			};
+		});
+	}
 
 	// Filter routes based on search query and status
 	const filteredRoutes = routesWithRanks.filter((route) => {
@@ -253,7 +272,7 @@ export default function RoutesPage() {
 					<div className="flex justify-between items-center mt-4">
 						<p className="text-sm text-default-500">
 							Showing <span className="font-medium">{filteredRoutes.length}</span> of{" "}
-							<span className="font-medium">{routes.length}</span> routes
+							<span className="font-medium">{routesWithRanks.length}</span> routes
 						</p>
 
 						<Pagination

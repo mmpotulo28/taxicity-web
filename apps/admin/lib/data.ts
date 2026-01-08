@@ -1,4 +1,4 @@
-import { iRank, iRoute, iTaxi, iTrip } from "@/types";
+import { iRank, iRoute, iTaxi, iTrip, iAdminUser } from "@/types";
 
 // Mock Ranks Data
 export const ranks: iRank[] = [
@@ -409,45 +409,45 @@ export const rankDetails = ranks.map((rank) => ({
 	lastInspection: "2023-08-15",
 }));
 
-// Admin Users
-export const adminUsers = [
-	{
-		id: "admin1",
-		name: "Sarah Johnson",
-		email: "sarah.johnson@taxicity.co.za",
-		role: "Super Admin",
-		status: "active",
-		lastLogin: "2023-11-20 09:45 AM",
-		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin1",
-	},
-	{
-		id: "admin2",
-		name: "Michael Brown",
-		email: "michael.brown@taxicity.co.za",
-		role: "Operations Manager",
-		status: "active",
-		lastLogin: "2023-11-19 16:30 PM",
-		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin2",
-	},
-	{
-		id: "admin3",
-		name: "Thandi Nkosi",
-		email: "thandi.nkosi@taxicity.co.za",
-		role: "Support Agent",
-		status: "active",
-		lastLogin: "2023-11-20 08:15 AM",
-		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin3",
-	},
-	{
-		id: "admin4",
-		name: "David Wilson",
-		email: "david.wilson@taxicity.co.za",
-		role: "Data Analyst",
-		status: "inactive",
-		lastLogin: "2023-11-15 14:20 PM",
-		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin4",
-	},
-];
+// Admin Users (definition removed, using the one with type at the bottom)
+// export const adminUsers = [
+// 	{
+// 		id: "admin1",
+// 		name: "Sarah Johnson",
+// 		email: "sarah.johnson@taxicity.co.za",
+// 		role: "Super Admin",
+// 		status: "active",
+// 		lastLogin: "2023-11-20 09:45 AM",
+// 		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin1",
+// 	},
+// 	{
+// 		id: "admin2",
+// 		name: "Michael Brown",
+// 		email: "michael.brown@taxicity.co.za",
+// 		role: "Operations Manager",
+// 		status: "active",
+// 		lastLogin: "2023-11-19 16:30 PM",
+// 		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin2",
+// 	},
+// 	{
+// 		id: "admin3",
+// 		name: "Thandi Nkosi",
+// 		email: "thandi.nkosi@taxicity.co.za",
+// 		role: "Support Agent",
+// 		status: "active",
+// 		lastLogin: "2023-11-20 08:15 AM",
+// 		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin3",
+// 	},
+// 	{
+// 		id: "admin4",
+// 		name: "David Wilson",
+// 		email: "david.wilson@taxicity.co.za",
+// 		role: "Data Analyst",
+// 		status: "inactive",
+// 		lastLogin: "2023-11-15 14:20 PM",
+// 		avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin4",
+// 	},
+// ];
 
 // Support Tickets
 export const supportTickets = [
@@ -610,5 +610,45 @@ export const reportTemplates = [
 		format: "PDF",
 		schedule: "quarterly",
 		recipients: ["admin1@taxicity.co.za", "admin3@taxicity.co.za"],
+	},
+];
+
+// Mock Admin Users Data
+export const adminUsers: iAdminUser[] = [
+	{
+		id: "admin1",
+		name: "Manelisi Mbola",
+		email: "manelisi@taxicity.co.za",
+		role: "Super Admin",
+		status: "active",
+		lastLogin: "2023-11-15T08:30:00",
+		avatar: "https://i.pravatar.cc/150?u=admin1",
+	},
+	{
+		id: "admin2",
+		name: "Sarah Johnson",
+		email: "sarah@taxicity.co.za",
+		role: "Operations Manager",
+		status: "active",
+		lastLogin: "2023-11-14T14:20:00",
+		avatar: "https://i.pravatar.cc/150?u=admin2",
+	},
+	{
+		id: "admin3",
+		name: "Thabo Nkosi",
+		email: "thabo@taxicity.co.za",
+		role: "Support Agent",
+		status: "active",
+		lastLogin: "2023-11-15T09:15:00",
+		avatar: "https://i.pravatar.cc/150?u=admin3",
+	},
+	{
+		id: "admin4",
+		name: "Lisa Wong",
+		email: "lisa@taxicity.co.za",
+		role: "Data Analyst",
+		status: "inactive",
+		lastLogin: "2023-10-30T11:45:00",
+		avatar: "https://i.pravatar.cc/150?u=admin4",
 	},
 ];

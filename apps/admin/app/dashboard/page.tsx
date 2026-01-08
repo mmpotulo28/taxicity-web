@@ -21,17 +21,20 @@ import {
 	ResponsiveContainer,
 } from "recharts";
 
-// Import mock data
-import { taxis, trips as tripHistory } from "@/lib/data";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { trips as tripHistory } from "@/lib/data";
 
 export default function Dashboard() {
 	const router = useRouter();
-	const [activeTrips, setActiveTrips] = useState(0);
-	const [pendingApprovals, setPendingApprovals] = useState(0);
-	const [availableTaxis, setAvailableTaxis] = useState(0);
-	const [todayRevenue, setTodayRevenue] = useState("R0");
+
+
+	// Use the real data hook
+	const { data: stats, isLoading: isStatsLoading, refetch } = useDashboardStats();
+	const [isRefreshing, setIsRefreshing] = useState(false);
+
+	const isLoading = isStatsLoading || isRefreshing;
+
 	const [timeRange, setTimeRange] = useState("today");
-	const [isLoading, setIsLoading] = useState(true);
 	const [tripActivityData, setTripActivityData] = useState<
 		{
 			name: string;
@@ -48,36 +51,8 @@ export default function Dashboard() {
 	>([]);
 
 	useEffect(() => {
-		// Simulate data loading
-		setIsLoading(true);
-
-		// Calculate metrics from mock data
-		const calculateMetrics = () => {
-			// Available taxis
-			const available = taxis.filter((t) => t.status === "available").length;
-
-			setAvailableTaxis(available);
-
-			// Active trips (simulated)
-			setActiveTrips(Math.floor(Math.random() * 30) + 5);
-
-			// Pending driver approvals (simulated)
-			setPendingApprovals(Math.floor(Math.random() * 10));
-
-			// Calculate today's revenue from trips
-			const revenue = tripHistory.reduce((sum, trip) => {
-				if (trip.status === "completed") {
-					// Remove currency symbol and convert to number
-					const fareValue = Number(trip.fare.replace(/[^0-9.-]+/g, ""));
-
-					return sum + fareValue;
-				}
-
-				return sum;
-			}, 0);
-
-			setTodayRevenue(`R${revenue.toFixed(2)}`);
-
+		// Only chart data is simulated now
+		const generateChartData = () => {
 			// Generate trip activity data for the chart
 			const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 			const activityData = daysOfWeek.map((day) => ({
@@ -96,14 +71,16 @@ export default function Dashboard() {
 			];
 
 			setRevenueBreakdownData(breakdownData);
-
-			setIsLoading(false);
 		};
 
-		const timer = setTimeout(calculateMetrics, 800);
+		generateChartData();
+	}, []);
 
-		return () => clearTimeout(timer);
-	}, [timeRange]);
+	// Default values if data is loading or undefined
+	const activeTrips = stats?.activeTrips || 0;
+	const pendingApprovals = stats?.pendingApprovals || 0;
+	const availableTaxis = stats?.availableTaxis || 0;
+	const todayRevenue = stats?.todayRevenue ? `R${Number(stats.todayRevenue).toFixed(2)}` : "R0.00";
 
 	const StatCard = ({
 		title,
@@ -132,9 +109,8 @@ export default function Dashboard() {
 						)}
 						{!loading && change && (
 							<p
-								className={`text-xs flex items-center gap-1 mt-1 ${
-									change.startsWith("+") ? "text-success-600" : "text-danger-600"
-								}`}>
+								className={`text-xs flex items-center gap-1 mt-1 ${change.startsWith("+") ? "text-success-600" : "text-danger-600"
+									}`}>
 								<Icon
 									icon={
 										change.startsWith("+")
@@ -173,8 +149,10 @@ export default function Dashboard() {
 						startContent={<Icon icon="lucide:refresh-cw" />}
 						variant="flat"
 						onPress={() => {
-							setIsLoading(true);
-							setTimeout(() => setIsLoading(false), 800);
+							setIsRefreshing(true);
+							refetch().finally(() => {
+								setTimeout(() => setIsRefreshing(false), 800);
+							});
 						}}>
 						Refresh
 					</Button>
@@ -428,11 +406,10 @@ export default function Dashboard() {
 										<td className="py-3">{trip.time}</td>
 										<td className="py-3">
 											<span
-												className={`px-2 py-1 rounded-full text-xs ${
-													trip.status === "completed"
-														? "bg-success-100 text-success-600"
-														: "bg-danger-100 text-danger-600"
-												}`}>
+												className={`px-2 py-1 rounded-full text-xs ${trip.status === "completed"
+													? "bg-success-100 text-success-600"
+													: "bg-danger-100 text-danger-600"
+													}`}>
 												{trip.status}
 											</span>
 										</td>

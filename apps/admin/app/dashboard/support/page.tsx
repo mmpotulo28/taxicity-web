@@ -38,11 +38,13 @@ import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 import { useRouter } from "next/navigation";
 
-// Import mock data
-import { supportTickets, adminUsers } from "@/lib/data";
+// Import mock data (fallback)
+import { supportTickets as mockSupportTickets, adminUsers } from "@/lib/data";
 import { iSupportTicket } from "@/types";
+import { useSupportTickets } from "@/hooks/useSupportTickets";
 
 export default function SupportPage() {
+	const { data: realTickets, isLoading: isTicketsLoading } = useSupportTickets();
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(true);
 	const [filteredTickets, setFilteredTickets] = useState<iSupportTicket[]>([]);
@@ -93,50 +95,77 @@ export default function SupportPage() {
 
 	// Filter tickets
 	useEffect(() => {
-		setIsLoading(true);
+		if (isTicketsLoading) {
+			setIsLoading(true);
+			return;
+		}
 
-		// Simulate API call delay
-		setTimeout(() => {
-			let filtered = [...supportTickets];
+		const sourceData = realTickets && realTickets.length > 0 ? realTickets : null;
+		let mappedData: iSupportTicket[] = [];
 
-			// Apply status filter
-			if (statusFilter !== "all") {
-				filtered = filtered.filter((ticket) => ticket.status === statusFilter);
-			}
+		if (sourceData) {
+			mappedData = sourceData.map((t: any) => ({
+				id: t.id,
+				subject: t.subject,
+				description: t.message || "",
+				status: (t.status?.toLowerCase() === "open" ? "open" :
+					t.status?.toLowerCase() === "resolved" ? "resolved" :
+						t.status?.toLowerCase() === "closed" ? "closed" :
+							"in-progress") as any,
+				priority: (t.priority?.toLowerCase() === "high" ? "high" :
+					t.priority?.toLowerCase() === "low" ? "low" : "medium") as any,
+				createdDate: t.createdAt ? new Date(t.createdAt).toISOString() : new Date().toISOString(),
+				customerName: `User-${t.userId?.substring(0, 6) || "Unknown"}`, // Placeholder
+				customerEmail: "user@example.com", // Placeholder
+				assignedTo: t.assignedTo || null,
+				category: t.category || "General",
+				resolution: undefined,
+				relatedDriverId: undefined,
+				relatedTripId: undefined,
+				relatedTaxiId: undefined
+			}));
+		} else {
+			mappedData = mockSupportTickets.map((ticket) => ({
+				...ticket,
+				status: ticket.status as "open" | "in-progress" | "resolved" | "closed",
+				priority: ticket.priority as "low" | "medium" | "high",
+			}));
+		}
 
-			// Apply priority filter
-			if (priorityFilter !== "all") {
-				filtered = filtered.filter((ticket) => ticket.priority === priorityFilter);
-			}
+		let filtered = mappedData;
 
-			// Apply tab filter
-			if (activeTab === "my") {
-				filtered = filtered.filter((ticket) => ticket.assignedTo === "admin3");
-			} else if (activeTab === "unassigned") {
-				filtered = filtered.filter((ticket) => ticket.assignedTo === null);
-			}
+		// Apply status filter
+		if (statusFilter !== "all") {
+			filtered = filtered.filter((ticket) => ticket.status === statusFilter);
+		}
 
-			// Apply search query filter
-			if (searchQuery) {
-				filtered = filtered.filter(
-					(ticket) =>
-						ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						ticket.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						ticket.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						ticket.description.toLowerCase().includes(searchQuery.toLowerCase()),
-				);
-			}
+		// Apply priority filter
+		if (priorityFilter !== "all") {
+			filtered = filtered.filter((ticket) => ticket.priority === priorityFilter);
+		}
 
-			setFilteredTickets(
-				filtered.map((ticket) => ({
-					...ticket,
-					status: ticket.status as "open" | "in-progress" | "resolved" | "closed",
-					priority: ticket.priority as "low" | "medium" | "high",
-				})),
+		// Apply tab filter
+		if (activeTab === "my") {
+			filtered = filtered.filter((ticket) => ticket.assignedTo === "admin3"); // TODO: use real current user id
+		} else if (activeTab === "unassigned") {
+			filtered = filtered.filter((ticket) => ticket.assignedTo === null);
+		}
+
+		// Apply search query filter
+		if (searchQuery) {
+			filtered = filtered.filter(
+				(ticket) =>
+					ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					ticket.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					ticket.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					ticket.description.toLowerCase().includes(searchQuery.toLowerCase()),
 			);
-			setIsLoading(false);
-		}, 500);
-	}, [searchQuery, statusFilter, priorityFilter, activeTab]);
+		}
+
+		setFilteredTickets(filtered);
+		setIsLoading(false);
+	}, [searchQuery, statusFilter, priorityFilter, activeTab, realTickets, isTicketsLoading]);
+
 
 	// Pagination calculation
 	const pages = Math.ceil(filteredTickets.length / rowsPerPage);
@@ -386,7 +415,7 @@ export default function SupportPage() {
 							<div>
 								<p className="text-sm text-default-500">Open Tickets</p>
 								<p className="text-2xl font-bold mt-1">
-									{supportTickets.filter((t) => t.status === "open").length}
+									{filteredTickets.filter((t) => t.status === "open").length}
 								</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
@@ -406,7 +435,7 @@ export default function SupportPage() {
 								<p className="text-sm text-default-500">In Progress</p>
 								<p className="text-2xl font-bold mt-1">
 									{
-										supportTickets.filter((t) => t.status === "in-progress")
+										filteredTickets.filter((t) => t.status === "in-progress")
 											.length
 									}
 								</p>
@@ -727,11 +756,10 @@ export default function SupportPage() {
 														key={index}
 														className={`flex ${msg.isAdmin ? "justify-end" : "justify-start"}`}>
 														<div
-															className={`max-w-[80%] rounded-lg p-3 ${
-																msg.isAdmin
-																	? "bg-primary-100 text-primary-900"
-																	: "bg-default-100"
-															}`}>
+															className={`max-w-[80%] rounded-lg p-3 ${msg.isAdmin
+																? "bg-primary-100 text-primary-900"
+																: "bg-default-100"
+																}`}>
 															<div className="flex items-center gap-2 mb-1">
 																<span className="font-medium text-sm">
 																	{msg.sender}
@@ -931,54 +959,54 @@ export default function SupportPage() {
 														{(selectedTicket.relatedDriverId ||
 															selectedTicket.relatedTripId ||
 															selectedTicket.relatedTaxiId) && (
-															<>
-																<Divider />
-																<div>
-																	<p className="text-sm text-default-500 mb-1">
-																		Related Information
-																	</p>
-																	{selectedTicket.relatedDriverId && (
-																		<div className="flex items-center gap-2 mb-1">
-																			<Icon
-																				className="text-default-500"
-																				icon="lucide:user"
-																			/>
-																			<a
-																				className="text-sm text-primary"
-																				href={`/dashboard/drivers?id=${selectedTicket.relatedDriverId}`}>
-																				View Related Driver
-																			</a>
-																		</div>
-																	)}
-																	{selectedTicket.relatedTripId && (
-																		<div className="flex items-center gap-2 mb-1">
-																			<Icon
-																				className="text-default-500"
-																				icon="lucide:map"
-																			/>
-																			<a
-																				className="text-sm text-primary"
-																				href={`/dashboard/trips?id=${selectedTicket.relatedTripId}`}>
-																				View Related Trip
-																			</a>
-																		</div>
-																	)}
-																	{selectedTicket.relatedTaxiId && (
-																		<div className="flex items-center gap-2">
-																			<Icon
-																				className="text-default-500"
-																				icon="lucide:car"
-																			/>
-																			<a
-																				className="text-sm text-primary"
-																				href={`/dashboard/taxis?id=${selectedTicket.relatedTaxiId}`}>
-																				View Related Taxi
-																			</a>
-																		</div>
-																	)}
-																</div>
-															</>
-														)}
+																<>
+																	<Divider />
+																	<div>
+																		<p className="text-sm text-default-500 mb-1">
+																			Related Information
+																		</p>
+																		{selectedTicket.relatedDriverId && (
+																			<div className="flex items-center gap-2 mb-1">
+																				<Icon
+																					className="text-default-500"
+																					icon="lucide:user"
+																				/>
+																				<a
+																					className="text-sm text-primary"
+																					href={`/dashboard/drivers?id=${selectedTicket.relatedDriverId}`}>
+																					View Related Driver
+																				</a>
+																			</div>
+																		)}
+																		{selectedTicket.relatedTripId && (
+																			<div className="flex items-center gap-2 mb-1">
+																				<Icon
+																					className="text-default-500"
+																					icon="lucide:map"
+																				/>
+																				<a
+																					className="text-sm text-primary"
+																					href={`/dashboard/trips?id=${selectedTicket.relatedTripId}`}>
+																					View Related Trip
+																				</a>
+																			</div>
+																		)}
+																		{selectedTicket.relatedTaxiId && (
+																			<div className="flex items-center gap-2">
+																				<Icon
+																					className="text-default-500"
+																					icon="lucide:car"
+																				/>
+																				<a
+																					className="text-sm text-primary"
+																					href={`/dashboard/taxis?id=${selectedTicket.relatedTaxiId}`}>
+																					View Related Taxi
+																				</a>
+																			</div>
+																		)}
+																	</div>
+																</>
+															)}
 													</div>
 												</CardBody>
 											</Card>

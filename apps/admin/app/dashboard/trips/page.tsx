@@ -41,11 +41,13 @@ import {
 	Tooltip,
 } from "recharts";
 
-// Import trips from data
-import { trips, drivers } from "@/lib/data";
+// Import trips from data (fallback)
+import { trips as mockTrips, drivers } from "@/lib/data";
 import { iTrip } from "@/types";
+import { useTrips } from "@/hooks/useTrips";
 
 export default function TripsPage() {
+	const { data: realTrips, isLoading: isTripsLoading } = useTrips();
 	const [isLoading, setIsLoading] = useState(true);
 	const [filteredTrips, setFilteredTrips] = useState<iTrip[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -61,63 +63,90 @@ export default function TripsPage() {
 
 	// Filter trips
 	useEffect(() => {
-		setIsLoading(true);
+		if (isTripsLoading) {
+			setIsLoading(true);
+			return;
+		}
 
-		// Simulate API call delay
-		setTimeout(() => {
-			let filtered = [...trips];
+		const sourceData = realTrips && realTrips.length > 0 ? realTrips : null;
+		let mappedData: iTrip[] = [];
 
-			// Apply status filter
-			if (statusFilter !== "all") {
-				filtered = filtered.filter((trip) => trip.status === statusFilter);
+		if (sourceData) {
+			mappedData = sourceData.map((t: any) => ({
+				id: t.id,
+				route: t.vehicleTrip?.route?.name || "Unknown Route",
+				date: t.requestTime ? new Date(t.requestTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+				time: t.requestTime ? new Date(t.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
+				pickup: t.pickupAddress || "N/A",
+				dropoff: t.dropoffAddress || "N/A",
+				driver: t.vehicleTrip?.driver?.fullName ||
+					(t.vehicleTrip?.driver ? `${t.vehicleTrip.driver.firstName} ${t.vehicleTrip.driver.lastName}` : "Unassigned"),
+				vehicle: t.vehicleTrip?.taxi?.model || "Unknown",
+				licensePlate: t.vehicleTrip?.taxi?.licensePlate || "Unknown",
+				fare: t.fare ? `R${Number(t.fare).toFixed(2)}` : "R0.00",
+				status: (t.status?.toLowerCase() === "arrived_at_pickup" ? "in-progress" :
+					t.status?.toLowerCase() === "requested" ? "in-progress" :
+						t.status?.toLowerCase() === "accepted" ? "in-progress" :
+							t.status?.toLowerCase()) as any,
+				paymentMethod: t.paymentMethod ? t.paymentMethod.replace("_", " ") : "CASH",
+				rating: undefined
+			}));
+		} else {
+			mappedData = [...mockTrips];
+		}
+
+		let filtered = mappedData;
+
+		// Apply status filter
+		if (statusFilter !== "all") {
+			filtered = filtered.filter((trip) => trip.status === statusFilter);
+		}
+
+		// Apply date range filter
+		if (dateRange !== "all") {
+			const today = new Date();
+			const filterDate = new Date();
+
+			switch (dateRange) {
+				case "today":
+					filtered = filtered.filter((trip) => {
+						const tripDate = new Date(trip.date);
+
+						return tripDate.toDateString() === today.toDateString();
+					});
+					break;
+				case "week":
+					filterDate.setDate(today.getDate() - 7);
+					filtered = filtered.filter((trip) => {
+						const tripDate = new Date(trip.date);
+
+						return tripDate >= filterDate;
+					});
+					break;
+				case "month":
+					filterDate.setMonth(today.getMonth() - 1);
+					filtered = filtered.filter((trip) => {
+						const tripDate = new Date(trip.date);
+
+						return tripDate >= filterDate;
+					});
+					break;
 			}
+		}
 
-			// Apply date range filter
-			if (dateRange !== "all") {
-				const today = new Date();
-				const filterDate = new Date();
+		// Apply search query filter
+		if (searchQuery) {
+			filtered = filtered.filter(
+				(trip) =>
+					trip.route.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					trip.driver.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					trip.licensePlate.toLowerCase().includes(searchQuery.toLowerCase()),
+			);
+		}
 
-				switch (dateRange) {
-					case "today":
-						filtered = filtered.filter((trip) => {
-							const tripDate = new Date(trip.date);
-
-							return tripDate.toDateString() === today.toDateString();
-						});
-						break;
-					case "week":
-						filterDate.setDate(today.getDate() - 7);
-						filtered = filtered.filter((trip) => {
-							const tripDate = new Date(trip.date);
-
-							return tripDate >= filterDate;
-						});
-						break;
-					case "month":
-						filterDate.setMonth(today.getMonth() - 1);
-						filtered = filtered.filter((trip) => {
-							const tripDate = new Date(trip.date);
-
-							return tripDate >= filterDate;
-						});
-						break;
-				}
-			}
-
-			// Apply search query filter
-			if (searchQuery) {
-				filtered = filtered.filter(
-					(trip) =>
-						trip.route.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						trip.driver.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						trip.licensePlate.toLowerCase().includes(searchQuery.toLowerCase()),
-				);
-			}
-
-			setFilteredTrips(filtered);
-			setIsLoading(false);
-		}, 500);
-	}, [searchQuery, statusFilter, dateRange]);
+		setFilteredTrips(filtered);
+		setIsLoading(false);
+	}, [searchQuery, statusFilter, dateRange, realTrips, isTripsLoading]);
 
 	// Pagination calculation
 	const pages = Math.ceil(filteredTrips.length / rowsPerPage);
@@ -506,8 +535,8 @@ export default function TripsPage() {
 																		key={i}
 																		className={
 																			i <
-																			(selectedTrip.rating ||
-																				0)
+																				(selectedTrip.rating ||
+																					0)
 																				? "text-yellow-500"
 																				: "text-default-300"
 																		}
@@ -784,7 +813,7 @@ export default function TripsPage() {
 						<div className="flex items-center justify-between">
 							<div>
 								<p className="text-sm text-default-500">Total Trips</p>
-								<p className="text-2xl font-bold mt-1">{trips.length}</p>
+								<p className="text-2xl font-bold mt-1">{filteredTrips.length}</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
 								<Icon className="text-primary text-2xl" icon="lucide:map" />
@@ -799,7 +828,7 @@ export default function TripsPage() {
 							<div>
 								<p className="text-sm text-default-500">Completed Trips</p>
 								<p className="text-2xl font-bold mt-1">
-									{trips.filter((t) => t.status === "completed").length}
+									{filteredTrips.filter((t) => t.status === "completed").length}
 								</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
@@ -818,7 +847,7 @@ export default function TripsPage() {
 							<div>
 								<p className="text-sm text-default-500">Cancelled Trips</p>
 								<p className="text-2xl font-bold mt-1">
-									{trips.filter((t) => t.status === "cancelled").length}
+									{filteredTrips.filter((t) => t.status === "cancelled").length}
 								</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-danger/20 flex items-center justify-center">
@@ -834,7 +863,7 @@ export default function TripsPage() {
 							<div>
 								<p className="text-sm text-default-500">Active Trips</p>
 								<p className="text-2xl font-bold mt-1">
-									{trips.filter((t) => t.status === "in-progress").length}
+									{filteredTrips.filter((t) => t.status === "in-progress").length}
 								</p>
 							</div>
 							<div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center">

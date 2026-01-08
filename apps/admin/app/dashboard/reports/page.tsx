@@ -19,6 +19,9 @@ import {
 } from "recharts";
 import { CalendarDate } from "@internationalized/date";
 
+// Import hook
+import { useReports } from "@/hooks/useReports";
+
 const addDays = (date: DateValue, days: number): DateValue => {
 	const calendarDate = toCalendarDate(date);
 	const jsDate = new Date(calendarDate.year, calendarDate.month - 1, calendarDate.day);
@@ -52,11 +55,14 @@ export default function ReportsPage() {
 		{ key: "feedback", title: "Feedback & Ratings", icon: "lucide:message-square" },
 	];
 
+	// Fetch real data
+	const { data: reportData, isLoading: isReportLoading } = useReports();
+
 	// Selected report configuration
 	const currentReport = reportTypes.find((r) => r.key === selectedReport);
 
-	// Sample revenue data for the chart
-	const revenueData = [
+	// Sample revenue data for the chart (fallback)
+	const mockRevenueData = [
 		{ name: "Jan 1", revenue: 4800 },
 		{ name: "Jan 2", revenue: 5200 },
 		{ name: "Jan 3", revenue: 4900 },
@@ -68,6 +74,10 @@ export default function ReportsPage() {
 		{ name: "Jan 9", revenue: 6800 },
 		{ name: "Jan 10", revenue: 7400 },
 	];
+
+	const revenueData = reportData?.revenueData || mockRevenueData;
+	const totalRevenue = reportData?.totalRevenue ? `R${reportData.totalRevenue.toFixed(2)}` : "R24,586.00";
+	const totalTrips = reportData?.totalTrips || "1,245";
 
 	return (
 		<div className="space-y-6">
@@ -197,7 +207,7 @@ export default function ReportsPage() {
 											<p className="text-sm text-default-500">
 												Total Revenue
 											</p>
-											<p className="text-2xl font-bold mt-1">R24,586.00</p>
+											<p className="text-2xl font-bold mt-1">{totalRevenue}</p>
 											<p className="text-xs text-success-600 flex items-center gap-1 mt-1">
 												<Icon icon="lucide:trending-up" />
 												+15% from last period
@@ -208,7 +218,7 @@ export default function ReportsPage() {
 									<Card>
 										<CardBody className="p-4">
 											<p className="text-sm text-default-500">Trip Count</p>
-											<p className="text-2xl font-bold mt-1">1,245</p>
+											<p className="text-2xl font-bold mt-1">{totalTrips}</p>
 											<p className="text-xs text-success-600 flex items-center gap-1 mt-1">
 												<Icon icon="lucide:trending-up" />
 												+8% from last period
