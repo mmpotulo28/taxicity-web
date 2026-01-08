@@ -1,8 +1,8 @@
-import sharedConfig from "@taxicity/eslint-config";
+import sharedConfig from "@taxicity/configs/eslint";
 
 export default [
-  ...sharedConfig,
-  {
-      ignores: [".next/**"]
-  }
+	...sharedConfig,
+	{
+		ignores: [".next/**"],
+	},
 ];

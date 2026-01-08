@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
-import { clerkConfig } from "@/lib/config/clerk";
+import { clerkConfig } from "@taxicity/configs/clerk";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MapProvider, RideProvider } from "@taxicity/ui";
 import { DriverProvider } from "../context/DriverContext";

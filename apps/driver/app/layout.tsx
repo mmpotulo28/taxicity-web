@@ -13,7 +13,7 @@ export default function RootLayout({
  children: React.ReactNode;
 }) {
  return (
-  <html lang="en">
+  <html lang="en" suppressHydrationWarning>
    <body>
     <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
      <div className="h-full w-full flex flex-col max-w-lg mx-auto">

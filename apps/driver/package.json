@@ -1,6 +1,7 @@
 {
 	"name": "driver-app",
 	"version": "0.0.1",
+	"type": "module",
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack -p 3001",
@@ -10,7 +11,7 @@
 		"check": "next lint && tsc --noEmit"
 	},
 	"dependencies": {
-		"@clerk/nextjs": "^6.36.5",
+		"@clerk/nextjs": "^6.36.6",
 		"@heroui/system": "2.4.22",
 		"@heroui/toast": "2.0.16",
 		"@sentry/nextjs": "^10.32.1",
@@ -32,8 +33,7 @@
 		"zod": "^4.3.5"
 	},
 	"devDependencies": {
-		"@taxicity/eslint-config": "workspace:*",
-		"@taxicity/tsconfig": "workspace:*",
+		"@taxicity/configs": "workspace:*",
 		"@types/google.maps": "^3.58.1",
 		"@types/node": "20.5.7",
 		"@types/react": "18.3.3",

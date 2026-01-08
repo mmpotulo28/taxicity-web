@@ -12,7 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { RideProvider } from "@taxicity/ui";
 import { MapProvider } from "@taxicity/ui";
-import { clerkConfig } from "@/lib/config/clerk";
+import { clerkConfig } from "@taxicity/configs/clerk";
 
 export interface ProvidersProps {
 	children: React.ReactNode;

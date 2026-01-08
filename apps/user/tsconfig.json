@@ -1,5 +1,5 @@
 {
-  "extends": "@taxicity/tsconfig/base.json",
+  "extends": "@taxicity/configs/tsconfig",
   "compilerOptions": {
     "plugins": [
       {
@@ -16,7 +16,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../packages/ui/hero.ts"
   ],
   "exclude": [
     "node_modules"

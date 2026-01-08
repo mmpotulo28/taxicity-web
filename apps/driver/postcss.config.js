@@ -1,1 +1,3 @@
-module.exports = require("@taxicity/ui/postcss.config");
+import config from "@taxicity/ui/postcss.config";
+
+export default config;

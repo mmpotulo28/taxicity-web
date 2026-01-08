@@ -5,7 +5,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useRouter } from "next/navigation";
 import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
-import { clerkConfig } from "@/lib/config/clerk";
+import { clerkConfig } from "@taxicity/configs/clerk";
 
 export function Providers({ children }: { children: React.ReactNode }) {
  const router = useRouter();

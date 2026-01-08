@@ -1,3 +1,3 @@
-import config from "@taxicity/eslint-config";
+import config from "@taxicity/configs/eslint";
 
 export default config;

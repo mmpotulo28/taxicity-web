@@ -1,8 +1,4 @@
-import { ClerkProvider } from "@clerk/nextjs";
-import { ComponentProps } from "react";
-
-export const clerkConfig: ComponentProps<typeof ClerkProvider> = {
-	children: null,
+export const clerkConfig = {
 	publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "",
 	isSatellite: false,
 	proxyUrl: "",
