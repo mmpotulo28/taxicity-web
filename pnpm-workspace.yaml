@@ -9,6 +9,7 @@ onlyBuiltDependencies:
   - '@prisma/engines'
   - '@sentry/cli'
   - '@tailwindcss/oxide'
+  - esbuild
   - prisma
   - sharp
   - unrs-resolver
