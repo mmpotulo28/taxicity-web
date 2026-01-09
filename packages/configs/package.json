@@ -6,11 +6,7 @@
 	"exports": {
 		"./eslint": "./eslint.config.mts",
 		"./tsconfig": "./base.json",
-		"./clerk": {
-			"types": "./dist/clerk.d.ts",
-			"import": "./dist/clerk.js",
-			"default": "./dist/clerk.js"
-		}
+		"./clerk": "./src/clerk.ts"
 	},
 	"files": [
 		"dist",
