@@ -24,3 +24,29 @@ export const useCreateRank = () => {
 		},
 	});
 };
+
+export const useUpdateRank = () => {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async ({ id, ...data }: Partial<Rank> & { id: string }) => {
+			const response = await axios.patch(`/api/ranks/${id}`, data);
+			return response.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["ranks"] });
+		},
+	});
+};
+
+export const useDeleteRank = () => {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (id: string) => {
+			const response = await axios.delete(`/api/ranks/${id}`);
+			return response.data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["ranks"] });
+		},
+	});
+};

@@ -29,14 +29,16 @@ import {
 	Tabs,
 	Tab,
 	Progress,
+	Select,
+	SelectItem,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
-import { useRanks } from "@/hooks/useRanks";
+import { useRanks, useCreateRank, useUpdateRank, useDeleteRank } from "@/hooks/useRanks";
 import { useTaxis } from "@/hooks/useTaxis";
 import { useRoutes } from "@/hooks/useRoutes";
 import { ranks as mockRanksRaw } from "@/lib/data";
-import { Rank, Route } from "@taxicity/database";
+import { Rank, Route, Taxi, RankQueueEntry } from "@taxicity/database";
 import {
 	LineChart,
 	Line,
@@ -48,13 +50,26 @@ import {
 	ReferenceLine,
 } from "recharts";
 
+type RankWithCounts = Rank & {
+	_count?: {
+		queueEntries: number;
+		taxiRanks: number;
+		sourceRoutes: number;
+		trips: number;
+	};
+};
+
 export default function RanksPage() {
 	const { data: realRanks, isLoading } = useRanks();
+	const createRank = useCreateRank();
+	const updateRank = useUpdateRank();
+	const deleteRank = useDeleteRank();
+
 	const { data: taxis = [] } = useTaxis();
 	const { data: routes = [] } = useRoutes();
 
 	// Use real data if available, otherwise map mock data to match Prisma schema
-	const ranks = React.useMemo(() => {
+	const ranks: RankWithCounts[] = React.useMemo(() => {
 		if (realRanks && realRanks.length > 0) return realRanks;
 
 		return mockRanksRaw.map((r) => ({
@@ -73,18 +88,39 @@ export default function RanksPage() {
 			description: "Mock Rank Description",
 			operatingHours: "05:00 - 20:00",
 			image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1000&auto=format&fit=crop"
-		}));
+		})) as unknown as RankWithCounts[];
 	}, [realRanks]);
 
-	const [filteredRanks, setFilteredRanks] = useState<any[]>([]);
+	const [filteredRanks, setFilteredRanks] = useState<RankWithCounts[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [regionFilter, setRegionFilter] = useState("all");
 	const [currentPage, setCurrentPage] = useState(1);
-	const [selectedRank, setSelectedRank] = useState<any | null>(null);
+	const [selectedRank, setSelectedRank] = useState<RankWithCounts | null>(null);
 	const [uniqueRegions, setUniqueRegions] = useState<string[]>([]);
 	const [activeTab, setActiveTab] = useState("all");
 
+	// State for Create/Edit Modal
 	const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+	const {
+		isOpen: isFormOpen,
+		onOpen: onFormOpen,
+		onOpenChange: onFormOpenChange,
+		onClose: onFormClose
+	} = useDisclosure();
+
+	const [isEditing, setIsEditing] = useState(false);
+	const [formData, setFormData] = useState({
+		name: "",
+		region: "",
+		address: "",
+		city: "", // Added
+		province: "", // Added
+		lat: "",
+		lng: "",
+		capacity: "50",
+		operatingHours: "05:00 - 20:00",
+		status: "ACTIVE" // Added default status
+	});
 
 	// Items per page
 	const rowsPerPage = 8;
@@ -138,30 +174,112 @@ export default function RanksPage() {
 	);
 
 	// View rank details
-	const handleViewDetails = (rank: Rank) => {
+	const handleViewDetails = (rank: RankWithCounts) => {
 		setSelectedRank(rank);
 		onOpen();
 	};
 
-	// Handle rank status update
-	const handleUpdateRank = (rankId: string, action: string) => {
-		addToast({
-			title: "Rank Updated",
-			description: `Rank ${action} successfully`,
-			color: "success",
+	// --- CRUD Operations ---
+
+	const handleOpenCreateModal = () => {
+		setFormData({
+			name: "",
+			region: "",
+			address: "",
+			city: "",
+			province: "",
+			lat: "",
+			lng: "",
+			capacity: "50",
+			operatingHours: "05:00 - 20:00",
+			status: "ACTIVE"
 		});
-		onClose();
+		setIsEditing(false);
+		onFormOpen();
+	};
+
+	const handleOpenEditModal = (rank: RankWithCounts) => {
+		setFormData({
+			name: rank.name,
+			region: rank.region || "",
+			address: rank.address,
+			city: rank.city,
+			province: rank.province,
+			lat: (rank.lat || 0).toString(),
+			lng: (rank.lng || 0).toString(),
+			capacity: (rank.capacity || 50).toString(),
+			operatingHours: rank.operatingHours || "",
+			status: rank.isActive ? "ACTIVE" : "INACTIVE"
+		});
+		setSelectedRank(rank);
+		setIsEditing(true);
+		onFormOpen();
+	};
+
+	const handleDeleteRank = async (rankId: string) => {
+		if (confirm("Are you sure you want to delete this rank? This cannot be undone.")) {
+			try {
+				await deleteRank.mutateAsync(rankId);
+				addToast({
+					title: "Rank Deleted",
+					description: "Rank successfully removed",
+					color: "success",
+				});
+				// Refresh logic is handled by useDeleteRank invalidation
+			} catch (error) {
+				console.error(error);
+				addToast({
+					title: "Error", // Fixed title
+					description: "Failed to delete rank",
+					color: "danger",
+				});
+			}
+		}
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		try {
+			const payload: Partial<Rank> = {
+				name: formData.name,
+				region: formData.region,
+				address: formData.address,
+				city: formData.city,
+				province: formData.province,
+				lat: parseFloat(formData.lat) || 0,
+				lng: parseFloat(formData.lng) || 0,
+				capacity: parseInt(formData.capacity) || 50,
+				operatingHours: formData.operatingHours,
+				isActive: formData.status === "ACTIVE"
+			};
+
+			if (isEditing && selectedRank) {
+				await updateRank.mutateAsync({ id: selectedRank.id, ...payload });
+				addToast({ title: "Rank Updated", description: "Rank details updated successfully", color: "success" });
+			} else {
+				await createRank.mutateAsync(payload);
+				addToast({ title: "Rank Created", description: "New rank added successfully", color: "success" });
+			}
+			onFormClose();
+		} catch (error) {
+			console.error(error);
+			addToast({ title: "Error", description: "Operation failed", color: "danger" });
+		}
+	};
+
+	const handleInputChange = (field: string, value: string) => {
+		setFormData(prev => ({ ...prev, [field]: value }));
 	};
 
 	// Calculate occupancy percentage
-	const calculateOccupancy = (rank: any) => {
+	const calculateOccupancy = (rank: RankWithCounts) => {
 		const current = rank._count?.queueEntries || 0;
 		const capacity = rank.capacity || 1;
 		return Math.min(Math.round((current / capacity) * 100), 100);
 	};
 
 	// Get occupancy status and color
-	const getOccupancyStatus = (rank: any) => {
+	const getOccupancyStatus = (rank: RankWithCounts) => {
 		const percentage = calculateOccupancy(rank);
 		if (percentage >= 80) return { status: "High", color: "danger" };
 		if (percentage >= 40) return { status: "Medium", color: "warning" };
@@ -169,10 +287,12 @@ export default function RanksPage() {
 	};
 
 	// Get taxis at a specific rank
-	const getTaxisAtRank = (rankId: string): any[] => {
+	const getTaxisAtRank = (rankId: string): (Taxi & { queueEntry: RankQueueEntry[] })[] => {
 		if (!taxis) return [];
-		// Filter taxis that are in the queue for this rank
-		return taxis.filter((taxi: any) => taxi.queueEntry?.some((q: any) => q.rankId === rankId));
+		// detailed typing for the filter
+		return (taxis as (Taxi & { queueEntry: RankQueueEntry[] })[]).filter((taxi) =>
+			taxi.queueEntry?.some((q) => q.rankId === rankId)
+		);
 	};
 
 	// Get routes from a specific rank
@@ -203,7 +323,11 @@ export default function RanksPage() {
 						Map View
 					</Button>
 
-					<Button color="primary" startContent={<Icon icon="lucide:plus" />}>
+					<Button
+						color="primary"
+						startContent={<Icon icon="lucide:plus" />}
+						onPress={handleOpenCreateModal}
+					>
 						Add New Rank
 					</Button>
 				</div>
@@ -350,10 +474,10 @@ export default function RanksPage() {
 											<div className="flex flex-col gap-1">
 												<div className="flex justify-between text-small">
 													<span>
-														{(rank as any)._count?.queueEntries || 0}/{rank.capacity}
+														{rank._count?.queueEntries || 0}/{rank.capacity || 50}
 													</span>
 													<Chip
-														color={occupancyInfo.color as any}
+														color={occupancyInfo.color as "default" | "primary" | "secondary" | "success" | "warning" | "danger"}
 														size="sm"
 														variant="flat">
 														{occupancyInfo.status}
@@ -361,7 +485,7 @@ export default function RanksPage() {
 												</div>
 												<Progress
 													aria-label="Occupancy"
-													color={occupancyInfo.color as any}
+													color={occupancyInfo.color as "default" | "primary" | "secondary" | "success" | "warning" | "danger"}
 													size="sm"
 													value={occupancyPercentage}
 												/>
@@ -395,7 +519,9 @@ export default function RanksPage() {
 															key="edit"
 															startContent={
 																<Icon icon="lucide:edit" />
-															}>
+															}
+															onPress={() => handleOpenEditModal(rank)}
+														>
 															Edit Rank
 														</DropdownItem>
 														<DropdownItem
@@ -406,18 +532,15 @@ export default function RanksPage() {
 															View on Map
 														</DropdownItem>
 														<DropdownItem
-															key="report"
+															key="delete"
+															className="text-danger"
+															color="danger"
 															startContent={
-																<Icon icon="lucide:file-text" />
-															}>
-															Generate Report
-														</DropdownItem>
-														<DropdownItem
-															key="notify"
-															startContent={
-																<Icon icon="lucide:bell" />
-															}>
-															Send Notification
+																<Icon icon="lucide:trash-2" />
+															}
+															onPress={() => handleDeleteRank(rank.id)}
+														>
+															Delete Rank
 														</DropdownItem>
 													</DropdownMenu>
 												</Dropdown>
@@ -430,6 +553,100 @@ export default function RanksPage() {
 					</Table>
 				</CardBody>
 			</Card>
+
+			{/* Create/Edit Rank Modal */}
+			<Modal isOpen={isFormOpen} size="2xl" onOpenChange={onFormOpenChange}>
+				<ModalContent>
+					{(onClose) => (
+						<form onSubmit={handleSubmit}>
+							<ModalHeader className="flex flex-col gap-1">
+								{isEditing ? "Edit Rank" : "Add New Rank"}
+							</ModalHeader>
+							<ModalBody>
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+									<Input
+										isRequired
+										label="Rank Name"
+										placeholder="e.g. Bree Street Taxi Rank"
+										value={formData.name}
+										onValueChange={(val) => handleInputChange("name", val)}
+									/>
+									<Input
+										isRequired
+										label="Region"
+										placeholder="e.g. Johannesburg CBD"
+										value={formData.region}
+										onValueChange={(val) => handleInputChange("region", val)}
+									/>
+									<Input
+										isRequired
+										className="md:col-span-2"
+										label="Address"
+										placeholder="Street address"
+										value={formData.address}
+										onValueChange={(val) => handleInputChange("address", val)}
+									/>
+									<Input
+										isRequired
+										label="City"
+										value={formData.city}
+										onValueChange={(val) => handleInputChange("city", val)}
+									/>
+									<Input
+										isRequired
+										label="Province"
+										value={formData.province}
+										onValueChange={(val) => handleInputChange("province", val)}
+									/>
+									<Input
+										label="Latitude"
+										type="number"
+										step="any"
+										value={formData.lat}
+										onValueChange={(val) => handleInputChange("lat", val)}
+									/>
+									<Input
+										label="Longitude"
+										type="number"
+										step="any"
+										value={formData.lng}
+										onValueChange={(val) => handleInputChange("lng", val)}
+									/>
+									<Input
+										label="Capacity"
+										type="number"
+										value={formData.capacity}
+										onValueChange={(val) => handleInputChange("capacity", val)}
+									/>
+									<Input
+										label="Operating Hours"
+										placeholder="e.g. 05:00 - 20:00"
+										value={formData.operatingHours}
+										onValueChange={(val) => handleInputChange("operatingHours", val)}
+									/>
+									<Select
+										label="Status"
+										selectedKeys={[formData.status]}
+										onChange={(e) => handleInputChange("status", e.target.value)}
+									>
+										<SelectItem key="ACTIVE">Active</SelectItem>
+										<SelectItem key="INACTIVE">Inactive</SelectItem>
+										<SelectItem key="MAINTENANCE">Maintenance</SelectItem>
+									</Select>
+								</div>
+							</ModalBody>
+							<ModalFooter>
+								<Button color="danger" variant="light" onPress={onClose}>
+									Cancel
+								</Button>
+								<Button color="primary" type="submit">
+									{isEditing ? "Save Changes" : "Create Rank"}
+								</Button>
+							</ModalFooter>
+						</form>
+					)}
+				</ModalContent>
+			</Modal>
 
 			{/* Rank Details Modal */}
 			{selectedRank && (
@@ -497,36 +714,9 @@ export default function RanksPage() {
 																	Current Occupancy
 																</p>
 																<p className="font-medium">
-																	N/A
+																	{calculateOccupancy(selectedRank)}%
 																</p>
 															</div>
-														</div>
-
-														<div>
-															<p className="text-small text-default-500">
-																Facilities
-															</p>
-															<div className="flex flex-wrap gap-1 mt-1">
-																<Chip size="sm">N/A</Chip>
-															</div>
-														</div>
-
-														<div>
-															<p className="text-small text-default-500">
-																Last Inspection
-															</p>
-															<p className="font-medium">
-																N/A
-															</p>
-														</div>
-
-														<div>
-															<p className="text-small text-default-500">
-																Managers
-															</p>
-															<p className="font-medium">
-																N/A
-															</p>
 														</div>
 													</div>
 												</CardBody>
@@ -539,8 +729,7 @@ export default function RanksPage() {
 													</h3>
 												</CardHeader>
 												<CardBody>
-													{getRoutesFromRank(selectedRank.id).length >
-														0 ? (
+													{getRoutesFromRank(selectedRank.id).length > 0 ? (
 														<Table
 															aria-label="Routes from this rank"
 															className="text-sm">
@@ -559,7 +748,7 @@ export default function RanksPage() {
 																			{route.name}
 																		</TableCell>
 																		<TableCell>
-																			{typeof route.baseFare === 'object' ? (route.baseFare as any).toString() : route.baseFare}
+																			{typeof route.baseFare === 'object' ? String(route.baseFare) : route.baseFare}
 																		</TableCell>
 																		<TableCell>
 																			<Chip
@@ -596,118 +785,6 @@ export default function RanksPage() {
 										</div>
 
 										<div className="space-y-6">
-											<Card>
-												<CardHeader className="pb-0">
-													<h3 className="text-lg font-medium">
-														Location
-													</h3>
-												</CardHeader>
-												<CardBody>
-													<div className="h-[200px] bg-default-100 rounded-lg flex items-center justify-center">
-														<div className="text-center">
-															<p className="text-default-500 mb-2">
-																Map view would appear here
-															</p>
-															<p className="text-xs">
-																Coordinates:{" "}
-																{selectedRank.lat},{" "}
-																{selectedRank.lng}
-															</p>
-														</div>
-													</div>
-
-													<Button
-														fullWidth
-														className="mt-4"
-														color="primary"
-														startContent={
-															<Icon icon="lucide:navigation" />
-														}
-														variant="flat">
-														Get Directions
-													</Button>
-												</CardBody>
-											</Card>
-
-											<Card>
-												<CardHeader className="pb-0">
-													<h3 className="text-lg font-medium">
-														Current Taxis
-													</h3>
-												</CardHeader>
-												<CardBody>
-													{getTaxisAtRank(selectedRank.id).length > 0 ? (
-														<Table
-															aria-label="Taxis at this rank"
-															className="text-sm">
-															<TableHeader>
-																<TableColumn>TAXI</TableColumn>
-																<TableColumn>DRIVER</TableColumn>
-																<TableColumn>STATUS</TableColumn>
-															</TableHeader>
-															<TableBody
-																items={getTaxisAtRank(
-																	selectedRank.id,
-																).slice(0, 5)}>
-																{(taxi) => (
-																	<TableRow key={taxi.id}>
-																		<TableCell>
-																			<div className="flex flex-col">
-																				<span>
-																					{taxi.model}
-																				</span>
-																				<span className="text-tiny text-default-500">
-																					{
-																						taxi.licensePlate
-																					}
-																				</span>
-																			</div>
-																		</TableCell>
-																		<TableCell>
-																			{taxi.driver?.fullName || taxi.driver?.firstName || "Unknown"}
-																		</TableCell>
-																		<TableCell>
-																			<Chip
-																				color={
-																					taxi.status ===
-																						"AVAILABLE"
-																						? "success"
-																						: "warning"
-																				}
-																				size="sm">
-																				{taxi.status}
-																			</Chip>
-																		</TableCell>
-																	</TableRow>
-																)}
-															</TableBody>
-														</Table>
-													) : (
-														<div className="flex flex-col items-center justify-center py-6">
-															<Icon
-																className="text-3xl text-default-400 mb-2"
-																icon="lucide:car-off"
-															/>
-															<p className="text-default-500">
-																No active taxis at this rank
-															</p>
-														</div>
-													)}
-
-													{getTaxisAtRank(selectedRank.id).length > 5 && (
-														<Button
-															fullWidth
-															className="mt-4"
-															size="sm"
-															variant="flat">
-															View all{" "}
-															{getTaxisAtRank(selectedRank.id).length}{" "}
-															taxis
-														</Button>
-													)}
-												</CardBody>
-											</Card>
-
 											<Card>
 												<CardHeader className="pb-0">
 													<h3 className="text-lg font-medium">
@@ -760,7 +837,6 @@ export default function RanksPage() {
 																	strokeWidth={2}
 																	type="monotone"
 																/>
-																{/* Add a reference line for capacity */}
 																<ReferenceLine
 																	label={{
 																		value: "Capacity",
@@ -777,24 +853,58 @@ export default function RanksPage() {
 													</div>
 												</CardBody>
 											</Card>
+
+											<Card>
+												<CardHeader className="pb-0">
+													<h3 className="text-lg font-medium">
+														Active Taxis
+													</h3>
+												</CardHeader>
+												<CardBody>
+													{getTaxisAtRank(selectedRank.id).length > 0 ? (
+														<Table aria-label="Taxis table">
+															<TableHeader>
+																<TableColumn>MODEL</TableColumn>
+																<TableColumn>PLATE</TableColumn>
+																<TableColumn>STATUS</TableColumn>
+															</TableHeader>
+															<TableBody items={getTaxisAtRank(selectedRank.id)}>
+																{(taxi) => (
+																	<TableRow key={taxi.id}>
+																		<TableCell>{taxi.model}</TableCell>
+																		<TableCell>{taxi.licensePlate}</TableCell>
+																		<TableCell>
+																			<Chip size="sm" color={taxi.status === "AVAILABLE" ? "success" : "warning"}>
+																				{taxi.status}
+																			</Chip>
+																		</TableCell>
+																	</TableRow>
+																)}
+															</TableBody>
+														</Table>
+													) : (
+														<p className="text-default-500">No active taxis.</p>
+													)}
+												</CardBody>
+											</Card>
 										</div>
 									</div>
 								</ModalBody>
 
 								<ModalFooter>
 									<Button
-										color="danger"
-										startContent={<Icon icon="lucide:alert-triangle" />}
-										variant="flat"
-										onPress={() => handleUpdateRank(selectedRank.id, "closed")}>
-										Report Issue
-									</Button>
-									<Button
 										color="primary"
-										onPress={() =>
-											handleUpdateRank(selectedRank.id, "updated")
-										}>
-										Update Status
+										onPress={() => {
+											onClose();
+											handleOpenEditModal(selectedRank);
+										}}>
+										Edit Rank
+									</Button>
+									<Button color="danger" variant="light" onPress={() => {
+										onClose();
+										handleDeleteRank(selectedRank.id);
+									}}>
+										Delete Rank
 									</Button>
 									<Button color="default" onPress={onClose}>
 										Close
@@ -861,7 +971,7 @@ export default function RanksPage() {
 								<p className="text-sm text-default-500">Avg. Occupancy</p>
 								<p className="text-2xl font-bold mt-1">
 									{Math.round(
-										(ranks || []).reduce((acc: number, rank: any) => {
+										(ranks || []).reduce((acc: number, rank: RankWithCounts) => {
 											return (
 												acc + ((rank._count?.queueEntries || 0) / (rank.capacity || 1)) * 100
 											);
