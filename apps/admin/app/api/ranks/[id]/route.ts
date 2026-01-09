@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 
 		const { id } = await context.params;
 		const body = await req.json();
-		const { name, address, city, province, region, lat, lng, capacity, operatingHours, status } = body;
+		const { name, address, city, province, region, lat, lng, capacity, operatingHours } = body;
 
 		const rank = await prisma.rank.update({
 			where: { id },
@@ -29,7 +29,6 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
 				lng: lng ? parseFloat(lng) : undefined,
 				capacity: capacity ? parseInt(capacity) : undefined,
 				operatingHours,
-				status, // 'ACTIVE' | 'INACTIVE' | etc.
 			},
 		});
 
