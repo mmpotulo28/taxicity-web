@@ -9,6 +9,7 @@
   }
  },
  "include": [
-  "src"
+  "src",
+  "../../apps/user/components/NotificationBell.tsx"
  ]
 }

@@ -80,4 +80,6 @@ export interface iTrip {
 	rating?: number;
 	taxiId?: string;
 	passengerCount?: number;
+	pickupLat?: number;
+	pickupLng?: number;
 }

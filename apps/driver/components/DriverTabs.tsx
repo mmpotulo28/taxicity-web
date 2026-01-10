@@ -1,7 +1,7 @@
 "use client";
-import { cn } from "../lib/utils";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
+import { cn } from "@taxicity/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -47,7 +47,7 @@ const DriverTabs = () => {
 
  useEffect(() => {
   const handleRouteChange = (url: string) => {
-   if (url === "/") setCurrentPage("home");
+   if (url === "/driver") setCurrentPage("home");
    else if (url.includes("dashboard")) setCurrentPage("stats");
    else if (url.includes("earnings")) setCurrentPage("earnings");
    else if (url.includes("requests")) setCurrentPage("requests");
@@ -58,6 +58,8 @@ const DriverTabs = () => {
   handleRouteChange(pathname || "");
  }, [pathname]);
 
+ // Only show on driver pages
+ if (!pathname?.startsWith("/driver")) return null;
  // Don't show on the application page
  if (pathname === "/driver/apply" || pathname === "/driver/status") return null;
 

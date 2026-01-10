@@ -7,7 +7,9 @@ import { Icon } from "@iconify/react";
 import { useDriver } from "@/context/DriverContext";
 import { DriverConsole } from "@/components/DriverConsole";
 import { VehicleRegistration } from "@/components/VehicleRegistration";
+import { NotificationBell } from "@/components/NotificationBell";
 import { motion } from "framer-motion";
+import { Header } from "@taxicity/ui";
 
 export default function DriverPage() {
   const { driver, isLoading, refreshDriver } = useDriver();
@@ -69,5 +71,10 @@ export default function DriverPage() {
   }
 
   // Step 2: Driver Console (Handles Shift Start & Active Shift)
-  return <DriverConsole />;
+  return (
+    <div className="min-h-[calc(100vh-64px)] max-w-lg overflow-hidden relative">
+
+      <DriverConsole />
+    </div>
+  );
 }

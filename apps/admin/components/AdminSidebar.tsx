@@ -55,6 +55,7 @@ const AdminSidebar: React.FC = () => {
 		{ href: "/dashboard/routes", icon: "lucide:route", label: "Routes" },
 		{ href: "/dashboard/ranks", icon: "lucide:map-pin", label: "Ranks" },
 		{ href: "/dashboard/trips", icon: "lucide:map", label: "Trips", badge: 12 },
+		{ href: "/dashboard/notifications", icon: "lucide:bell", label: "Notifications" },
 	];
 
 	const systemNavItems = [

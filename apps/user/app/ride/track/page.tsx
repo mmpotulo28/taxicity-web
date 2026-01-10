@@ -10,6 +10,7 @@ import { Switch, Card, CardBody, Chip } from "@heroui/react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 import { useVehicleTracker } from "../../../hooks/useVehicleTracker";
+import { calculateDistance } from "@taxicity/utils";
 
 import { useRide, MapView, TripCard, TripModal } from "@taxicity/ui";
 
@@ -23,6 +24,7 @@ const TrackRide: React.FC = () => {
 	const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
 	const [isScanning, setIsScanning] = useState(false);
 	const [useSimulation, setUseSimulation] = useState(false);
+	const [arrivalNotified, setArrivalNotified] = useState(false);
 
 	const activeTaxi = activeTrip ? taxis.find(t => t.id === activeTrip.taxiId) : null;
 	const { location: trackedLocation } = useVehicleTracker(activeTrip?.taxiId || null);
@@ -32,6 +34,33 @@ const TrackRide: React.FC = () => {
 		lng: trackedLocation.lng,
 		heading: trackedLocation.heading
 	} : activeTaxi?.location;
+
+	// Real-time Arrival Notification Logic (Phase 3)
+	useEffect(() => {
+		if (!currentTaxiLocation || !activeTrip || activeTrip.status !== "accepted") return;
+
+		// Assuming we have pickup coords in activeTrip (or fetch them if needed)
+		// For now using the mock logic's assumed destination or route start
+		// In a real scenario, trip.pickupLat/Lng should be used.
+		// Let's assume activeTrip has pickupLat/Lng extended types
+		if (activeTrip.pickupLat && activeTrip.pickupLng && !arrivalNotified) {
+			const distance = calculateDistance(
+				currentTaxiLocation.lat,
+				currentTaxiLocation.lng,
+				activeTrip.pickupLat,
+				activeTrip.pickupLng
+			);
+
+			if (distance < 200) { // 200 meters threshold
+				addToast({
+					title: "Driver Arrived",
+					description: "Your taxi is within 200m of your pickup location.",
+					color: "success",
+				});
+				setArrivalNotified(true);
+			}
+		}
+	}, [currentTaxiLocation, activeTrip, arrivalNotified]);
 
 	// If no active trip, redirect to home
 	useEffect(() => {

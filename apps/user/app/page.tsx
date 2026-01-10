@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 import { useRide, TripCard, TripRating, MapView, Header } from "@taxicity/ui";
-
+import { NotificationBell } from "@/components/NotificationBell";
 
 export default function Home() {
 	const router = useRouter();
@@ -28,7 +28,7 @@ export default function Home() {
 			{/* Fullscreen map as background */}
 			<MapView centerOnRank showTaxis fullscreen={true} zIndex={0} />
 
-			<Header />
+			<Header endContent={<NotificationBell />} />
 
 			{/* Overlay content */}
 			{showRating ? (

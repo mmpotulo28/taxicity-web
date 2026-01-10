@@ -144,3 +144,13 @@ export interface iReportTemplate {
 	schedule: "daily" | "weekly" | "monthly" | "quarterly";
 	recipients: string[];
 }
+
+export interface Notification {
+	id: string;
+	title: string;
+	message: string;
+	type: "INFO" | "SUCCESS" | "WARNING" | "ERROR" | "TRIP_UPDATE" | "PAYMENT";
+	userId: string;
+	createdAt: string;
+	isRead: boolean;
+}
