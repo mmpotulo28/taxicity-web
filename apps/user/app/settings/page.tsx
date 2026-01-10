@@ -16,17 +16,49 @@ import {
 	SelectItem,
 	Chip,
 	Badge,
+	Modal,
+	ModalContent,
+	ModalHeader,
+	ModalBody,
+	ModalFooter,
+	useDisclosure,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
+import { useLoadScript } from "@react-google-maps/api";
+import { addToast } from "@heroui/toast";
 
 import { useRide } from "@taxicity/ui";
 
+const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
+
 const Settings: React.FC = () => {
 	const router = useRouter();
+	const { isLoaded } = useLoadScript({
+		googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+		libraries,
+	});
+
 	const { setTheme, theme } = useTheme();
-	const { clearAppData } = useRide();
+	const {
+		clearAppData,
+		savedLocations,
+		isLoadingSavedLocations,
+		saveLocation,
+		deleteSavedLocation,
+		isSavingLocation,
+		isDeletingLocation,
+	} = useRide();
+	const { isOpen: isAddLocationOpen, onOpen: onAddLocationOpen, onOpenChange: onAddLocationOpenChange } = useDisclosure();
+	const [newPlace, setNewPlace] = useState<{
+		name: string;
+		address: string;
+		type: string;
+		lat?: number;
+		lng?: number;
+	}>({ name: "", address: "", type: "other" });
+	const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 	const [activeTab, setActiveTab] = useState("profile");
 	const [profileForm, setProfileForm] = useState({
 		name: "John Doe",
@@ -74,6 +106,80 @@ const Settings: React.FC = () => {
 	const handleSaveProfile = () => {
 		// In a real app, this would save the profile data to a server
 		alert("Profile updated successfully");
+	};
+
+	const handleUseCurrentLocation = () => {
+		setIsLoadingLocation(true);
+
+		if (!navigator.geolocation) {
+			addToast({
+				title: "Error",
+				description: "Geolocation is not supported by your browser",
+				color: "danger",
+			});
+			setIsLoadingLocation(false);
+
+			return;
+		}
+
+		navigator.geolocation.getCurrentPosition(
+			async (position) => {
+				const { latitude, longitude } = position.coords;
+
+				try {
+					let address = "Current Location";
+
+					if (window.google && window.google.maps && window.google.maps.Geocoder) {
+						const geocoder = new google.maps.Geocoder();
+						const response = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
+							geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
+								if (status === "OK" && results && results.length > 0) {
+									resolve(results);
+								} else {
+									reject(status);
+								}
+							});
+						});
+
+						if (response[0]) {
+							address = response[0].formatted_address;
+						}
+					}
+
+					setNewPlace((prev) => ({
+						...prev,
+						address,
+						lat: latitude,
+						lng: longitude,
+					}));
+				} catch (error) {
+					console.error("Error getting address:", error);
+					addToast({
+						title: "Error",
+						description: "Failed to get address details",
+						color: "warning",
+					});
+					// Still set coordinates even if address lookup fails
+					setNewPlace((prev) => ({
+						...prev,
+						address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
+						lat: latitude,
+						lng: longitude,
+					}));
+				} finally {
+					setIsLoadingLocation(false);
+				}
+			},
+			(error) => {
+				console.error("Geolocation error:", error);
+				addToast({
+					title: "Error",
+					description: "Failed to get current location",
+					color: "danger",
+				});
+				setIsLoadingLocation(false);
+			},
+		);
 	};
 
 	const containerVariants = {
@@ -126,6 +232,15 @@ const Settings: React.FC = () => {
 							<div className="flex items-center gap-2">
 								<Icon icon="lucide:settings" />
 								<span>Preferences</span>
+							</div>
+						}
+					/>
+					<Tab
+						key="places"
+						title={
+							<div className="flex items-center gap-2">
+								<Icon icon="lucide:map-pin" />
+								<span>Saved Places</span>
 							</div>
 						}
 					/>
@@ -380,6 +495,86 @@ const Settings: React.FC = () => {
 						</motion.div>
 					)}
 
+					{activeTab === "places" && (
+						<motion.div
+							key="places"
+							variants={containerVariants}
+							initial="hidden"
+							animate="visible"
+							exit="exit"
+							className="space-y-4">
+							<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
+								<CardBody className="p-0">
+									{isLoadingSavedLocations ? (
+										<div className="p-8 text-center text-default-500">Loading...</div>
+									) : savedLocations?.length === 0 ? (
+										<div className="flex flex-col items-center justify-center p-8 text-center text-default-500">
+											<div className="p-4 bg-default-100 rounded-full mb-3">
+												<Icon icon="lucide:map-pin-off" className="w-6 h-6" />
+											</div>
+											<p>No saved places yet.</p>
+										</div>
+									) : (
+										savedLocations?.map((place: any, i: number) => (
+											<React.Fragment key={place.id}>
+												<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
+													<div className="flex items-center gap-3">
+														<div
+															className={`p-2 rounded-xl ${place.name.toLowerCase() === "home"
+																? "bg-primary/10 text-primary"
+																: place.name.toLowerCase() === "work"
+																	? "bg-secondary/10 text-secondary"
+																	: "bg-default-100 text-default-500"
+																}`}>
+															<Icon
+																icon={
+																	place.name.toLowerCase() === "home"
+																		? "lucide:home"
+																		: place.name.toLowerCase() === "work"
+																			? "lucide:briefcase"
+																			: "lucide:map-pin"
+																}
+																className="w-5 h-5"
+															/>
+														</div>
+														<div>
+															<p className="font-medium capitalization">{place.name}</p>
+															<p className="text-xs text-default-500 line-clamp-1">{place.address}</p>
+														</div>
+													</div>
+													<div className="flex items-center gap-2">
+														<Button
+															isIconOnly
+															size="sm"
+															variant="light"
+															color="danger"
+															isDisabled={isDeletingLocation}
+															onPress={() => deleteSavedLocation(place.id)}>
+															<Icon icon="lucide:trash-2" className="w-4 h-4" />
+														</Button>
+													</div>
+												</div>
+												{i < (savedLocations?.length || 0) - 1 && <Divider className="opacity-50" />}
+											</React.Fragment>
+										))
+									)}
+								</CardBody>
+							</Card>
+
+							<Button
+								color="primary"
+								variant="flat"
+								className="w-full"
+								startContent={<Icon icon="lucide:plus" />}
+								onPress={() => {
+									setNewPlace({ name: "", address: "", type: "other" });
+									onAddLocationOpen();
+								}}>
+								Add New Place
+							</Button>
+						</motion.div>
+					)}
+
 					{activeTab === "payment" && (
 						<motion.div
 							key="payment"
@@ -476,6 +671,82 @@ const Settings: React.FC = () => {
 					)}
 				</AnimatePresence>
 			</div>
+
+			<Modal isOpen={isAddLocationOpen} onOpenChange={onAddLocationOpenChange} placement="center">
+				<ModalContent>
+					{(onClose) => (
+						<>
+							<ModalHeader className="flex flex-col gap-1">Add Saved Place</ModalHeader>
+							<ModalBody>
+								<Input
+									autoFocus
+									label="Name"
+									placeholder="e.g. Home, Work, Gym"
+									variant="bordered"
+									value={newPlace.name}
+									onValueChange={(val) => setNewPlace((prev) => ({ ...prev, name: val }))}
+									startContent={<Icon icon="lucide:tag" className="mb-0.5 text-default-400 pointer-events-none flex-shrink-0" />}
+								/>
+								<Input
+									label="Address"
+									placeholder="Enter address"
+									variant="bordered"
+									value={newPlace.address}
+									onValueChange={(val) => setNewPlace((prev) => ({ ...prev, address: val }))}
+									startContent={
+										<Icon icon="lucide:map-pin" className="mb-0.5 text-default-400 pointer-events-none flex-shrink-0" />
+									}
+								/>
+								<div className="flex justify-end">
+									<Button
+										size="sm"
+										variant="flat"
+										color="secondary"
+										isLoading={isLoadingLocation}
+										isDisabled={isLoadingLocation || !isLoaded}
+										startContent={!isLoadingLocation && <Icon icon="lucide:crosshair" />}
+										onPress={handleUseCurrentLocation}>
+										Use current location
+									</Button>
+								</div>
+								<div className="flex gap-2 mt-2">
+									{["Home", "Work", "School", "Gym"].map((preset) => (
+										<Chip
+											key={preset}
+											variant="flat"
+											color={newPlace.name === preset ? "primary" : "default"}
+											className="cursor-pointer hover:bg-default-200"
+											onClick={() => setNewPlace((prev) => ({ ...prev, name: preset }))}>
+											{preset}
+										</Chip>
+									))}
+								</div>
+							</ModalBody>
+							<ModalFooter>
+								<Button color="danger" variant="light" onPress={onClose}>
+									Cancel
+								</Button>
+								<Button
+									color="primary"
+									isLoading={isSavingLocation}
+									onPress={async () => {
+										if (!newPlace.name || !newPlace.address) return;
+										await saveLocation({
+											name: newPlace.name,
+											address: newPlace.address,
+											lat: newPlace.lat || -26.2041,
+											lng: newPlace.lng || 28.0473,
+											type: newPlace.name.toLowerCase(),
+										});
+										onClose();
+									}}>
+									Save Place
+								</Button>
+							</ModalFooter>
+						</>
+					)}
+				</ModalContent>
+			</Modal>
 		</div>
 	);
 };

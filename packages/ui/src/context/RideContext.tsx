@@ -5,7 +5,7 @@ import { addToast } from "@heroui/toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-import { iTrip, iRoute, iRank, iTaxi } from "../types";
+import { iTrip, iRoute, iRank, iTaxi, iSavedLocation } from "../types";
 import { useMap } from "./MapContext";
 import { usePusher } from "./PusherContext";
 
@@ -14,6 +14,10 @@ interface RideContextType {
 	routes: iRoute[];
 	ranks: iRank[];
 	taxis: iTaxi[];
+	savedLocations: iSavedLocation[];
+	isLoadingSavedLocations: boolean;
+	isSavingLocation: boolean;
+	isDeletingLocation: boolean;
 	activeTrip: iTrip | null;
 	selectedRoute: iRoute | null;
 	selectedTaxi: iTaxi | null;
@@ -28,6 +32,11 @@ interface RideContextType {
 	setPickupLocation: (location: string) => void;
 	setDropoffLocation: (location: string) => void;
 	setRatingTrip: (trip: iTrip | null) => void;
+	// Saved Locations
+	saveLocation: (location: Omit<iSavedLocation, "id">) => Promise<void>;
+	updateSavedLocation: (id: string, location: Partial<iSavedLocation>) => Promise<void>;
+	deleteSavedLocation: (id: string) => Promise<void>;
+	// Ride Actions
 	requestRide: () => Promise<void>;
 	driverArrived: () => Promise<void>;
 	startRide: () => Promise<void>;
@@ -106,6 +115,11 @@ const fetchTrips = async (): Promise<iTrip[]> => {
 		paymentMethod: t.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
 		rating: t.rating?.rating
 	}));
+};
+
+const fetchSavedLocations = async (): Promise<iSavedLocation[]> => {
+	const { data } = await axios.get("/api/users/saved-locations");
+	return data;
 };
 
 export function RideProvider({ children }: { children: React.ReactNode }) {
@@ -202,6 +216,11 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	const { data: tripHistory = [], isLoading: isLoadingTrips } = useQuery({
 		queryKey: ["trips"],
 		queryFn: fetchTrips
+	});
+
+	const { data: savedLocations = [], isLoading: isLoadingSavedLocations } = useQuery({
+		queryKey: ["savedLocations"],
+		queryFn: fetchSavedLocations
 	});
 
 	// Poll for active trip updates
@@ -379,6 +398,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 						color: "success",
 					});
 					queryClient.invalidateQueries({ queryKey: ["trips"] });
+					setRatingTrip(newTripState);
 				}
 			}
 		};
@@ -432,6 +452,55 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			});
 		}
 	});
+
+	// Saved Location Mutations
+	const saveLocationMutation = useMutation({
+		mutationFn: async (location: Omit<iSavedLocation, "id">) => {
+			const { data } = await axios.post("/api/users/saved-locations", location);
+			return data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
+			addToast({ title: "Location Saved", description: "Location saved successfully.", color: "success" });
+		},
+		onError: () => addToast({ title: "Error", description: "Failed to save location.", color: "danger" })
+	});
+
+	const updateLocationMutation = useMutation({
+		mutationFn: async ({ id, location }: { id: string, location: Partial<iSavedLocation> }) => {
+			const { data } = await axios.put(`/api/users/saved-locations/${id}`, location);
+			return data;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
+			addToast({ title: "Location Updated", description: "Location updated successfully.", color: "success" });
+		},
+		onError: () => addToast({ title: "Error", description: "Failed to update location.", color: "danger" })
+	});
+
+	const deleteLocationMutation = useMutation({
+		mutationFn: async (id: string) => {
+			await axios.delete(`/api/users/saved-locations/${id}`);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
+			addToast({ title: "Location Deleted", description: "Location removed successfully.", color: "success" });
+		},
+		onError: () => addToast({ title: "Error", description: "Failed to delete location.", color: "danger" })
+	});
+
+	// Actions wrappers
+	const saveLocation = async (location: Omit<iSavedLocation, "id">) => {
+		await saveLocationMutation.mutateAsync(location);
+	};
+
+	const updateSavedLocation = async (id: string, location: Partial<iSavedLocation>) => {
+		await updateLocationMutation.mutateAsync({ id, location });
+	};
+
+	const deleteSavedLocation = async (id: string) => {
+		await deleteLocationMutation.mutateAsync(id);
+	};
 
 	// Request a new ride
 	const requestRide = async () => {
@@ -619,8 +688,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			const updatedTrip = { ...activeTrip, status: "completed" as const };
 			setActiveTrip(updatedTrip);
 
-			// We now handle rating inline in the dashboard, so we don't trigger the modal
-			// setRatingTrip(updatedTrip);
+			// Trigger rating modal
+			setRatingTrip(updatedTrip);
 
 			// Clear other state, but keep activeTrip for the receipt view until user dismisses or rates
 			setSelectedRoute(null);
@@ -675,6 +744,10 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		pickupLocation,
 		dropoffLocation,
 		ratingTrip,
+		savedLocations,
+		isLoadingSavedLocations,
+		isSavingLocation: saveLocationMutation.isPending,
+		isDeletingLocation: deleteLocationMutation.isPending,
 		isLoading: isLoadingRoutes || isLoadingRanks || isLoadingTaxis || isLoadingTrips,
 		isRestoring,
 
@@ -684,6 +757,9 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		setPickupLocation,
 		setDropoffLocation,
 		setRatingTrip,
+		saveLocation,
+		updateSavedLocation,
+		deleteSavedLocation,
 		requestRide,
 		driverArrived,
 		startRide,

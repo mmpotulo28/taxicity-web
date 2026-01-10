@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@clerk/nextjs": "^6.36.6",
 		"@heroui/react": "^2.8.7",
+		"@react-google-maps/api": "^2.20.8",
 		"@sentry/nextjs": "^10.32.1",
 		"@tanstack/react-query": "^5.90.16",
 		"@taxicity/database": "workspace:*",

@@ -13,6 +13,15 @@ export interface iPopularLocation {
 	type?: string;
 }
 
+export interface iSavedLocation {
+	id: string;
+	name: string;
+	address: string;
+	lat: number;
+	lng: number;
+	type: string;
+}
+
 export interface iRoute {
 	id: string;
 	name: string;

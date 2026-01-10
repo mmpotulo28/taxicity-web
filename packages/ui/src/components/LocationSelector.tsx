@@ -22,7 +22,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const { userLocation, getAddressFromLatLng, setPickupMarker, setDropoffMarker } = useMap();
 
-	const { ranks, selectedRoute } = useRide();
+	const { ranks, selectedRoute, savedLocations } = useRide();
 
 	// Use local input state to handle the input field
 	const [inputValue, setInputValue] = useState(value);
@@ -31,6 +31,20 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 	useEffect(() => {
 		setInputValue(value);
 	}, [value]);
+
+	// Handler for saved location selection
+	const handleSavedLocation = (location: any) => {
+		const fullAddress = location.address; // Saved locations already have full addresses
+
+		setInputValue(fullAddress);
+		onSelect(fullAddress);
+
+		if (type === "pickup") {
+			setPickupMarker({ lat: location.lat, lng: location.lng });
+		} else {
+			setDropoffMarker({ lat: location.lat, lng: location.lng });
+		}
+	};
 
 	// Handler for popular location selection
 	const handlePopularLocation = (location: any) => {
@@ -175,10 +189,38 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 				</Button>
 			</div>
 
-			{/* Popular locations and ranks section */}
+			{/* Saved locations, Popular locations and ranks section */}
 			<div className="mb-3">
-				<p className="text-xs text-default-500 mb-2">Popular locations:</p>
+				{((savedLocations?.length || 0) > 0 || (selectedRoute?.popularLocations?.length || 0) > 0) && (
+					<p className="text-xs text-default-500 mb-2">Suggestions:</p>
+				)}
 				<div className="flex flex-wrap gap-2">
+					{/* Saved Locations */}
+					{savedLocations?.map((location) => (
+						<Chip
+							key={location.id}
+							className="cursor-pointer"
+							color={type === "pickup" ? "primary" : "danger"}
+							radius="sm"
+							size="sm"
+							variant="solid" // Solid to stand out
+							startContent={
+								<Icon
+									icon={
+										location.name.toLowerCase() === "home"
+											? "lucide:home"
+											: location.name.toLowerCase() === "work"
+												? "lucide:briefcase"
+												: "lucide:map-pin"
+									}
+									className="text-xs"
+								/>
+							}
+							onClick={() => handleSavedLocation(location)}>
+							{location.name}
+						</Chip>
+					))}
+
 					{/* Popular locations */}
 					{selectedRoute?.popularLocations?.map((location) => (
 						<Chip
