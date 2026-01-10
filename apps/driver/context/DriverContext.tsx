@@ -221,6 +221,34 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setIncomingRequests((prev) => [newTrip, ...prev]);
     });
 
+    subscribe(channelName, "trip-cancelled", (data: { id: string; reason?: string }) => {
+      console.log("Trip cancelled/removed:", data.id);
+
+      // Update Incoming Requests
+      setIncomingRequests((prev) => prev.filter((r) => r.id !== data.id));
+
+      // Update Active Manifest (if the passenger was already accepted)
+      setActiveVehicleTrip((prev) => {
+        if (!prev) return null;
+        // Check if the passenger is in the current manifest
+        const isPassenger = prev.passengers.some(p => p.id === data.id);
+
+        if (isPassenger) {
+          return {
+            ...prev,
+            passengers: prev.passengers.filter(p => p.id !== data.id)
+          };
+        }
+        return prev;
+      });
+
+      addToast({
+        title: "Request Cancelled",
+        description: data.reason || "A passenger cancelled their request.",
+        color: "default",
+      });
+    });
+
     return () => {
       unsubscribe(channelName);
     };

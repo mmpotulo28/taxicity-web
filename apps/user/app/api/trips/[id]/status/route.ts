@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 
 import { z } from "zod";
 import { prisma } from "@taxicity/database";
+import { pusherServer } from "@taxicity/utils";
 
 const statusSchema = z.object({
 	status: z.enum(["REQUESTED", "ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),
@@ -55,6 +56,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 			where: { id },
 			data: updateData,
 		});
+
+		if (status === "CANCELLED") {
+			try {
+				await pusherServer.trigger(`route-${trip.routeId}`, "trip-cancelled", {
+					id: trip.id,
+					reason: "Passenger cancelled the request.",
+				});
+			} catch (error) {
+				console.error("Pusher trigger failed:", error);
+			}
+		}
 
 		return NextResponse.json(updatedTrip);
 	} catch (error) {

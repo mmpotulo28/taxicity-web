@@ -85,7 +85,7 @@ export function RequestModal({
         </div>
         <div className="flex flex-col items-end">
          <h2 className="text-2xl font-bold text-success">
-          R{Number(request.fare).toFixed(2)}
+          R{request.fare ? Number(request.fare).toFixed(2) : "0.00"}
          </h2>
          <Chip size="sm" variant="flat" color="default">
           {request.paymentMethod.replace(/_/g, " ")}

@@ -98,6 +98,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 		try {
 			await pusherServer.trigger(`trip-${passengerTripId}`, "trip-updated", updatedPassengerTrip);
 			console.log(`Triggered trip-updated for trip-${passengerTripId}`);
+
+			// Notify other drivers to remove the request
+			await pusherServer.trigger(`route-${passengerTrip.routeId}`, "trip-cancelled", {
+				id: passengerTripId,
+				reason: "Request accepted by another driver.",
+			});
 		} catch (error) {
 			console.error("Pusher trigger failed:", error);
 		}
