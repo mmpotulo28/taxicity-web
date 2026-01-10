@@ -11,13 +11,14 @@
 	},
 	"dependencies": {
 		"@prisma/client": "^6.19.1",
-		"@prisma/extension-accelerate": "^2.0.2"
+		"@prisma/extension-accelerate": "^2.0.2",
+		"@upstash/redis": "^1.36.1"
 	},
 	"devDependencies": {
-		"prisma": "^6.19.1",
-		"typescript": "5.6.3",
+		"@taxicity/configs": "workspace:*",
 		"@types/node": "20.5.7",
+		"prisma": "^6.19.1",
 		"ts-node": "^10.9.2",
-		"@taxicity/configs": "workspace:*"
+		"typescript": "5.6.3"
 	}
 }

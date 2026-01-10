@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { addToast } from "@heroui/toast";
 import { usePusher } from "@taxicity/ui";
+import { useDriverLocation } from "../hooks/useDriverLocation";
 
 export interface Driver {
   id: string;
@@ -101,69 +102,46 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [activeVehicleTrip, setActiveVehicleTrip] = useState<VehicleTrip | null>(null);
   const [incomingRequests, setIncomingRequests] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number; heading?: number; speed?: number } | null>(null);
-  const lastLocationUpdate = React.useRef<number>(0);
+  const { location: trackedLocation, startTracking, stopTracking, isTracking } = useDriverLocation();
+  const lastLocationSync = React.useRef<number>(0);
 
-  const sendLocationUpdate = async (position: GeolocationPosition) => {
-    const now = Date.now();
-
-    // Update local state immediately
-    setCurrentLocation({
-      lat: position.coords.latitude,
-      lng: position.coords.longitude,
-      heading: position.coords.heading || 0,
-      speed: position.coords.speed || 0,
-    });
-
-    // Throttle updates to every 5 seconds
-    if (now - lastLocationUpdate.current < 5000) return;
-
-    try {
-      await fetch("/api/driver/location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          heading: position.coords.heading,
-          speed: position.coords.speed,
-        }),
-      });
-      lastLocationUpdate.current = now;
-    } catch (error) {
-      console.error("Failed to update location:", error);
+  const currentLocation = trackedLocation
+    ? {
+      lat: trackedLocation.latitude,
+      lng: trackedLocation.longitude,
+      heading: trackedLocation.heading ?? undefined,
+      speed: trackedLocation.speed ?? undefined,
     }
-  };
+    : null;
+
+  // Sync location to API (Throttled to 5s)
+  useEffect(() => {
+    if (!trackedLocation || !activeVehicleTrip) return;
+
+    const now = Date.now();
+    if (now - lastLocationSync.current < 5000) return;
+
+    fetch("/api/driver/location", {
+      method: "POST",
+      body: JSON.stringify({
+        lat: trackedLocation.latitude,
+        lng: trackedLocation.longitude,
+        heading: trackedLocation.heading,
+        speed: trackedLocation.speed,
+      }),
+    }).catch((e) => console.error("Location sync failed:", e));
+
+    lastLocationSync.current = now;
+  }, [trackedLocation, activeVehicleTrip]);
 
   // Watch position when active
   useEffect(() => {
-    if (!activeVehicleTrip) return;
-
-    if (!navigator.geolocation) {
-      console.error("Geolocation is not supported by this browser.");
-      return;
+    if (activeVehicleTrip && !isTracking) {
+      startTracking();
+    } else if (!activeVehicleTrip && isTracking) {
+      stopTracking();
     }
-
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        sendLocationUpdate(position);
-      },
-      (error) => {
-        // Log detailed error info
-        console.error("Error watching position:", {
-          code: error.code,
-          message: error.message,
-        });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 1000,
-      }
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [activeVehicleTrip?.id]);
+  }, [activeVehicleTrip, isTracking, startTracking, stopTracking]);
 
   const fetchDriver = React.useCallback(async () => {
     if (!user) return;

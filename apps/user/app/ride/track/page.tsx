@@ -9,6 +9,7 @@ import { Scanner, IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { Switch, Card, CardBody, Chip } from "@heroui/react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
+import { useVehicleTracker } from "../../../hooks/useVehicleTracker";
 
 import { useRide, MapView, TripCard, TripModal } from "@taxicity/ui";
 
@@ -24,6 +25,13 @@ const TrackRide: React.FC = () => {
 	const [useSimulation, setUseSimulation] = useState(false);
 
 	const activeTaxi = activeTrip ? taxis.find(t => t.id === activeTrip.taxiId) : null;
+	const { location: trackedLocation } = useVehicleTracker(activeTrip?.taxiId || null);
+
+	const currentTaxiLocation = trackedLocation ? {
+		lat: trackedLocation.lat,
+		lng: trackedLocation.lng,
+		heading: trackedLocation.heading
+	} : activeTaxi?.location;
 
 	// If no active trip, redirect to home
 	useEffect(() => {
@@ -264,7 +272,7 @@ const TrackRide: React.FC = () => {
 					showTaxis={activeTrip.status !== "in-progress"}
 					showRoute={activeTrip.status === "in-progress"}
 					zIndex={0}
-					taxiLocation={activeTaxi?.location}
+					taxiLocation={currentTaxiLocation}
 				/>
 			</div>
 

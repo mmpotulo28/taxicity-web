@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { prisma } from "@taxicity/database";
+import { prisma, redis } from "@taxicity/database";
+import { pusherServer } from "../../../../lib/pusher";
 import { z } from "zod";
 
 const UpdateLocationSchema = z.object({
@@ -57,6 +58,23 @@ export async function POST(req: NextRequest) {
 				createdAt: new Date(), // Update timestamp to show freshness
 			},
 		});
+
+		// 3. Update Redis (Hot Storage) & Trigger Pusher
+		const locationData = {
+			driverId: userId,
+			taxiId,
+			lat,
+			lng,
+			heading: heading || 0,
+			speed: speed || 0,
+			timestamp: Date.now(),
+		};
+
+		// Cache in Redis for 60s
+		await redis.set(`vehicle:${taxiId}:location`, locationData, { ex: 60 });
+
+		// Broadcast real-time update
+		await pusherServer.trigger(`vehicle-${taxiId}`, "location-update", locationData);
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
