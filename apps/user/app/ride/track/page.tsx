@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useDisclosure } from "@heroui/modal";
@@ -29,11 +29,11 @@ const TrackRide: React.FC = () => {
 	const activeTaxi = activeTrip ? taxis.find(t => t.id === activeTrip.taxiId) : null;
 	const { location: trackedLocation } = useVehicleTracker(activeTrip?.taxiId || null);
 
-	const currentTaxiLocation = trackedLocation ? {
+	const currentTaxiLocation = useMemo(() => trackedLocation ? {
 		lat: trackedLocation.lat,
 		lng: trackedLocation.lng,
 		heading: trackedLocation.heading
-	} : activeTaxi?.location;
+	} : activeTaxi?.location, [trackedLocation, activeTaxi?.location]);
 
 	// Real-time Arrival Notification Logic (Phase 3)
 	useEffect(() => {
