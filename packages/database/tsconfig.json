@@ -1,0 +1,13 @@
+{
+ "extends": "@taxicity/configs/tsconfig",
+ "compilerOptions": {
+  "paths": {
+   "@/*": [
+    "./*"
+   ]
+  }
+ },
+ "include": [
+  "."
+ ]
+}

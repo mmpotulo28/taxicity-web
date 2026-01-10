@@ -1,0 +1,580 @@
+// TaxiCity Prisma Schema
+// PostgreSQL Database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// USER DATA MODELS (User auth is managed by Clerk)
+
+model UserLocation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lat       Float
+  lng       Float
+  accuracy  Float?
+  userId    String   @unique
+
+  @@map("user_locations")
+}
+
+model SavedLocation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  type      String // home, work, favorite, etc.
+  userId    String
+
+  @@map("saved_locations")
+}
+
+model EmergencyContact {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  phone     String
+  relation  String?
+  userId    String
+
+  @@map("emergency_contacts")
+}
+
+// TAXI AND DRIVER MODELS
+model Driver {
+  id               String           @id @default(uuid())
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  firstName        String
+  lastName         String
+  fullName         String?
+  phone            String           @unique
+  email            String?          @unique
+  profileImage     String?
+  licenseNumber    String           @unique
+  licenseExpiry    DateTime
+  licenseImageFront String?
+  licenseImageBack  String?
+  dateOfBirth      DateTime?
+  address          String?
+  status           DriverStatus     @default(ACTIVE)
+  verificationDate DateTime?
+  userId           String?          @unique // Link to Clerk User ID
+  taxis            Taxi[]
+  reports          Report[]
+  tripRatings      TripRating[]
+  favoriteOfUsers  FavoriteDriver[]
+  vehicleTrips     VehicleTrip[]
+  queueEntry       RankQueueEntry?
+
+  @@map("drivers")
+}
+
+model Taxi {
+  id              String         @id @default(uuid())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  licensePlate    String         @unique
+  model           String
+  make            String
+  year            Int?
+  color           String
+  capacity        Int
+  status          TaxiStatus     @default(AVAILABLE)
+  registrationDoc String? // URL to registration document
+  insuranceDoc    String? // URL to insurance document
+  permitDoc       String? // URL to route permit/operating license
+  driver          Driver         @relation(fields: [driverId], references: [id])
+  driverId        String
+  taxiRanks       TaxiRank[]
+  routes          TaxiOnRoute[]
+  trips           Trip[]
+  reports         Report[]
+  currentLocation TaxiLocation?  @relation("current_location")
+  locationHistory TaxiLocation[] @relation("history")
+  maintenanceLog  Maintenance[]
+  vehicleTrips    VehicleTrip[]
+  queueEntry      RankQueueEntry[] // A taxi can be in multiple queue entries history? No, wait.
+                                 // The RankQueueEntry has @@unique([driverId]).
+                                 // Does it imply 1:1 on Taxi?
+                                 // RankQueueEntry definition: taxi Taxi? @relation(...)
+                                 // It's optional 1-to-many from Taxi perspective if a Taxi can be used by different drivers...
+                                 // But a queue entry is a specific moment.
+                                 // Actually let's just make it RankQueueEntry[] to be safe (history) or if I delete them, it's fine.
+                                 // Wait, I said `queueEntry RankQueueEntry?` (Singular) on Driver.
+                                 // A taxi can only be in one queue at a time.
+                                 // But if I delete the entry when they leave, it's transient.
+                                 // Let's use `RankQueueEntry[]` to allow for the relation without constraints,
+                                 // OR `RankQueueEntry?` if we enforce unique taxiId.
+                                 // I didn't enforce unique taxiId in RankQueueEntry schema, only driverId.
+                                 // So `RankQueueEntry[]` is safer.
+
+  @@map("taxis")
+}
+
+model TaxiLocation {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  lat           Float
+  lng           Float
+  heading       Float?
+  speed         Float?
+  taxi          Taxi?    @relation("current_location", fields: [taxiId], references: [id], onDelete: SetNull)
+  taxiId        String?  @unique // Added @unique for the one-to-one relation
+  taxiHistory   Taxi?    @relation("history", fields: [taxiHistoryId], references: [id], onDelete: SetNull)
+  taxiHistoryId String?
+
+  @@index([taxiHistoryId, createdAt])
+  @@map("taxi_locations")
+}
+
+model Maintenance {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  date        DateTime
+  description String
+  cost        Decimal  @db.Decimal(10, 2)
+  odometer    Int?
+  type        String // routine, repair, etc.
+  taxi        Taxi     @relation(fields: [taxiId], references: [id], onDelete: Cascade)
+  taxiId      String
+
+  @@map("maintenance_logs")
+}
+
+model FavoriteDriver {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  driverId  String
+
+  @@unique([userId, driverId])
+  @@map("favorite_drivers")
+}
+
+// RANK AND ROUTE MODELS
+model Rank {
+  id             String     @id @default(uuid())
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  name           String
+  address        String
+  city           String
+  province       String
+  region         String
+  description    String?
+  lat            Float
+  lng            Float
+  phone          String?
+  operatingHours String?
+  capacity       Int?
+  isActive       Boolean    @default(true)
+  image          String? // URL to image of the rank
+  sourceRoutes   Route[]    @relation("source_rank")
+  destRoutes     Route[]    @relation("destination_rank")
+  taxiRanks      TaxiRank[]
+  queueEntries   RankQueueEntry[]
+  trips          Trip[]
+
+  @@map("ranks")
+}
+
+model RankQueueEntry {
+  id        String   @id @default(uuid())
+  joinedAt  DateTime @default(now())
+  rank      Rank     @relation(fields: [rankId], references: [id], onDelete: Cascade)
+  rankId    String
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  driverId  String
+  taxi      Taxi?    @relation(fields: [taxiId], references: [id])
+  taxiId    String?
+
+  @@unique([driverId]) // A driver can only be in one queue at a time
+  @@map("rank_queue_entries")
+}
+
+model Route {
+  id                String            @id @default(uuid())
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  name              String
+  description       String?
+  distance          Float // in km
+  baseFare          Decimal           @db.Decimal(10, 2)
+  estimatedDuration Int // in minutes
+  sourceRank        Rank              @relation("source_rank", fields: [sourceRankId], references: [id])
+  sourceRankId      String
+  destRank          Rank?             @relation("destination_rank", fields: [destRankId], references: [id])
+  destRankId        String?
+  status            RouteStatus       @default(ACTIVE)
+  taxis             TaxiOnRoute[]
+  trips             Trip[]
+  userPreferences   RoutePreference[]
+  popularLocations  PopularLocation[]
+  vehicleTrips      VehicleTrip[]
+
+  @@map("routes")
+}
+
+model RoutePreference {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  frequency Int      @default(0) // How often user takes this route
+  userId    String
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  routeId   String
+
+  @@unique([userId, routeId])
+  @@map("route_preferences")
+}
+
+model PopularLocation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  type      String? // e.g. "MALL", "HOSPITAL", "STOP"
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  routeId   String
+
+  @@map("popular_locations")
+}
+
+model TaxiRank {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  taxi      Taxi     @relation(fields: [taxiId], references: [id], onDelete: Cascade)
+  taxiId    String
+  rank      Rank     @relation(fields: [rankId], references: [id], onDelete: Cascade)
+  rankId    String
+  isHome    Boolean  @default(false) // Is this the taxi's home rank?
+
+  @@unique([taxiId, rankId])
+  @@map("taxi_ranks")
+}
+
+model TaxiOnRoute {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  taxi      Taxi     @relation(fields: [taxiId], references: [id], onDelete: Cascade)
+  taxiId    String
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  routeId   String
+  isActive  Boolean  @default(true)
+
+  @@unique([taxiId, routeId])
+  @@map("taxi_routes")
+}
+
+// TRIP MODELS
+model Trip {
+  id             String        @id @default(uuid())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  userId         String
+  taxi           Taxi?         @relation(fields: [taxiId], references: [id])
+  taxiId         String?
+  route          Route         @relation(fields: [routeId], references: [id])
+  routeId        String
+  rank           Rank          @relation(fields: [rankId], references: [id])
+  rankId         String
+  pickupAddress  String
+  pickupLat      Float
+  pickupLng      Float
+  dropoffAddress String
+  dropoffLat     Float
+  dropoffLng     Float
+  fare           Decimal       @db.Decimal(10, 2)
+  platformFee    Decimal?      @db.Decimal(10, 2) // 5% fee
+  platformFeeStatus PlatformFeeStatus @default(PENDING)
+  status         TripStatus    @default(REQUESTED)
+  paymentMethod  PaymentMethod @default(CASH)
+  paymentStatus  PaymentStatus @default(PENDING)
+  requestTime    DateTime      @default(now())
+  acceptTime     DateTime?
+  pickupTime     DateTime?
+  dropoffTime    DateTime?
+  cancelReason   String?
+  rating         TripRating?
+  events         TripEvent[]
+  vehicleTrip    VehicleTrip?  @relation(fields: [vehicleTripId], references: [id])
+  vehicleTripId  String?
+
+  @@map("trips")
+}
+
+model VehicleTrip {
+  id          String            @id @default(uuid())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  driver      Driver            @relation(fields: [driverId], references: [id])
+  driverId    String
+  taxi        Taxi              @relation(fields: [taxiId], references: [id])
+  taxiId      String
+  route       Route             @relation(fields: [routeId], references: [id])
+  routeId     String
+  status      VehicleTripStatus @default(SCHEDULED)
+  startTime   DateTime?
+  endTime     DateTime?
+  capacity    Int
+  manualPassengers Int    @default(0)
+  passengers  Trip[]
+
+  @@map("vehicle_trips")
+}
+
+model TripRating {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId      String   @unique
+  userId      String
+  driver      Driver   @relation(fields: [driverId], references: [id])
+  driverId    String
+  rating      Int // 1-5 stars
+  comment     String?
+  cleanliness Int? // Additional rating criteria
+  safety      Int? // Additional rating criteria
+  timeliness  Int? // Additional rating criteria
+
+  @@map("trip_ratings")
+}
+
+model TripEvent {
+  id        String        @id @default(uuid())
+  createdAt DateTime      @default(now())
+  trip      Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId    String
+  type      TripEventType
+  timestamp DateTime      @default(now())
+  lat       Float?
+  lng       Float?
+  data      Json? // Additional event data
+
+  @@map("trip_events")
+}
+
+// REPORTS AND SUPPORT
+model Report {
+  id              String       @id @default(uuid())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  type            ReportType
+  description     String
+  status          ReportStatus @default(OPEN)
+
+  taxi            Taxi?        @relation(fields: [taxiId], references: [id])
+  taxiId          String?
+
+  driver          Driver?      @relation(fields: [driverId], references: [id])
+  driverId        String?
+
+  reporterId      String
+
+  assignedTo      String?
+
+  images          String[]
+  resolutionNotes String?
+  closedAt        DateTime?
+
+  @@map("reports")
+}
+
+model SupportTicket {
+  id            String           @id @default(uuid())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  ticketNumber  String           @unique
+  subject       String
+  message       String
+  status        TicketStatus     @default(OPEN)
+  priority      TicketPriority   @default(MEDIUM)
+  category      TicketCategory
+
+  userId        String
+
+  assignedTo    String?
+
+  attachments   String[]
+  contactMethod String?
+  phoneNumber   String?
+
+  messages      SupportMessage[]
+
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id          String        @id @default(uuid())
+  createdAt   DateTime      @default(now())
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId    String
+  message     String
+  attachments String[]
+
+  senderId    String?
+
+  isInternal  Boolean       @default(false)
+  readAt      DateTime?
+
+  @@map("support_messages")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  actionUrl String?
+  data      Json?
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+// ENUMS
+enum Role {
+  USER
+  ADMIN
+  DRIVER
+  SUPPORT
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  ACCOUNT_ISSUE
+  PAYMENT_PROBLEM
+  TECHNICAL_SUPPORT
+  BOOKING_ISSUE
+  DRIVER_COMPLAINT
+  FEATURE_REQUEST
+  BUG_REPORT
+  OTHER
+}
+
+enum DriverStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum TaxiStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+  MAINTENANCE
+}
+
+enum RouteStatus {
+  ACTIVE
+  BUSY
+  INACTIVE
+}
+
+enum TripStatus {
+  REQUESTED
+  ACCEPTED
+  ARRIVED_AT_PICKUP
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  QR_CODE
+  MOBILE_MONEY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum TripEventType {
+  REQUEST_CREATED
+  DRIVER_ASSIGNED
+  DRIVER_ARRIVED
+  TRIP_STARTED
+  ROUTE_UPDATED
+  TRIP_COMPLETED
+  TRIP_CANCELLED
+  PAYMENT_COMPLETED
+}
+
+enum ReportType {
+  DRIVER_BEHAVIOR
+  VEHICLE_CONDITION
+  ROUTE_DEVIATION
+  OVERCHARGING
+  SAFETY_CONCERN
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum VehicleTripStatus {
+  SCHEDULED
+  BOARDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  TRIP_UPDATE
+  PAYMENT
+}
+
+enum PlatformFeeStatus {
+  PENDING
+  PAID
+  WAIVED
+}

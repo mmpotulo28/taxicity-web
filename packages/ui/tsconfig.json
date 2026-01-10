@@ -1,0 +1,15 @@
+{
+ "extends": "@taxicity/configs/tsconfig",
+ "compilerOptions": {
+  "jsx": "react-jsx",
+  "paths": {
+   "@/*": [
+    "./src/*"
+   ]
+  }
+ },
+ "include": [
+  "src",
+  "../../apps/user/components/NotificationBell.tsx"
+ ]
+}

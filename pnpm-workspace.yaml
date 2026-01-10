@@ -1,7 +1,6 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
-  - vue-demi
+packages:
+  - apps/*
+  - packages/*
 
 onlyBuiltDependencies:
   - '@clerk/shared'
@@ -10,4 +9,8 @@ onlyBuiltDependencies:
   - '@prisma/engines'
   - '@sentry/cli'
   - '@tailwindcss/oxide'
+  - esbuild
   - prisma
+  - sharp
+  - unrs-resolver
+  - vue-demi

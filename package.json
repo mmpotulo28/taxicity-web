@@ -1,21 +1,22 @@
 {
 	"name": "next-app-template",
 	"version": "0.0.1",
+	"packageManager": "pnpm@10.23.0",
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "next dev --turbopack",
-		"postinstall": "pnpm prisma generate --no-engine",
-		"build": "next build",
-		"start": "next start",
-		"check": "tsc --noEmit && eslint --fix"
+		"postinstall": "pnpm db:generate",
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"start": "turbo start",
+		"lint": "turbo lint",
+		"check": "turbo check",
+		"db:generate": "pnpm --filter @taxicity/database generate"
 	},
 	"prisma": {
 		"seed": "node --loader ts-node/esm prisma/seed.ts"
 	},
 	"dependencies": {
-		"@clerk/clerk-react": "^5.59.2",
-		"@clerk/nextjs": "^6.36.5",
 		"@eslint/compat": "^1.4.1",
 		"@heroui/accordion": "2.2.23",
 		"@heroui/alert": "2.2.26",
@@ -65,7 +66,7 @@
 		"@react-aria/ssr": "3.9.10",
 		"@react-aria/visually-hidden": "3.8.27",
 		"@react-google-maps/api": "^2.20.8",
-		"@scalar/api-reference-react": "^0.8.15",
+		"@scalar/api-reference-react": "^0.8.19",
 		"@sentry/nextjs": "^10.32.1",
 		"@tanstack/react-query": "^5.90.16",
 		"@vercel/blob": "^2.0.0",
@@ -89,6 +90,7 @@
 		"@next/eslint-plugin-next": "15.3.4",
 		"@react-types/shared": "3.30.0",
 		"@tailwindcss/postcss": "4.1.11",
+		"@types/google.maps": "^3.58.1",
 		"@types/node": "20.5.7",
 		"@types/react": "18.3.3",
 		"@types/react-dom": "18.3.0",
@@ -112,6 +114,7 @@
 		"tailwind-variants": "3.1.1",
 		"tailwindcss": "4.1.11",
 		"ts-node": "^10.9.2",
+		"turbo": "^2.7.3",
 		"typescript": "5.6.3",
 		"typescript-eslint": "^8.52.0"
 	}

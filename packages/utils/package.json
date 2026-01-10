@@ -1,0 +1,19 @@
+{
+	"name": "@taxicity/utils",
+	"version": "0.0.1",
+	"main": "src/index.ts",
+	"types": "src/index.ts",
+	"scripts": {
+		"check": "tsc --noEmit"
+	},
+	"dependencies": {
+		"clsx": "2.1.1",
+		"intl-messageformat": "10.7.16",
+		"pusher": "^5.3.2",
+		"tailwind-merge": "^3.4.0"
+	},
+	"devDependencies": {
+		"@taxicity/configs": "workspace:*",
+		"typescript": "5.6.3"
+	}
+}
