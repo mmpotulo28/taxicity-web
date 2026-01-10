@@ -44,7 +44,7 @@ import { iSupportTicket } from "@/types";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
 
 export default function SupportPage() {
-	const { data: realTickets, isLoading: isTicketsLoading } = useSupportTickets();
+	const { tickets: realTickets, isLoading: isTicketsLoading } = useSupportTickets();
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(true);
 	const [filteredTickets, setFilteredTickets] = useState<iSupportTicket[]>([]);

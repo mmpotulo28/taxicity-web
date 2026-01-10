@@ -22,14 +22,15 @@ import {
 } from "recharts";
 
 import { useDashboardStats } from "@/hooks/useDashboardStats";
-import { trips as tripHistory } from "@/lib/data";
+import { useTrips } from "@/hooks/useTrips";
 
 export default function Dashboard() {
 	const router = useRouter();
 
 
 	// Use the real data hook
-	const { data: stats, isLoading: isStatsLoading, refetch } = useDashboardStats();
+	const { stats, isLoading: isStatsLoading, refetch } = useDashboardStats();
+	const { trips: recentTrips, isLoading: isTripsLoading } = useTrips();
 	const [isRefreshing, setIsRefreshing] = useState(false);
 
 	const isLoading = isStatsLoading || isRefreshing;
@@ -359,7 +360,7 @@ export default function Dashboard() {
 					</Button>
 				</CardHeader>
 				<CardBody className="p-4">
-					{isLoading ? (
+					{isTripsLoading ? (
 						<div className="space-y-4">
 							{Array.from({ length: 5 }).map((_, i) => (
 								<div
@@ -389,26 +390,33 @@ export default function Dashboard() {
 								</tr>
 							</thead>
 							<tbody>
-								{tripHistory.slice(0, 5).map((trip, index) => (
+								{recentTrips?.slice(0, 5).map((trip) => (
 									<tr
-										key={index}
+										key={trip.id}
 										className="border-b border-divider hover:bg-default-50 transition-colors">
 										<td className="py-3">
 											Trip{" "}
-											{trip.status === "completed"
-												? "Completed"
-												: "Cancelled"}
+											{trip.status.charAt(0).toUpperCase() + trip.status.slice(1).toLowerCase()}
 										</td>
 										<td className="py-3">
-											Customer #{Math.floor(Math.random() * 1000) + 1000}
+											Customer #{trip.userId.slice(0, 6)}...
 										</td>
-										<td className="py-3">{trip.route}</td>
-										<td className="py-3">{trip.time}</td>
+										<td className="py-3">{trip.route.name}</td>
+										<td className="py-3">
+											{new Date(trip.createdAt).toLocaleString(undefined, {
+												month: "short",
+												day: "numeric",
+												hour: "2-digit",
+												minute: "2-digit",
+											})}
+										</td>
 										<td className="py-3">
 											<span
-												className={`px-2 py-1 rounded-full text-xs ${trip.status === "completed"
+												className={`px-2 py-1 rounded-full text-xs ${trip.status === "COMPLETED"
 													? "bg-success-100 text-success-600"
-													: "bg-danger-100 text-danger-600"
+													: trip.status === "CANCELLED"
+														? "bg-danger-100 text-danger-600"
+														: "bg-warning-100 text-warning-600"
 													}`}>
 												{trip.status}
 											</span>
@@ -421,8 +429,8 @@ export default function Dashboard() {
 
 					<div className="mt-4 flex justify-between items-center">
 						<p className="text-sm text-default-500">
-							Showing <span className="font-medium">5</span> of{" "}
-							<span className="font-medium">{tripHistory.length}</span> activities
+							Showing <span className="font-medium">{Math.min(5, recentTrips?.length || 0)}</span> of{" "}
+							<span className="font-medium">{recentTrips?.length || 0}</span> activities
 						</p>
 
 						<div className="flex gap-2">

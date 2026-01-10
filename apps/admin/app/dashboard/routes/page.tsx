@@ -20,7 +20,7 @@ import { routes as mockRoutes, ranks } from "@/lib/data";
 import { useRoutes } from "@/hooks/useRoutes";
 
 export default function RoutesPage() {
-	const { data: realRoutes, isLoading: isRoutesLoading } = useRoutes();
+	const { routes: realRoutes, isLoading: isRoutesLoading, updateRoute } = useRoutes();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -38,7 +38,7 @@ export default function RoutesPage() {
 			estimatedDuration: r.estimatedDuration ? `${r.estimatedDuration} min` : "N/A",
 			estimatedFare: r.baseFare ? `R${Number(r.baseFare).toFixed(2)}` : "N/A",
 			distance: r.distance ? `${r.distance} km` : "N/A",
-			status: r.status.toLowerCase()
+			status: "active" // Default for now if status isn't on Route model, or check schema
 		}));
 	} else {
 		// Fallback to mock

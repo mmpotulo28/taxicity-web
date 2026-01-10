@@ -28,7 +28,7 @@ import {
 	ModalHeader,
 	ModalBody,
 	ModalFooter,
-	Avatar,
+	User,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
@@ -44,7 +44,7 @@ type TaxiWithRelations = Taxi & {
 };
 
 export default function TaxisPage() {
-	const { data: taxisRaw, isLoading } = useTaxis();
+	const { taxis: taxisRaw, isLoading } = useTaxis();
 
 	// Combine real and mock data (fallback if real is empty)
 	const taxis = React.useMemo(() => {
@@ -374,77 +374,67 @@ export default function TaxisPage() {
 									Taxi Details
 								</ModalHeader>
 
-								<ModalBody>
-									<div className="flex flex-col md:flex-row gap-6">
-										<div className="w-full md:w-1/3 flex flex-col">
-											<div className="flex flex-col items-center mb-4">
-												<div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+								<ModalBody className="py-6">
+									<div className="flex flex-col md:flex-row gap-8">
+										{/* Left Sidebar: Vehicle Profile */}
+										<div className="w-full md:w-1/3 flex flex-col gap-6 md:border-r border-default-100 md:pr-6">
+											<div className="flex flex-col items-center text-center space-y-4">
+												<div className="w-28 h-28 bg-primary/10 rounded-full flex items-center justify-center ring-4 ring-primary/5 transition-transform hover:scale-105">
 													<Icon
-														className="text-primary text-4xl"
+														className="text-primary text-5xl"
 														icon="lucide:car"
 													/>
 												</div>
-												<h3 className="text-xl font-semibold">
-													{selectedTaxi.licensePlate}
-												</h3>
-												<p className="text-default-500">
-													{selectedTaxi.model}
-												</p>
-											</div>
-
-											<div className="mt-2 text-center">
-												<p className="text-sm text-default-500">Status</p>
-												<div className="mt-1">
+												<div>
+													<h3 className="text-2xl font-bold tracking-tight text-foreground">
+														{selectedTaxi.licensePlate}
+													</h3>
+													<p className="text-medium text-default-500 font-medium">
+														{selectedTaxi.make} {selectedTaxi.model}
+													</p>
+												</div>
+												<div>
 													{renderStatusChip(selectedTaxi.status)}
 												</div>
 											</div>
 
-											<div className="mt-4">
-												<Card>
-													<CardBody className="p-3">
-														<h4 className="font-medium mb-2 text-sm">
-															Vehicle Information
-														</h4>
-														<div className="space-y-2 text-sm">
-															<div className="flex justify-between">
-																<span className="text-default-500">
-																	Capacity:
-																</span>
-																<span>
-																	{selectedTaxi.capacity} seats
-																</span>
-															</div>
-															<div className="flex justify-between">
-																<span className="text-default-500">
-																	Make/Model:
-																</span>
-																<span>
-																	{selectedTaxi.make} {selectedTaxi.model}
-																</span>
-															</div>
-															<div className="flex justify-between">
-																<span className="text-default-500">
-																	Year:
-																</span>
-																<span>
-																	{selectedTaxi.year || "N/A"}
-																</span>
-															</div>
-															<div className="flex justify-between">
-																<span className="text-default-500">
-																	Routes:
-																</span>
-																<span>
-																	{selectedTaxi.routes?.length ||
-																		"0"}
-																</span>
-															</div>
+											<div className="space-y-3">
+												<h4 className="text-xs font-bold text-default-400 uppercase tracking-widest px-1">
+													Vehicle Details
+												</h4>
+												<div className="grid grid-cols-1 gap-3">
+													<div className="flex items-center justify-between p-3 bg-default-50 rounded-xl">
+														<div className="flex items-center gap-3 text-default-500">
+															<Icon icon="lucide:users" className="text-lg" />
+															<span className="text-small">Capacity</span>
 														</div>
-													</CardBody>
-												</Card>
+														<span className="font-semibold text-small">
+															{selectedTaxi.capacity} Passengers
+														</span>
+													</div>
+													<div className="flex items-center justify-between p-3 bg-default-50 rounded-xl">
+														<div className="flex items-center gap-3 text-default-500">
+															<Icon icon="lucide:calendar" className="text-lg" />
+															<span className="text-small">Year</span>
+														</div>
+														<span className="font-semibold text-small">
+															{selectedTaxi.year || "N/A"}
+														</span>
+													</div>
+													<div className="flex items-center justify-between p-3 bg-default-50 rounded-xl">
+														<div className="flex items-center gap-3 text-default-500">
+															<Icon icon="lucide:route" className="text-lg" />
+															<span className="text-small">Active Routes</span>
+														</div>
+														<span className="font-semibold text-small">
+															{selectedTaxi.routes?.length || "None"}
+														</span>
+													</div>
+												</div>
 											</div>
 										</div>
 
+										{/* Right Content */}
 										<div className="w-full md:w-2/3 space-y-4">
 											<Tabs aria-label="Taxi details tabs">
 												<Tab
@@ -455,61 +445,73 @@ export default function TaxisPage() {
 															Driver
 														</div>
 													}>
-													<Card>
+													<Card shadow="sm" className="bg-default-50">
 														<CardBody>
 															{selectedTaxi.driver ? (
-																<div className="space-y-4">
-																	<div className="flex items-center gap-3">
-																		<Avatar
+																<div className="space-y-6">
+																	<div className="flex items-center justify-between">
+																		<User
 																			name={selectedTaxi.driver.fullName || "Unassigned"}
-																			src={selectedTaxi.driver.profileImage || undefined}
+																			description={
+																				<div className="flex flex-col gap-1">
+																					<span className="text-small text-default-500">
+																						{selectedTaxi.driver.phone || "No phone"}
+																					</span>
+																					<span className="text-tiny text-default-400">
+																						{selectedTaxi.driver.email || "No email"}
+																					</span>
+																				</div>
+																			}
+																			avatarProps={{
+																				src: selectedTaxi.driver.profileImage || undefined,
+																				size: "lg",
+																				isBordered: true,
+																				name: (selectedTaxi.driver.fullName || "U").charAt(0),
+																			}}
 																		/>
-																		<div>
-																			<h4 className="font-medium">
-																				{selectedTaxi.driver.fullName}
-																			</h4>
-																			<p className="text-default-500 text-sm">
-																				{selectedTaxi.driver.phone ||
-																					"No phone number"}
-																			</p>
+																		<div className="flex gap-2">
+																			<Button size="sm" variant="flat" color="primary" isIconOnly>
+																				<Icon icon="lucide:phone" className="text-lg" />
+																			</Button>
+																			<Button size="sm" variant="flat" color="secondary" isIconOnly>
+																				<Icon icon="lucide:message-circle" className="text-lg" />
+																			</Button>
 																		</div>
-																		<Button
-																			className="ml-auto"
-																			size="sm"
-																			variant="flat">
-																			Contact
-																		</Button>
 																	</div>
 
-																	<div className="grid grid-cols-2 gap-2 text-sm">
-																		<div>
-																			<p className="text-default-500">
-																				Status
-																			</p>
-																			<p className="font-medium">
-																				{selectedTaxi.driver.status}
-																			</p>
+																	<div className="grid grid-cols-2 gap-4">
+																		<div className="bg-background p-3 rounded-lg border border-default-200">
+																			<p className="text-tiny text-default-500 uppercase font-bold">Status</p>
+																			<div className="mt-1 flex items-center gap-2">
+																				<div className={`w-2 h-2 rounded-full ${selectedTaxi.driver.status === 'ACTIVE' ? 'bg-success' : 'bg-warning'}`} />
+																				<p className="font-semibold text-small">
+																					{selectedTaxi.driver.status}
+																				</p>
+																			</div>
 																		</div>
-																		<div>
-																			<p className="text-default-500">
-																				License
-																			</p>
-																			<p className="font-medium">
-																				{selectedTaxi.driver.licenseNumber}
+																		<div className="bg-background p-3 rounded-lg border border-default-200">
+																			<p className="text-tiny text-default-500 uppercase font-bold">License</p>
+																			<p className="font-semibold text-small mt-1">
+																				{selectedTaxi.driver.licenseNumber || "N/A"}
 																			</p>
 																		</div>
 																	</div>
 																</div>
 															) : (
-																<div className="text-center py-8">
-																	<Icon
-																		className="mx-auto text-4xl text-default-400 mb-2"
-																		icon="lucide:user-x"
-																	/>
-																	<p className="text-default-500">
-																		No driver information
-																		available
-																	</p>
+																<div className="flex flex-col items-center justify-center py-12 gap-3">
+																	<div className="w-16 h-16 rounded-full bg-default-100 flex items-center justify-center">
+																		<Icon
+																			className="text-2xl text-default-400"
+																			icon="lucide:user-x"
+																		/>
+																	</div>
+																	<div className="text-center">
+																		<p className="text-medium font-medium text-default-700">No Driver Assigned</p>
+																		<p className="text-small text-default-500">This vehicle is currently not assigned to any driver.</p>
+																	</div>
+																	<Button variant="flat" color="primary" size="sm" className="mt-2">
+																		Assign Driver
+																	</Button>
 																</div>
 															)}
 														</CardBody>

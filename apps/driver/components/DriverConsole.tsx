@@ -8,12 +8,13 @@ import { Chip } from "@heroui/chip";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/modal";
 import { Icon } from "@iconify/react";
 import QRCode from "react-qr-code";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { addToast } from "@heroui/toast";
 import { useDriver, Trip } from "../context/DriverContext";
 import { MapView } from "@taxicity/ui";
 import { formatCurrency } from "@taxicity/utils";
 import { RankQueue } from "./RankQueue";
+import { RequestModal } from "./RequestModal";
 
 export function DriverConsole() {
 	const {
@@ -23,6 +24,7 @@ export function DriverConsole() {
 		startShift,
 		endShift,
 		acceptRequest,
+		declineRequest,
 		updatePassengerStatus,
 		updateManualPassengers,
 		currentLocation,
@@ -484,81 +486,7 @@ export function DriverConsole() {
 
 				{/* Scrollable Content */}
 				<div className="overflow-y-auto flex-1 p-4 space-y-6">
-					{/* Incoming Requests */}
-					<AnimatePresence>
-						{incomingRequests.length > 0 && (
-							<motion.div
-								initial={{ opacity: 0, height: 0 }}
-								animate={{ opacity: 1, height: "auto" }}
-								exit={{ opacity: 0, height: 0 }}
-								className="space-y-3">
-								<div className="flex items-center justify-between">
-									<h3 className="font-semibold text-sm text-default-600 flex items-center gap-2">
-										<span className="relative flex h-2 w-2">
-											<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-											<span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-										</span>
-										Incoming Requests
-									</h3>
-									<Chip size="sm" color="primary" variant="flat">
-										{incomingRequests.length}
-									</Chip>
-								</div>
 
-								{incomingRequests.map((req) => (
-									<motion.div
-										key={req.id}
-										initial={{ x: -20, opacity: 0 }}
-										animate={{ x: 0, opacity: 1 }}
-										exit={{ x: 20, opacity: 0 }}>
-										<Card className="border-l-4 border-l-primary shadow-sm">
-											<CardBody className="gap-3 p-3">
-												<div className="flex justify-between items-start">
-													<div>
-														<span className="font-semibold text-sm">New Passenger</span>
-														<div className="flex items-center gap-1 text-xs text-default-400 mt-0.5">
-															<Icon icon="lucide:clock" width={12} />
-															<span>2 mins away</span>
-														</div>
-													</div>
-													<Chip size="sm" color="success" variant="flat" className="font-bold">
-														R{req.fare}
-													</Chip>
-												</div>
-
-												<div className="space-y-2 my-1">
-													<div className="flex gap-2 items-start">
-														<div className="mt-1 min-w-[16px]">
-															<div className="w-2 h-2 rounded-full bg-success ring-2 ring-success/30" />
-														</div>
-														<span className="text-xs text-default-600 line-clamp-1">
-															{req.pickupAddress}
-														</span>
-													</div>
-													<div className="flex gap-2 items-start">
-														<div className="mt-1 min-w-[16px]">
-															<div className="w-2 h-2 rounded-full bg-danger ring-2 ring-danger/30" />
-														</div>
-														<span className="text-xs text-default-600 line-clamp-1">
-															{req.dropoffAddress}
-														</span>
-													</div>
-												</div>
-
-												<Button
-													size="sm"
-													color="primary"
-													className="w-full font-medium"
-													onPress={() => acceptRequest(req.id)}>
-													Accept Passenger
-												</Button>
-											</CardBody>
-										</Card>
-									</motion.div>
-								))}
-							</motion.div>
-						)}
-					</AnimatePresence>
 
 					{/* Passenger Manifest */}
 					<div className="space-y-3">
@@ -725,6 +653,13 @@ export function DriverConsole() {
 					)}
 				</ModalContent>
 			</Modal>
+
+			<RequestModal
+				isOpen={incomingRequests.length > 0}
+				request={incomingRequests[0] || null}
+				onClose={() => incomingRequests[0] && declineRequest(incomingRequests[0].id)}
+				onAccept={acceptRequest}
+			/>
 		</div>
 	);
 }

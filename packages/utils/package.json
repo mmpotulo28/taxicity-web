@@ -8,11 +8,12 @@
 	},
 	"dependencies": {
 		"clsx": "2.1.1",
-		"tailwind-merge": "^3.4.0",
-		"intl-messageformat": "10.7.16"
+		"intl-messageformat": "10.7.16",
+		"pusher": "^5.3.2",
+		"tailwind-merge": "^3.4.0"
 	},
 	"devDependencies": {
-		"typescript": "5.6.3",
-		"@taxicity/configs": "workspace:*"
+		"@taxicity/configs": "workspace:*",
+		"typescript": "5.6.3"
 	}
 }

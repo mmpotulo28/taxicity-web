@@ -3,6 +3,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "@taxicity/database";
 import { Prisma } from "@prisma/client";
+import { pusherServer } from "@taxicity/utils";
 
 const CreateTripSchema = z.object({
 	routeId: z.string(),
@@ -80,6 +81,13 @@ export async function POST(req: NextRequest) {
 				route: true,
 			},
 		});
+
+		// Trigger Pusher event for drivers on this route
+		try {
+			await pusherServer.trigger(`route-${trip.routeId}`, "new-trip", trip);
+		} catch (error) {
+			console.error("Pusher trigger failed:", error);
+		}
 
 		return NextResponse.json(trip, { status: 201 });
 	} catch (error) {

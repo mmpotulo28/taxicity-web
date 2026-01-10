@@ -12,6 +12,57 @@ export async function GET(_req: NextRequest) {
 
 		const ranks = await prisma.rank.findMany({
 			include: {
+				sourceRoutes: {
+					where: { status: "ACTIVE" },
+					select: {
+						id: true,
+						name: true,
+						distance: true,
+						estimatedDuration: true,
+						baseFare: true,
+					},
+				},
+				taxiRanks: {
+					include: {
+						taxi: {
+							select: {
+								id: true,
+								licensePlate: true,
+								model: true,
+								status: true,
+								driver: {
+									select: {
+										fullName: true,
+										phone: true,
+									},
+								},
+							},
+						},
+					},
+				},
+				queueEntries: {
+					take: 50, // Limit queue entries for performance
+					include: {
+						taxi: {
+							select: {
+								id: true,
+								licensePlate: true,
+								model: true,
+								status: true,
+							},
+						},
+						driver: {
+							select: {
+								id: true,
+								fullName: true,
+								phone: true,
+							},
+						},
+					},
+					orderBy: {
+						joinedAt: "asc",
+					},
+				},
 				_count: {
 					select: {
 						taxiRanks: true, // Taxis present at rank (approx)

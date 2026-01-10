@@ -9,7 +9,13 @@ export interface DashboardStats {
 }
 
 export const useDashboardStats = () => {
-	return useQuery<DashboardStats>({
+	const {
+		data: stats,
+		isLoading,
+		isError,
+		error,
+		refetch,
+	} = useQuery<DashboardStats>({
 		queryKey: ["dashboard-stats"],
 		queryFn: async () => {
 			const { data } = await axios.get("/api/dashboard/stats");
@@ -18,4 +24,12 @@ export const useDashboardStats = () => {
 		// Refetch every minute
 		refetchInterval: 60000,
 	});
+
+	return {
+		stats,
+		isLoading,
+		isError,
+		error,
+		refetch,
+	};
 };

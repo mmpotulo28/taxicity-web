@@ -56,7 +56,7 @@ export default function ReportsPage() {
 	];
 
 	// Fetch real data
-	const { data: reportData, isLoading: isReportLoading } = useReports();
+	const { reports: reportData, isLoading: isReportLoading } = useReports();
 
 	// Selected report configuration
 	const currentReport = reportTypes.find((r) => r.key === selectedReport);

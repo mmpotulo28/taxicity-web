@@ -33,8 +33,7 @@ import {
 	SelectItem,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { addToast } from "@heroui/toast";
-import { useRanks, useCreateRank, useUpdateRank, useDeleteRank } from "@/hooks/useRanks";
+import { useRanks } from "@/hooks/useRanks";
 import { useTaxis } from "@/hooks/useTaxis";
 import { useRoutes } from "@/hooks/useRoutes";
 import { ranks as mockRanksRaw } from "@/lib/data";
@@ -51,6 +50,12 @@ import {
 } from "recharts";
 
 type RankWithCounts = Rank & {
+	sourceRoutes?: Route[];
+	taxiRanks?: { taxi: Taxi & { driver: { fullName: string | null; phone: string | null } | null } }[];
+	queueEntries?: (RankQueueEntry & {
+		driver: { fullName: string | null; phone: string | null };
+		taxi?: Pick<Taxi, "id" | "licensePlate" | "model" | "status">;
+	})[];
 	_count?: {
 		queueEntries: number;
 		taxiRanks: number;
@@ -60,13 +65,10 @@ type RankWithCounts = Rank & {
 };
 
 export default function RanksPage() {
-	const { data: realRanks, isLoading } = useRanks();
-	const createRank = useCreateRank();
-	const updateRank = useUpdateRank();
-	const deleteRank = useDeleteRank();
+	const { ranks: realRanks, isLoading, createRank, updateRank, deleteRank, refetch } = useRanks();
 
-	const { data: taxis = [] } = useTaxis();
-	const { data: routes = [] } = useRoutes();
+	const { taxis = [] } = useTaxis();
+	const { routes = [] } = useRoutes();
 
 	// Use real data if available, otherwise map mock data to match Prisma schema
 	const ranks: RankWithCounts[] = React.useMemo(() => {
@@ -219,20 +221,11 @@ export default function RanksPage() {
 	const handleDeleteRank = async (rankId: string) => {
 		if (confirm("Are you sure you want to delete this rank? This cannot be undone.")) {
 			try {
-				await deleteRank.mutateAsync(rankId);
-				addToast({
-					title: "Rank Deleted",
-					description: "Rank successfully removed",
-					color: "success",
-				});
+				await deleteRank(rankId);
 				// Refresh logic is handled by useDeleteRank invalidation
 			} catch (error) {
 				console.error(error);
-				addToast({
-					title: "Error", // Fixed title
-					description: "Failed to delete rank",
-					color: "danger",
-				});
+				// Notification handled by hook
 			}
 		}
 	};
@@ -254,16 +247,14 @@ export default function RanksPage() {
 			};
 
 			if (isEditing && selectedRank) {
-				await updateRank.mutateAsync({ id: selectedRank.id, ...payload });
-				addToast({ title: "Rank Updated", description: "Rank details updated successfully", color: "success" });
+				await updateRank({ id: selectedRank.id, data: payload });
 			} else {
-				await createRank.mutateAsync(payload);
-				addToast({ title: "Rank Created", description: "New rank added successfully", color: "success" });
+				await createRank(payload);
 			}
 			onFormClose();
 		} catch (error) {
 			console.error(error);
-			addToast({ title: "Error", description: "Operation failed", color: "danger" });
+			// Notification handled by hook
 		}
 	};
 
@@ -287,7 +278,19 @@ export default function RanksPage() {
 	};
 
 	// Get taxis at a specific rank
-	const getTaxisAtRank = (rankId: string): (Taxi & { queueEntry: RankQueueEntry[] })[] => {
+	const getTaxisAtRank = (rankId: string) => {
+		// Try to get from rank data itself first (more accurate/linked)
+		const rank = ranks?.find((r) => r.id === rankId);
+		if (rank?.queueEntries && rank.queueEntries.length > 0) {
+			return rank.queueEntries
+				.filter((entry) => entry.taxi)
+				.map((entry) => ({
+					...entry.taxi!,
+					// Ensure status is present or default
+					status: entry.taxi?.status || "AVAILABLE"
+				}));
+		}
+
 		if (!taxis) return [];
 		// detailed typing for the filter
 		return (taxis as (Taxi & { queueEntry: RankQueueEntry[] })[]).filter((taxi) =>
@@ -395,7 +398,9 @@ export default function RanksPage() {
 							<Button
 								color="primary"
 								startContent={<Icon icon="lucide:refresh-cw" />}
-								variant="flat">
+								variant="flat"
+								onPress={() => refetch()}
+							>
 								Refresh
 							</Button>
 						</div>

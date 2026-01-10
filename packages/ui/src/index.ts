@@ -1,5 +1,6 @@
 export * from "./context/RideContext";
 export * from "./context/MapContext";
+export * from "./context/PusherContext";
 export * from "./hooks/useRating";
 export * from "./types";
 

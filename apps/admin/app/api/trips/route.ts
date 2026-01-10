@@ -15,6 +15,7 @@ export async function GET(_req: NextRequest) {
 				requestTime: "desc",
 			},
 			include: {
+				route: true, // Include the requested route details
 				vehicleTrip: {
 					include: {
 						driver: true,

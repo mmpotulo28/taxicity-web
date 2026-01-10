@@ -1,12 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { Button } from "@heroui/button";
 import { Divider } from "@heroui/divider";
 import { Avatar } from "@heroui/avatar";
 import { addToast } from "@heroui/toast";
+import { useClerk, useUser } from "@clerk/nextjs";
 
 import { ThemeSwitch } from "./theme-switch";
 
@@ -43,6 +44,9 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, label, currentPath, badge
 const AdminSidebar: React.FC = () => {
 	const pathname = usePathname() || "";
 	const [collapsed, setCollapsed] = useState(false);
+	const { signOut } = useClerk();
+	const { user } = useUser();
+	const router = useRouter();
 
 	const mainNavItems = [
 		{ href: "/dashboard", icon: "lucide:layout-dashboard", label: "Dashboard" },
@@ -65,14 +69,13 @@ const AdminSidebar: React.FC = () => {
 		},
 	];
 
-	const handleSignOut = () => {
+	const handleSignOut = async () => {
+		await signOut({ redirectUrl: "/login" });
 		addToast({
 			title: "Signed Out",
 			description: "You have been signed out successfully",
 			color: "success",
 		});
-		// In a real app, this would handle the sign out process
-		window.location.href = "/login";
 	};
 
 	return (
@@ -128,12 +131,13 @@ const AdminSidebar: React.FC = () => {
 				<div className={`flex ${collapsed ? "flex-col" : "items-center"} gap-2 mb-2`}>
 					<Avatar
 						className="w-10 h-10"
-						src="https://img.heroui.chat/image/avatar?w=60&h=60&u=admin"
+						src={user?.imageUrl}
+						name={user?.fullName || "Admin"}
 					/>
 					{!collapsed && (
-						<div>
-							<p className="text-sm font-medium">Admin User</p>
-							<p className="text-xs text-default-500">admin@taxicity.co.za</p>
+						<div className="overflow-hidden">
+							<p className="text-sm font-medium truncate">{user?.fullName || "Admin User"}</p>
+							<p className="text-xs text-default-500 truncate">{user?.primaryEmailAddress?.emailAddress || ""}</p>
 						</div>
 					)}
 				</div>

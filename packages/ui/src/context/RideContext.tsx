@@ -7,6 +7,7 @@ import axios from "axios";
 
 import { iTrip, iRoute, iRank, iTaxi } from "../types";
 import { useMap } from "./MapContext";
+import { usePusher } from "./PusherContext";
 
 interface RideContextType {
 	tripHistory: iTrip[];
@@ -110,6 +111,7 @@ const fetchTrips = async (): Promise<iTrip[]> => {
 export function RideProvider({ children }: { children: React.ReactNode }) {
 	const queryClient = useQueryClient();
 	const { pickupMarker, dropoffMarker } = useMap();
+	const { subscribe, unsubscribe } = usePusher();
 
 	// State
 	const [activeTrip, setActiveTrip] = useState<iTrip | null>(null);
@@ -211,8 +213,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			return data;
 		},
 		enabled: !!activeTrip?.id && ["requested", "accepted", "driver-arrived", "arrived_at_pickup", "in-progress", "in_progress"].includes(activeTrip.status),
-		refetchInterval: 3000, // Poll every 3 seconds
-		refetchIntervalInBackground: true,
+		refetchOnWindowFocus: false,
 	});
 
 	// Helper to determine status precedence
@@ -308,6 +309,84 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			}
 		}
 	}, [polledTrip, activeTrip]);
+
+	// Subscribe to Pusher updates for active trip
+	React.useEffect(() => {
+		if (!activeTrip?.id) return;
+
+		const channelName = `trip-${activeTrip.id}`;
+
+		const handleTripUpdate = (updatedTrip: any) => {
+			// Logic duplicated from polling effect - strictly this should be a shared function
+			const driverName = updatedTrip.taxi?.driver
+				? (updatedTrip.taxi.driver.fullName || `${updatedTrip.taxi.driver.firstName} ${updatedTrip.taxi.driver.lastName}`)
+				: "Pending Assignment";
+
+			let mappedStatus = updatedTrip.status.toLowerCase();
+			if (mappedStatus === 'arrived_at_pickup') mappedStatus = 'driver-arrived';
+			if (mappedStatus === 'in_progress') mappedStatus = 'in-progress';
+
+			const passengerCount = updatedTrip.vehicleTrip?.passengers?.filter((p: any) =>
+				['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(p.status)
+			).length || 0;
+
+			const newTripState: iTrip = {
+				id: updatedTrip.id,
+				route: updatedTrip.route?.name || "Unknown Route",
+				date: new Date(updatedTrip.requestTime).toISOString().split('T')[0],
+				time: new Date(updatedTrip.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+				pickup: updatedTrip.pickupAddress,
+				dropoff: updatedTrip.dropoffAddress,
+				driver: driverName,
+				vehicle: updatedTrip.taxi ? (updatedTrip.taxi.make && updatedTrip.taxi.model ? `${updatedTrip.taxi.make} ${updatedTrip.taxi.model}` : updatedTrip.taxi.model) : "Pending Assignment",
+				licensePlate: updatedTrip.taxi?.licensePlate || "Pending Assignment",
+				fare: `R${updatedTrip.fare}`,
+				status: mappedStatus,
+				paymentMethod: updatedTrip.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
+				rating: updatedTrip.rating?.rating,
+				taxiId: updatedTrip.taxiId,
+				passengerCount: passengerCount
+			};
+
+			// Check for changes (ignoring race cons somewhat as Pusher should be latest)
+			const statusChanged = newTripState.status !== activeTrip.status;
+
+			setActiveTrip(newTripState);
+
+			if (statusChanged) {
+				if (newTripState.status === 'accepted') {
+					addToast({
+						title: "Ride Accepted",
+						description: `${newTripState.driver} is on their way!`,
+						color: "success",
+					});
+				} else if (newTripState.status === 'driver-arrived') {
+					addToast({
+						title: "Driver Arrived",
+						description: "Your taxi has arrived at the pickup location.",
+						color: "primary",
+					});
+				} else if (newTripState.status === 'in-progress') {
+					addToast({
+						title: "Ride Started",
+						description: "You are on your way to the destination.",
+						color: "success",
+					});
+				} else if (newTripState.status === 'completed') {
+					addToast({
+						title: "Ride Completed",
+						description: "You have arrived at your destination.",
+						color: "success",
+					});
+					queryClient.invalidateQueries({ queryKey: ["trips"] });
+				}
+			}
+		};
+
+		subscribe(channelName, "trip-updated", handleTripUpdate);
+
+		return () => unsubscribe(channelName);
+	}, [activeTrip?.id, activeTrip?.status, subscribe, unsubscribe, queryClient]);
 
 	// Mutations
 	const createTripMutation = useMutation({

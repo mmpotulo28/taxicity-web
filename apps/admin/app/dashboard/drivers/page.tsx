@@ -36,14 +36,18 @@ import { addToast } from "@heroui/toast";
 // Import drivers from data (fallback)
 import { drivers as mockDrivers } from "@/lib/data";
 import { iDriver } from "@/types";
-import { useDrivers, useCreateDriver, useUpdateDriver, useDeleteDriver } from "@/hooks/useDrivers";
+import { useDrivers } from "@/hooks/useDrivers";
 import { DriverStatus } from "@taxicity/database";
 
 export default function DriversPage() {
-	const { data: driversData, isLoading: isDriversLoading } = useDrivers();
-	const createDriverMutation = useCreateDriver();
-	const updateDriverMutation = useUpdateDriver();
-	const deleteDriverMutation = useDeleteDriver();
+	const {
+		drivers: driversData,
+		isLoading: isDriversLoading,
+		createDriver,
+		updateDriver,
+		deleteDriver,
+		isCreating
+	} = useDrivers();
 
 	const [isLoading, setIsLoading] = useState(true);
 	const [filteredDrivers, setFilteredDrivers] = useState<iDriver[]>([]);
@@ -140,7 +144,7 @@ export default function DriversPage() {
 		else if (newStatus === 'pending') dbStatus = "PENDING_VERIFICATION";
 		else dbStatus = "INACTIVE";
 
-		updateDriverMutation.mutate({
+		updateDriver({
 			id: driverId,
 			data: { status: dbStatus }
 		}, {
@@ -152,7 +156,7 @@ export default function DriversPage() {
 				});
 				onDetailsClose();
 			},
-			onError: (error) => {
+			onError: () => {
 				addToast({
 					title: "Error",
 					description: "Failed to update driver status",
@@ -163,7 +167,7 @@ export default function DriversPage() {
 	};
 
 	const handleAddDriver = () => {
-		createDriverMutation.mutate({
+		createDriver({
 			...formData,
 			licenseExpiry: new Date(formData.licenseExpiry),
 			status: DriverStatus.ACTIVE
@@ -196,7 +200,7 @@ export default function DriversPage() {
 
 	const handleDeleteDriver = (driverId: string) => {
 		if (confirm("Are you sure you want to delete this driver?")) {
-			deleteDriverMutation.mutate(driverId, {
+			deleteDriver(driverId, {
 				onSuccess: () => {
 					addToast({
 						title: "Success",
@@ -491,7 +495,7 @@ export default function DriversPage() {
 								<Button color="danger" variant="light" onPress={onClose}>
 									Cancel
 								</Button>
-								<Button color="primary" isLoading={createDriverMutation.isPending} onPress={handleAddDriver}>
+								<Button color="primary" isLoading={isCreating} onPress={handleAddDriver}>
 									Add Driver
 								</Button>
 							</ModalFooter>

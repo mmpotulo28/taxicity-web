@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { addToast } from "@heroui/toast";
+import { usePusher } from "@taxicity/ui";
 
 export interface Driver {
   id: string;
@@ -83,6 +84,7 @@ interface DriverContextType {
   startShift: (taxiId: string, routeId: string) => Promise<void>;
   endShift: () => Promise<void>;
   acceptRequest: (tripId: string) => Promise<void>;
+  declineRequest: (tripId: string) => void;
   updatePassengerStatus: (tripId: string, status: string) => Promise<void>;
   updateManualPassengers: (count: number) => Promise<void>;
   refreshRequests: () => Promise<void>;
@@ -93,6 +95,7 @@ const DriverContext = createContext<DriverContextType | undefined>(undefined);
 
 export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoaded } = useUser();
+  const { subscribe, unsubscribe } = usePusher();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [isOnline, setIsOnline] = useState(false);
   const [activeVehicleTrip, setActiveVehicleTrip] = useState<VehicleTrip | null>(null);
@@ -146,17 +149,21 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         sendLocationUpdate(position);
       },
       (error) => {
-        console.error("Error watching position:", error);
+        // Log detailed error info
+        console.error("Error watching position:", {
+          code: error.code,
+          message: error.message,
+        });
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        timeout: 20000,
+        maximumAge: 1000,
       }
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [activeVehicleTrip]);
+  }, [activeVehicleTrip?.id]);
 
   const fetchDriver = React.useCallback(async () => {
     if (!user) return;
@@ -202,18 +209,32 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [driver, fetchActiveVehicleTrip]);
 
-  // Poll for requests when online (active vehicle trip)
+  // Subscribe to Pusher updates for real-time requests and trips
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    if (!activeVehicleTrip) return;
 
+    const channelName = `route-${activeVehicleTrip.route.id}`;
+
+    subscribe(channelName, "new-trip", (newTrip: Trip) => {
+      console.log("New trip received via Pusher:", newTrip);
+      addToast({ title: "New Ride Request", description: "A new passenger request has arrived." });
+      setIncomingRequests((prev) => [newTrip, ...prev]);
+    });
+
+    return () => {
+      unsubscribe(channelName);
+    };
+  }, [activeVehicleTrip?.route?.id, subscribe, unsubscribe]);
+
+  // Poll for requests when online (active vehicle trip)
+  // Initial fetch for requests when active (no polling, relies on Pusher)
+  useEffect(() => {
     const fetchRequests = async () => {
       if (!activeVehicleTrip) return;
       try {
         const res = await fetch("/api/driver/requests");
         if (res.ok) {
           const data = await res.json();
-          // Filter requests relevant to current route
-          // Note: API should ideally filter this, but we can double check
           setIncomingRequests(data);
         }
       } catch (error) {
@@ -223,16 +244,10 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     if (activeVehicleTrip) {
       fetchRequests(); // Initial fetch
-      interval = setInterval(() => {
-        fetchRequests();
-        fetchActiveVehicleTrip();
-      }, 5000); // Poll every 5s
     } else {
       setIncomingRequests([]);
     }
-
-    return () => clearInterval(interval);
-  }, [activeVehicleTrip, fetchActiveVehicleTrip]);
+  }, [activeVehicleTrip?.id]);
 
   const toggleOnline = async () => {
     // This is now mostly controlled by start/end shift
@@ -341,6 +356,11 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const declineRequest = (tripId: string) => {
+    setIncomingRequests((prev) => prev.filter((r) => r.id !== tripId));
+  };
+
+
   const updatePassengerStatus = async (tripId: string, status: string) => {
     try {
       const res = await fetch(`/api/driver/trips/${tripId}/status`, {
@@ -411,6 +431,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         startShift,
         endShift,
         acceptRequest,
+        declineRequest,
         updatePassengerStatus,
         updateManualPassengers,
         refreshRequests,

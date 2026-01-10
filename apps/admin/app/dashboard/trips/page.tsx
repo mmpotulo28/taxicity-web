@@ -47,7 +47,7 @@ import { iTrip } from "@/types";
 import { useTrips } from "@/hooks/useTrips";
 
 export default function TripsPage() {
-	const { data: realTrips, isLoading: isTripsLoading } = useTrips();
+	const { trips: realTrips, isLoading: isTripsLoading } = useTrips();
 	const [isLoading, setIsLoading] = useState(true);
 	const [filteredTrips, setFilteredTrips] = useState<iTrip[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");

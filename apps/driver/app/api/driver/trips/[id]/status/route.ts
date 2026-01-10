@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { prisma } from "@taxicity/database";
 import { TripStatus } from "@prisma/client";
+import { pusherServer } from "@taxicity/utils";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -58,11 +59,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 		const updatedTrip = await prisma.trip.update({
 			where: { id: tripId },
 			data: updateData,
+			include: {
+				taxi: {
+					include: {
+						driver: true,
+					},
+				},
+				route: true,
+				vehicleTrip: {
+					include: {
+						passengers: true,
+					},
+				},
+			},
 		});
 
-		// If the trip is completed, we should ensure the driver context updates
-		// The polling mechanism in DriverContext will fetch the updated trip status
-		// and the UI will move it to history or remove it from active list.
+		// Trigger Pusher event for the specific trip
+		try {
+			await pusherServer.trigger(`trip-${tripId}`, "trip-updated", updatedTrip);
+		} catch (error) {
+			console.error("Pusher trigger failed:", error);
+		}
 
 		return NextResponse.json(updatedTrip);
 	} catch (error) {
