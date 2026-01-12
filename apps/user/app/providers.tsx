@@ -12,7 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { RideProvider } from "@taxicity/ui";
 import { MapProvider } from "@taxicity/ui";
-import { PusherProvider } from "@taxicity/ui";
+import { PusherProvider, TelemetryProvider } from "@taxicity/ui";
 import { clerkConfig } from "@taxicity/configs/clerk";
 
 export interface ProvidersProps {
@@ -33,20 +33,22 @@ function Providers({ children, themeProps }: ProvidersProps) {
 
 	return (
 		<ClerkProvider appearance={clerkConfig.appearance}>
-			<QueryClientProvider client={queryClient}>
-				<HeroUIProvider navigate={router.push}>
-					<NextThemesProvider {...themeProps}>
-						<PusherProvider>
-							<MapProvider>
-								<RideProvider>
-									<ToastProvider placement="top-center" />
-									{children}
-								</RideProvider>
-							</MapProvider>
-						</PusherProvider>
-					</NextThemesProvider>
-				</HeroUIProvider>
-			</QueryClientProvider>
+			<TelemetryProvider appName="Taxicity User" version="1.0.0">
+				<QueryClientProvider client={queryClient}>
+					<HeroUIProvider navigate={router.push}>
+						<NextThemesProvider {...themeProps}>
+							<PusherProvider>
+								<MapProvider>
+									<RideProvider>
+										<ToastProvider placement="top-center" />
+										{children}
+									</RideProvider>
+								</MapProvider>
+							</PusherProvider>
+						</NextThemesProvider>
+					</HeroUIProvider>
+				</QueryClientProvider>
+			</TelemetryProvider>
 		</ClerkProvider>
 	);
 }
