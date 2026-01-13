@@ -4,7 +4,8 @@
   "module": "ESNext",
   "moduleResolution": "bundler",
   "declaration": true,
-  "outDir": "dist",
+  "noEmit": false,
+  "outDir": "./dist",
   "strict": true,
   "skipLibCheck": true,
   "jsx": "react-jsx"

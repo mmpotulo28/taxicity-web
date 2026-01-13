@@ -4,7 +4,8 @@
 	"main": "src/index.ts",
 	"types": "src/index.ts",
 	"scripts": {
-		"check": "tsc --noEmit"
+		"check": "tsc --noEmit",
+		"build": "tsc"
 	},
 	"dependencies": {
 		"clsx": "2.1.1",

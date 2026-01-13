@@ -5,6 +5,7 @@ packages:
 onlyBuiltDependencies:
   - '@clerk/shared'
   - '@heroui/shared-utils'
+  - '@nestjs/core'
   - '@prisma/client'
   - '@prisma/engines'
   - '@sentry/cli'
