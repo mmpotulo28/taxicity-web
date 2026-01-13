@@ -27,10 +27,18 @@ const TaxiMap: React.FC<TaxiMapProps> = ({ taxis, center }) => {
 			? { lat: taxis[0].lat, lng: taxis[0].lng }
 			: { lat: -26.2041, lng: 28.0473 }); // Default to Johannesburg
 
-	const { isLoaded } = useJsApiLoader({
+	const { isLoaded, loadError } = useJsApiLoader({
 		id: "google-map-script",
 		googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
 	});
+
+	if (loadError) {
+		return (
+			<div className="flex items-center justify-center h-full text-red-500">
+				<span>Error loading Google Maps</span>
+			</div>
+		);
+	}
 
 	if (!isLoaded) {
 		return (
