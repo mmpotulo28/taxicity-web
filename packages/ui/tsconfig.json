@@ -1,6 +1,8 @@
 {
  "extends": "@taxicity/configs/tsconfig",
  "compilerOptions": {
+  "noEmit": false,
+  "outDir": "./dist",
   "jsx": "react-jsx",
   "paths": {
    "@/*": [

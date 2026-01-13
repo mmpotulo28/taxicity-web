@@ -13,8 +13,7 @@
 	},
 	"scripts": {
 		"lint": "eslint .",
-		"check": "pnpm lint && tsc --noEmit",
-		"build": "tsc"
+		"check": "pnpm lint && tsc --noEmit"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.36.6",
