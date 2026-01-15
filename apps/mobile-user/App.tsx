@@ -17,8 +17,8 @@ const getHost = () => {
   return 'localhost';
 };
 
-const USER_APP_URL = `http://${getHost()}:3000`; // Dev URL
-// const USER_APP_URL = 'https://taxicity.mpotulo.com'; // Prod URL
+// const USER_APP_URL = `http://${getHost()}:3000`; // Dev URL
+const USER_APP_URL = 'https://taxicity.mpotulo.com'; // Prod URL
 
 export default function App() {
 
