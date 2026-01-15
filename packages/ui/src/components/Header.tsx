@@ -12,7 +12,7 @@ const Header: React.FC<HeaderProps> = ({ endContent, driverMode }) => {
 	const { user } = useUser();
 
 	return (
-		<header className={cn("absolute top-4 left-0 right-0 z-50 flex items-center justify-between pointer-events-none w-full max-w-lg mx-auto", !!driverMode && "mt-4")}>
+		<header className={cn("absolute mt-2 top-0 left-0 right-0 z-50 flex items-center justify-between pointer-events-none w-full max-w-lg mx-auto")}>
 			<SignedIn>
 				<div className="flex justify-between w-full px-4	items-center">
 					<div className="bg-background/70 backdrop-blur-sm rounded-full px-4 py-2 pointer-events-auto border border-default-100 shadow-sm">
