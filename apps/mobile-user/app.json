@@ -25,7 +25,7 @@
 				"backgroundColor": "#ffffff"
 			},
 			"edgeToEdgeEnabled": true,
-			"package": "com.mmpotulo.mobileuser"
+			"package": "com.taxicity.user"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png"
