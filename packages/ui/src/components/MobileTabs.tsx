@@ -70,7 +70,7 @@ const MobileTabs = () => {
 							as={Link}
 							className={`flex flex-col items-center w-full transition-all duration-200 px-3 py-2 h-16
 								${isActive ? "bg-primary/10 text-primary font-semibold shadow-md" : "text-default-700"}
-								hover:bg-primary/5 active:scale-95 ${tab.main ? "-mt-6 shadow-lg rounded-xl bg-primary text-white w-16 h-16" : "rounded-none"}`}
+								hover:bg-primary/5 active:scale-95 ${tab.main ? "shadow-lg rounded-xl bg-primary text-white w-16 h-16 absolute top-[-20px]" : "rounded-none"}`}
 							href={tab.href}
 							radius="none"
 							style={{
