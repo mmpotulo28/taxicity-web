@@ -12,6 +12,7 @@ export { default as DriverTabs } from "./components/DriverTabs";
 export { default as GlobalModals } from "./components/GlobalModals";
 export { default as Header } from "./components/Header";
 export { default as LocationSelector } from "./components/LocationSelector";
+export * from "./components/Loading";
 export { default as MapSelectionModal } from "./components/MapSelectionModal";
 export { default as MapSelectionOverlay } from "./components/MapSelectionOverlay";
 export { default as MobileTabs } from "./components/MobileTabs";
