@@ -25,14 +25,16 @@ const Header: React.FC<HeaderProps> = ({ endContent, driverMode }) => {
 				</div>
 			</SignedIn>
 			<SignedOut>
-				{/* Empty header for signed out state to let the landing page focus on the bottom sheet */}
-				<div className="bg-background/80 backdrop-blur-md rounded-full px-3 py-1.5 pointer-events-auto border border-default-100 shadow-sm flex items-center gap-2">
-					<span className="text-sm font-bold bg-gradient-to-tr from-primary to-secondary bg-clip-text text-transparent">
-						TaxiCity
-					</span>
-				</div>
-				<div className="pointer-events-auto">
-					<AuthButton />
+				<div className="flex justify-between w-full px-4	items-center">
+					{/* Empty header for signed out state to let the landing page focus on the bottom sheet */}
+					<div className="bg-prismar/70 backdrop-blur-sm rounded-lg px-4 py-2 pointer-events-auto border border-default-100 shadow-sm">
+						<p className="text-md font-bold text-primary">
+							Welcome
+						</p>
+					</div>
+					<div className="pointer-events-auto">
+						<AuthButton />
+					</div>
 				</div>
 			</SignedOut>
 		</header>

@@ -1,0 +1,34 @@
+# Core
+node_modules
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+
+# Build Artifacts
+.next
+dist
+build
+out
+
+# Dependencies
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Turborepo
+.turbo
+
+# Mobile
+apps/mobile-user/android
+apps/mobile-user/ios
+apps/mobile-driver/android
+apps/mobile-driver/ios
+apps/mobile-user/.expo
+apps/mobile-driver/.expo
