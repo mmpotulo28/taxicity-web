@@ -8,12 +8,9 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-import { RideProvider } from "@taxicity/ui";
-import { MapProvider } from "@taxicity/ui";
-import { PusherProvider } from "@taxicity/ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { clerkConfig } from "@taxicity/configs/clerk";
+import { TelemetryProvider, PusherProvider, MapProvider, RideProvider } from "@taxicity/ui";
 
 export interface ProvidersProps {
 	children: React.ReactNode;
@@ -33,20 +30,22 @@ function Providers({ children, themeProps }: ProvidersProps) {
 
 	return (
 		<ClerkProvider appearance={clerkConfig.appearance}>
-			<QueryClientProvider client={queryClient}>
-				<HeroUIProvider navigate={router.push}>
-					<NextThemesProvider {...themeProps}>
-						<PusherProvider>
-							<MapProvider>
-								<RideProvider>
-									<ToastProvider placement="top-center" />
-									{children}
-								</RideProvider>
-							</MapProvider>
-						</PusherProvider>
-					</NextThemesProvider>
-				</HeroUIProvider>
-			</QueryClientProvider>
+			<TelemetryProvider appName="Taxicity User" version="1.0.0">
+				<QueryClientProvider client={queryClient}>
+					<HeroUIProvider navigate={router.push}>
+						<NextThemesProvider {...themeProps}>
+							<PusherProvider>
+								<MapProvider>
+									<RideProvider>
+										<ToastProvider placement="top-center" />
+										{children}
+									</RideProvider>
+								</MapProvider>
+							</PusherProvider>
+						</NextThemesProvider>
+					</HeroUIProvider>
+				</QueryClientProvider>
+			</TelemetryProvider>
 		</ClerkProvider>
 	);
 }

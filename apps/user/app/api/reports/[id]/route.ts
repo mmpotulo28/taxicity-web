@@ -39,8 +39,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 		}
 
 		// Fetch reporter and assigned user details
-		let reporter = null;
-		let assignedToUser = null;
+		let reporter: { id: string; fullName: string; email?: string; role?: unknown } | null = null;
+		let assignedToUser: { id: string; fullName: string; email?: string } | null = null;
 
 		if (report.reporterId) {
 			try {
@@ -148,8 +148,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		});
 
 		// Fetch reporter and assigned user details for response
-		let reporter = null;
-		let assignedToUser = null;
+		let reporter: { id: string; fullName: string; email?: string; role?: unknown } | null = null;
+		let assignedToUser: { id: string; fullName: string; email?: string } | null = null;
 
 		if (updatedReport.reporterId) {
 			try {

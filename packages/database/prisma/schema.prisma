@@ -2,12 +2,12 @@
 // PostgreSQL Database
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // USER DATA MODELS (User auth is managed by Clerk)

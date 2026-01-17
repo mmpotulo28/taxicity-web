@@ -15,6 +15,7 @@
 		"PUSHER_CLUSTER",
 		"NEXT_PUBLIC_PUSHER_KEY",
 		"NEXT_PUBLIC_PUSHER_CLUSTER",
+		"NEXT_PUBLIC_FARO_URL",
 		"UPSTASH_REDIS_REST_URL",
 		"UPSTASH_REDIS_REST_TOKEN",
 		"KV_REST_API_URL",
@@ -33,6 +34,10 @@
 			"dependsOn": ["^check"]
 		},
 		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"start": {
 			"cache": false,
 			"persistent": true
 		},

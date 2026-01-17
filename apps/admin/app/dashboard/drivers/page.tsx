@@ -32,12 +32,11 @@ import {
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
-
-// Import drivers from data (fallback)
-import { drivers as mockDrivers } from "@/lib/data";
-import { iDriver } from "@/types";
 import { useDrivers } from "@/hooks/useDrivers";
-import { DriverStatus } from "@taxicity/database";
+import type { Driver } from "@taxicity/database/types";
+
+// Local definition to avoid runtime import of Prisma Enum in Client Component
+type DriverStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION" | "BLOCKED";
 
 export default function DriversPage() {
 	const {
@@ -50,7 +49,7 @@ export default function DriversPage() {
 	} = useDrivers();
 
 	const [isLoading, setIsLoading] = useState(true);
-	const [filteredDrivers, setFilteredDrivers] = useState<iDriver[]>([]);
+	const [filteredDrivers, setFilteredDrivers] = useState<any[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [currentPage, setCurrentPage] = useState(1);
@@ -82,11 +81,11 @@ export default function DriversPage() {
 
 		const sourceData = driversData && driversData.length > 0 ? driversData : null;
 
-		let mappedData: iDriver[] = [];
+		let mappedData: any[] = [];
 
 		if (sourceData) {
 			// Map real data
-			mappedData = sourceData.map((d: any) => ({
+			mappedData = sourceData.map((d) => ({
 				id: d.id,
 				name: d.fullName || `${d.firstName} ${d.lastName}`,
 				phone: d.phone,
@@ -99,15 +98,9 @@ export default function DriversPage() {
 				avatar: d.profileImage || `https://i.pravatar.cc/150?u=${d.id}`,
 				taxiId: undefined
 			}));
-		} else {
-			// Fallback to mock data
-			mappedData = mockDrivers.map((driver) => ({
-				...driver,
-				status: driver.status as "active" | "suspended" | "pending" | "inactive",
-			}));
 		}
 
-		let filtered: iDriver[] = mappedData;
+		let filtered: any[] = mappedData;
 
 		// Apply search query filter
 		if (searchQuery) {
@@ -170,7 +163,7 @@ export default function DriversPage() {
 		createDriver({
 			...formData,
 			licenseExpiry: new Date(formData.licenseExpiry),
-			status: DriverStatus.ACTIVE
+			status: "ACTIVE"
 		}, {
 			onSuccess: () => {
 				addToast({
@@ -213,7 +206,7 @@ export default function DriversPage() {
 	};
 
 	// Handle view driver details
-	const handleViewDetails = (driver: iDriver) => {
+	const handleViewDetails = (driver: Driver) => {
 		setSelectedDriver(driver);
 		onDetailsOpen();
 	};

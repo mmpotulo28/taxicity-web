@@ -114,7 +114,7 @@ export default function Home() {
 
 									{tripHistory && tripHistory.length > 0 ? (
 										<div className="space-y-2">
-											{tripHistory.slice(0, 2).map((trip) => (
+											{tripHistory.slice(0, 1).map((trip) => (
 												<TripCard
 													key={trip.id}
 													trip={trip}

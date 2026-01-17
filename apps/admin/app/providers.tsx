@@ -10,7 +10,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { clerkConfig } from "@taxicity/configs/clerk";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { PusherProvider } from "@taxicity/ui";
+import { PusherProvider, TelemetryProvider } from "@taxicity/ui";
 
 export interface ProvidersProps {
  children: React.ReactNode;
@@ -32,14 +32,16 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
  return (
   <ClerkProvider appearance={clerkConfig.appearance}>
-   <QueryClientProvider client={queryClient}>
-    <ReactQueryDevtools initialIsOpen={false} />
-    <HeroUIProvider navigate={router.push}>
-     <NextThemesProvider {...themeProps}>
-      <PusherProvider>{children}</PusherProvider>
-     </NextThemesProvider>
-    </HeroUIProvider>
-   </QueryClientProvider>
+   <TelemetryProvider appName="Taxicity Admin" version="1.0.0">
+    <QueryClientProvider client={queryClient}>
+     <ReactQueryDevtools initialIsOpen={false} />
+     <HeroUIProvider navigate={router.push}>
+      <NextThemesProvider {...themeProps}>
+       <PusherProvider>{children}</PusherProvider>
+      </NextThemesProvider>
+     </HeroUIProvider>
+    </QueryClientProvider>
+   </TelemetryProvider>
   </ClerkProvider>
  );
 }

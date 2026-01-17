@@ -168,8 +168,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		});
 
 		// Fetch user details for response
-		let ticketUser = null;
-		let assignedToUser = null;
+		let ticketUser: { id: string; fullName: string; email?: string } | null = null;
+		let assignedToUser: { id: string; fullName: string; email?: string } | null = null;
 
 		if (updatedTicket.userId) {
 			try {

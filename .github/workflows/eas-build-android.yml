@@ -1,0 +1,57 @@
+name: EAS Build Android
+
+on:
+ workflow_dispatch:
+  inputs:
+   profile:
+    description: "EAS Build Profile"
+    required: true
+    default: "preview"
+    type: choice
+    options:
+     - preview
+     - production
+     - development
+ push:
+  branches:
+   - main
+   - preview
+  paths:
+   - "apps/mobile-user/**"
+   - "apps/mobile-driver/**"
+
+jobs:
+ build:
+  name: Build Android
+  runs-on: ubuntu-latest
+  strategy:
+   matrix:
+    app: [mobile-user, mobile-driver]
+
+  steps:
+   - name: Checkout repository
+     uses: actions/checkout@v4
+
+   - name: Install pnpm
+     uses: pnpm/action-setup@v2
+     with:
+      version: 10.23.0
+
+   - name: Setup Node.js
+     uses: actions/setup-node@v4
+     with:
+      node-version: "20"
+      cache: "pnpm"
+
+   - name: Install dependencies
+     run: pnpm install --frozen-lockfile
+
+   - name: Setup EAS
+     uses: expo/expo-github-action@v8
+     with:
+      eas-version: latest
+      token: ${{ secrets.EXPO_TOKEN }}
+
+   - name: Build ${{ matrix.app }}
+     working-directory: ./apps/${{ matrix.app }}
+     run: eas build --platform android --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive
