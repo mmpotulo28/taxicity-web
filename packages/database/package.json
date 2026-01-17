@@ -10,7 +10,7 @@
 	"type": "module",
 	"scripts": {
 		"postinstall": "pnpm generate",
-		"build": "tsc",
+		"build": "pnpm generate && tsc",
 		"generate": "prisma generate",
 		"db:push": "prisma db push",
 		"studio": "prisma studio",
