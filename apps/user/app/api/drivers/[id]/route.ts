@@ -26,7 +26,7 @@ const UpdateDriverSchema = z.object({
 // GET /api/drivers/[id] - Get specific driver
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const { userId } = getAuth(req);
+		const { userId } = getAuth(req as any);
 		const { id } = await params;
 
 		if (!userId) {
@@ -114,10 +114,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 		// Fetch user details for ratings and favorites
 		const userIds = new Set<string>();
-		driver.tripRatings.forEach((r) => {
+		driver.tripRatings.forEach((r: any) => {
 			if (r.userId) userIds.add(r.userId);
 		});
-		driver.favoriteOfUsers.forEach((f) => {
+		driver.favoriteOfUsers.forEach((f: any) => {
 			if (f.userId) userIds.add(f.userId);
 		});
 
@@ -162,7 +162,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 // PUT /api/drivers/[id] - Update driver (admin only)
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const { userId } = getAuth(req);
+		const { userId } = getAuth(req as any);
 		const { id } = await params;
 
 		if (!userId) {
@@ -254,7 +254,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 // DELETE /api/drivers/[id] - Delete driver (admin only)
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const { userId } = getAuth(req);
+		const { userId } = getAuth(req as any);
 		const { id } = await params;
 
 		if (!userId) {

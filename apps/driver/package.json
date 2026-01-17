@@ -7,8 +7,8 @@
 		"dev": "next dev --turbopack -p 3001",
 		"build": "next build",
 		"start": "next start -p 3001",
-		"lint": "next lint",
-		"check": "next lint && tsc --noEmit"
+		"lint": "eslint .",
+		"check": "eslint . && tsc --noEmit"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.36.6",

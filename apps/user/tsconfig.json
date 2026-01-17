@@ -17,7 +17,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../../packages/ui/hero.ts"
+    "../../packages/ui/hero.ts",
+    "../../packages/ui/src/hooks/useNotifications.ts",
+    "../../packages/ui/src/components/NotificationBell.tsx"
   ],
   "exclude": [
     "node_modules"

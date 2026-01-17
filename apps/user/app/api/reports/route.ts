@@ -2,8 +2,11 @@ import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+// import { Report } from "@prisma/client";
 import { prisma } from "@taxicity/database";
-import { Report } from "@prisma/client";
+
+// Temporary any type for Report until Prisma types are resolved
+type Report = any;
 
 const CreateReportSchema = z.object({
 	reporterType: z.enum(["USER", "DRIVER", "ADMIN"]),
@@ -34,7 +37,7 @@ const UpdateReportSchema = z.object({
 // GET /api/reports - Get reports (filtered by role and permissions)
 export async function GET(req: NextRequest) {
 	try {
-		const { userId } = getAuth(req);
+		const { userId } = getAuth(req as any);
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -128,7 +131,7 @@ export async function GET(req: NextRequest) {
 // POST /api/reports - Create new report
 export async function POST(req: NextRequest) {
 	try {
-		const { userId } = getAuth(req);
+		const { userId } = getAuth(req as any);
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

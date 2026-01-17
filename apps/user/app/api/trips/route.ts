@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "@taxicity/database";
-import { Prisma } from "@prisma/client";
+// import { Prisma } from "@prisma/client";
 import { pusherServer } from "@taxicity/utils";
+
+// Temporary any type for Prisma until types are resolved
+type Prisma = any;
 
 const CreateTripSchema = z.object({
 	routeId: z.string(),
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Invalid data", details: parse.error.issues }, { status: 400 });
 		}
 
-		const tripData: Prisma.TripUncheckedCreateInput = {
+		const tripData: any = {
 			routeId: parse.data.routeId,
 			rankId: parse.data.rankId,
 			pickupAddress: parse.data.pickupAddress,

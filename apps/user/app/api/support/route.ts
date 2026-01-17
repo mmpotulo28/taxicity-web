@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
 
 		// Fetch user details for response
 		const client = await clerkClient();
-		let user = null;
+		let user: { id: string; fullName: string; email?: string } | null = null;
 		try {
 			const u = await client.users.getUser(userId);
 			user = {

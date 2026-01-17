@@ -6,9 +6,10 @@ const nextConfig = {
 	transpilePackages: ["@taxicity/ui", "@taxicity/utils"],
 	experimental: {
 		authInterrupts: true,
+		turbopackUseSystemTlsCerts: true,
 	},
 	images: {
-		domains: ["img.heroui.chat", "images.unsplash.com"],
+		remotePatterns: [{ hostname: "img.heroui.chat" }, { hostname: "images.unsplash.com" }],
 	},
 };
 

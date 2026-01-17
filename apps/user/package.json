@@ -7,8 +7,8 @@
 		"dev": "next dev --turbopack -p 3000",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint",
-		"check": "next lint && tsc --noEmit"
+		"lint": "eslint .",
+		"check": "eslint . && tsc --noEmit"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.36.6",
@@ -33,7 +33,8 @@
 		"@taxicity/configs": "workspace:*",
 		"@types/google.maps": "^3.58.1",
 		"@types/node": "20.5.7",
-		"@types/react": "18.3.3",
+		"@types/react": "19.2.8",
+		"@types/react-dom": "^19.2.3",
 		"postcss": "8.5.6",
 		"tailwindcss": "4.1.11",
 		"typescript": "5.6.3"

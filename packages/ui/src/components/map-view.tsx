@@ -11,8 +11,8 @@ import { getTaxiIcon } from "../lib/helpers";
 const useSmoothPosition = (targetPosition: { lat: number; lng: number } | undefined | null, duration = 5000) => {
 	const [currentPosition, setCurrentPosition] = useState(targetPosition);
 	const positionRef = React.useRef(targetPosition);
-	const requestRef = React.useRef<number>();
-	const startTimeRef = React.useRef<number>();
+	const requestRef = React.useRef<number | undefined>(undefined);
+	const startTimeRef = React.useRef<number | undefined>(undefined);
 	const startPositionRef = React.useRef(targetPosition);
 
 	useEffect(() => {
