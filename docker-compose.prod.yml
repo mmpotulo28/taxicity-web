@@ -1,0 +1,26 @@
+services:
+  user-app:
+    image: mmpotulo28/taxicity-user:latest
+    container_name: taxicity-user
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env.production
+    networks:
+      - taxicity-net
+
+  driver-app:
+    image: mmpotulo28/taxicity-driver:latest
+    container_name: taxicity-driver
+    restart: always
+    ports:
+      - "127.0.0.1:3001:3000"
+    env_file:
+      - .env.production
+    networks:
+      - taxicity-net
+
+networks:
+  taxicity-net:
+    driver: bridge

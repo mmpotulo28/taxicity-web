@@ -23,6 +23,15 @@ COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 # Install deps (frozen lockfile for reproducibility)
 # Skip prisma generation during install, we'll do it explicitly
 ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
+ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+
+# Copy schema and config so postinstall can run during install
+COPY --from=pruner /app/out/full/packages/database/prisma ./packages/database/prisma
+COPY --from=pruner /app/out/full/packages/database/prisma.config.ts ./packages/database/prisma.config.ts
+
+# Set dummy DATABASE_URL to allow prisma generate to run during install
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taxicity"
+
 RUN pnpm install --frozen-lockfile
 
 # Copy source code from pruner (only what's needed for this app)
@@ -49,7 +58,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files
-COPY --from=builder /app/apps/driver/public ./apps/driver/public
+# COPY --from=builder /app/apps/driver/public ./apps/driver/public
 
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/apps/driver/.next/standalone ./

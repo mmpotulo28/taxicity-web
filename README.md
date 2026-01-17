@@ -1,53 +1,205 @@
-# Next.js & HeroUI Template
+# TaxiCity Web & Mobile Monorepo
 
-This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
+The comprehensive platform for modern shared taxi operations in South Africa.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
+## 🏗 System Architecture
 
-## Technologies Used
+```mermaid
+graph TD
+    subgraph "Clients"
+        U_WEB[User Web App\n(:3000)]
+        D_WEB[Driver Web App\n(:3001)]
+        A_WEB[Admin Dashboard\n(:3002)]
+        U_MOB[User Mobile App\n(:3005)]
+        D_MOB[Driver Mobile App\n(:3004)]
+    end
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [HeroUI v2](https://heroui.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
+    subgraph "Backend Services (Next.js API Routes)"
+        API[Unified API Layer\n(Auth, Routes, Trips)]
+    end
 
-## How to Use
+    subgraph "Infrastructure"
+        DB[(PostgreSQL\nPrisma)]
+        REDIS[(Upstash Redis/KV\nCaching & State)]
+        PUSHER[Pusher Channels\nRealtime Updates]
+        CLERK[Clerk Auth\nIdentity Management]
+        MAPS[Google Maps API\nRouting & Geocoding]
+    end
 
-### Use the template with create-next-app
+    U_WEB --> API
+    D_WEB --> API
+    A_WEB --> API
+    U_MOB --> API
+    D_MOB --> API
 
-To create a new project based on this template using `create-next-app`, run the following command:
+    API --> DB
+    API --> REDIS
+    API --> PUSHER
+    API --> CLERK
+    API --> MAPS
 
-```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
+    PUSHER -.-> U_WEB
+    PUSHER -.-> D_WEB
+    PUSHER -.-> U_MOB
+    PUSHER -.-> D_MOB
 ```
 
-### Install dependencies
+## 📂 Project Structure
 
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
+This project is a release-ready **Turborepo** monorepo.
+
+### Apps
+
+| Path                 | Description                       | Port   |
+| :------------------- | :-------------------------------- | :----- |
+| `apps/user`          | Passenger Web Application         | `3000` |
+| `apps/driver`        | Driver Web Dashboard & Operations | `3001` |
+| `apps/admin`         | Operator/Admin Dashboard          | `3002` |
+| `apps/mobile-driver` | Expo/React Native Driver App      | `3004` |
+| `apps/mobile-user`   | Expo/React Native Passenger App   | `3005` |
+
+### Packages
+
+| Path                | Description                                |
+| :------------------ | :----------------------------------------- |
+| `packages/database` | Shared Prisma Client (v7+) & Redis Config  |
+| `packages/ui`       | Shared HeroUI Components & Tailwind Config |
+| `packages/configs`  | Shared TSConfig, ESLint, etc.              |
+| `packages/utils`    | Shared Helper Functions                    |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js**: v20+
+- **PNPM**: v9 or v10 (`npm install -g pnpm`)
+- **Docker** (Optional, for containerized builds)
+
+### 1. Environment Setup
+
+Create a `.env` file in the root (or specific app folders) with the following keys.
+
+> **Note:** The `turbo.json` `globalPassThroughEnv` ensures these keys are available to all apps during build/dev.
 
 ```bash
-npm install
+# Database
+DATABASE_URL="postgresql://user:password@host:5432/taxicity"
+
+# Auth (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Realtime (Pusher)
+NEXT_PUBLIC_PUSHER_KEY=...
+NEXT_PUBLIC_PUSHER_CLUSTER=...
+PUSHER_APP_ID=...
+PUSHER_SECRET=...
+
+# Caching (Upstash/Vercel)
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+KV_REST_API_URL=...
+KV_REST_API_TOKEN=...
+
+# Maps
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
 ```
 
-### Run the development server
+### 2. Installation
 
 ```bash
-npm run dev
+pnpm install
 ```
 
-### Setup pnpm (optional)
+### 3. Database Generation
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
+Generate the Prisma Client types:
 
 ```bash
-public-hoist-pattern[]=*@heroui/*
+pnpm db:generate
 ```
 
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
+### 4. Run Development Servers
 
-## License
+Start all web applications locally:
 
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
+```bash
+pnpm dev
+# or specifically:
+turbo dev
+```
+
+---
+
+## 📱 Running Mobile Apps
+
+The mobile apps are built with **Expo**. ensure you have the Expo Go app on your physical device or an Android Emulator/iOS Simulator running.
+
+### Driver Mobile App
+
+```bash
+cd apps/mobile-driver
+pnpm dev
+# Port: 3004
+```
+
+### User Mobile App
+
+```bash
+cd apps/mobile-user
+pnpm dev
+# Port: 3005
+```
+
+---
+
+## 🐳 Docker Deployment
+
+The web applications are containerized using **Docker**.
+
+### Build Commands
+
+Run these from the **root** of the monorepo to ensure the build context includes the shared packages.
+
+**User App:**
+
+```bash
+docker build -f apps/user/Dockerfile -t taxicity-user .
+```
+
+**Driver App:**
+
+```bash
+docker build -f apps/driver/Dockerfile -t taxicity-driver .
+```
+
+> **Note:** We use a multi-stage Dockerfile that `prunes` the monorepo using `turbo prune` to isolate only necessary package dependencies, keeping images small.
+
+---
+
+## 🔄 Data Flow & Runtime Configuration
+
+### Shared Vehicle Model
+
+Unlike standard ride-hailing (Uber/Bolt), TaxiCity uses a **Shared Vehicle** model:
+
+1.  **Driver** starts a `VehicleTrip` on a specific `Route` (e.g., "Sandton to Soweto").
+2.  **User** requests a `Trip` (seat) on an active `VehicleTrip`.
+3.  **Queueing:** Users are added to a waiting queue.
+4.  **Dispatch:** When the vehicle is full (or driver departs), the status updates to `IN_PROGRESS`.
+
+### Runtime Configuration
+
+- **Authentication:** All requests are validated via Clerk Middleware.
+- **State Management:**
+    - **Frontend:** React Query for server state, React Context for local UI state.
+    - **Backend:** Redis/Upstash is used for real-time location caching and rapid queue management before persisting to PostgreSQL.
+- **Build Time vs Runtime:**
+    - `NEXT_PUBLIC_` variables are baked in at build time.
+    - `DATABASE_URL` and tokens are read at runtime (Server Components).
+
+### SSL/TLS Note
+
+In some CI/Docker environments, strict SSL verification might block Prisma engine downloads. We handle this in the Dockerfile by setting `NODE_TLS_REJECT_UNAUTHORIZED=0` specifically for the `pnpm install` step.

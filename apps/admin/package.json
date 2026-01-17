@@ -11,7 +11,7 @@
 		"check": "tsc --noEmit && eslint . --fix"
 	},
 	"dependencies": {
-		"@clerk/nextjs": "^6.12.0",
+		"@clerk/nextjs": "^6.36.8",
 		"@heroui/react": "^2.8.7",
 		"@internationalized/date": "^3.10.1",
 		"@tanstack/react-query": "^5.90.16",
