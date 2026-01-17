@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "@taxicity/database";
-// import { Prisma } from "@prisma/client";
 import { pusherServer } from "@taxicity/utils";
-
-// Temporary any type for Prisma until types are resolved
-type Prisma = any;
 
 const CreateTripSchema = z.object({
 	routeId: z.string(),
@@ -23,7 +19,7 @@ const CreateTripSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-	const { userId } = getAuth(req);
+	const { userId } = getAuth(req as any);
 	if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 	try {
@@ -49,7 +45,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-	const { userId } = getAuth(req);
+	const { userId } = getAuth(req as any);
 	if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 	try {

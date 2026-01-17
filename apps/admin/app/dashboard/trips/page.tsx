@@ -40,14 +40,13 @@ import {
 	CartesianGrid,
 	Tooltip,
 } from "recharts";
-
-// Import trips from data (fallback)
-import { trips as mockTrips, drivers } from "@/lib/data";
 import { iTrip } from "@/types";
 import { useTrips } from "@/hooks/useTrips";
+import { useDrivers } from "@/hooks/useDrivers";
 
 export default function TripsPage() {
 	const { trips: realTrips, isLoading: isTripsLoading } = useTrips();
+	const { drivers } = useDrivers();
 	const [isLoading, setIsLoading] = useState(true);
 	const [filteredTrips, setFilteredTrips] = useState<iTrip[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -91,10 +90,7 @@ export default function TripsPage() {
 				paymentMethod: t.paymentMethod ? t.paymentMethod.replace("_", " ") : "CASH",
 				rating: undefined
 			}));
-		} else {
-			mappedData = [...mockTrips];
 		}
-
 		let filtered = mappedData;
 
 		// Apply status filter
@@ -163,7 +159,7 @@ export default function TripsPage() {
 
 	// Get driver info
 	const getDriverInfo = (driverName: string) => {
-		return drivers.find((driver) => driver.name === driverName);
+		return drivers?.find((driver) => driver.fullName === driverName);
 	};
 
 	// Status chip renderer
@@ -575,7 +571,7 @@ export default function TripsPage() {
 																		src={
 																			getDriverInfo(
 																				selectedTrip.driver,
-																			)?.avatar
+																			)?.profileImage || undefined
 																		}
 																	/>
 																) : (
@@ -595,9 +591,7 @@ export default function TripsPage() {
 																		icon="lucide:star"
 																	/>
 																	<span>
-																		{getDriverInfo(
-																			selectedTrip.driver,
-																		)?.rating || "N/A"}
+																		{(getDriverInfo(selectedTrip.driver) as any)?.rating || "N/A"}
 																	</span>
 																</div>
 															</div>

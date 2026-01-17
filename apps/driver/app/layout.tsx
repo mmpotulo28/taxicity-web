@@ -19,7 +19,7 @@ export default function RootLayout({
    <body>
     <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
      <div className="h-full w-full flex flex-col max-w-lg mx-auto relative">
-      <Header endContent={<NotificationBell />} driverMode />
+      <Header endContent={<NotificationBell />} />
       {children}
       <DriverTabs />
      </div>

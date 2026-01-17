@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { Badge, Button, Popover, PopoverTrigger, PopoverContent, ScrollShadow } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "../lib/pusher-client";
 import { useUser } from "@clerk/nextjs";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications } from "../hooks/useNotifications";
 
 export interface Notification {
     id: string;

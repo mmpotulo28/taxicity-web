@@ -1,19 +1,18 @@
 "use client";
-import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import AuthButton from "./AuthButton";
 import { cn } from "@taxicity/utils";
 
 interface HeaderProps {
 	endContent?: React.ReactNode;
-	driverMode?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ endContent, driverMode }) => {
-	const { user } = useUser();
+const Header: React.FC<HeaderProps> = ({ endContent }) => {
+	const { user, isSignedIn, isLoaded } = useUser();
 
 	return (
 		<header className={cn("absolute mt-2 top-0 left-0 right-0 z-50 flex items-center justify-between pointer-events-none w-full max-w-lg mx-auto")}>
-			<SignedIn>
+			{isSignedIn && (
 				<div className="flex justify-between w-full px-4	items-center">
 					<div className="bg-background/70 backdrop-blur-sm rounded-full px-4 py-2 pointer-events-auto border border-default-100 shadow-sm">
 						<p className="text-sm font-semibold">Hi, {user?.firstName || "Traveler"} 👋</p>
@@ -23,8 +22,8 @@ const Header: React.FC<HeaderProps> = ({ endContent, driverMode }) => {
 						<AuthButton />
 					</div>
 				</div>
-			</SignedIn>
-			<SignedOut>
+			)}
+			{isLoaded && !isSignedIn && (
 				<div className="flex justify-between w-full px-4	items-center">
 					{/* Empty header for signed out state to let the landing page focus on the bottom sheet */}
 					<div className="bg-primary/70 backdrop-blur-sm rounded-lg px-4 py-2 pointer-events-auto border border-default-100 shadow-sm">
@@ -36,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ endContent, driverMode }) => {
 						<AuthButton />
 					</div>
 				</div>
-			</SignedOut>
+			)}
 		</header>
 	);
 };

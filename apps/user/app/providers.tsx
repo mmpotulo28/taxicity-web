@@ -8,12 +8,9 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-import { RideProvider } from "@taxicity/ui";
-import { MapProvider } from "@taxicity/ui";
-import { PusherProvider, TelemetryProvider } from "@taxicity/ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { clerkConfig } from "@taxicity/configs/clerk";
+import { TelemetryProvider, PusherProvider, MapProvider, RideProvider } from "@taxicity/ui";
 
 export interface ProvidersProps {
 	children: React.ReactNode;

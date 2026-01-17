@@ -1,16 +1,16 @@
 {
   "extends": "@taxicity/configs/tsconfig",
   "compilerOptions": {
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
     "plugins": [
       {
         "name": "next"
       }
     ],
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
   },
   "include": [
     "next-env.d.ts",

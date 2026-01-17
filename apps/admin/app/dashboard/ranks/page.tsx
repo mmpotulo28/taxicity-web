@@ -37,7 +37,7 @@ import { useRanks } from "@/hooks/useRanks";
 import { useTaxis } from "@/hooks/useTaxis";
 import { useRoutes } from "@/hooks/useRoutes";
 import { ranks as mockRanksRaw } from "@/lib/data";
-import { Rank, Route, Taxi, RankQueueEntry } from "@taxicity/database";
+import { Rank, Route, Taxi, RankQueueEntry } from "@taxicity/database/types";
 import {
 	LineChart,
 	Line,

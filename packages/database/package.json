@@ -3,6 +3,10 @@
 	"version": "0.0.1",
 	"main": "index.ts",
 	"types": "index.ts",
+	"exports": {
+		".": "./index.ts",
+		"./types": "./types.ts"
+	},
 	"type": "module",
 	"scripts": {
 		"build": "tsc",
@@ -12,6 +16,7 @@
 		"check": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@clerk/nextjs": "6.12.0",
 		"@prisma/adapter-pg": "^7.2.0",
 		"@prisma/client": "^7.2.0",
 		"@prisma/extension-accelerate": "^2.0.2",

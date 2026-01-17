@@ -1,12 +1,8 @@
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-
-// import { Report } from "@prisma/client";
 import { prisma } from "@taxicity/database";
-
-// Temporary any type for Report until Prisma types are resolved
-type Report = any;
+import type { Report } from "@taxicity/database/types";
 
 const CreateReportSchema = z.object({
 	reporterType: z.enum(["USER", "DRIVER", "ADMIN"]),
@@ -24,14 +20,6 @@ const CreateReportSchema = z.object({
 			address: z.string().optional(),
 		})
 		.optional(),
-});
-
-const UpdateReportSchema = z.object({
-	status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "DISMISSED"]).optional(),
-	priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
-	assignedToId: z.string().optional(),
-	adminNotes: z.string().max(2000).optional(),
-	resolution: z.string().max(2000).optional(),
 });
 
 // GET /api/reports - Get reports (filtered by role and permissions)
