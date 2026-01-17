@@ -29,5 +29,9 @@
 		"react/no-unescaped-entities": "error"
 	},
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+<<<<<<< HEAD
 	"exclude": ["node_modules", "lib/prisma/generated/**/*.ts"]
+=======
+	"exclude": ["node_modules", "lib/prisma/generated/**/*.ts", "./dist"]
+>>>>>>> origin
 }

@@ -1,24 +1,25 @@
 {
- "extends": "@taxicity/configs/tsconfig",
- "compilerOptions": {
-  "plugins": [
-   {
-    "name": "next"
-   }
+  "extends": "@taxicity/configs/tsconfig",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
   ],
-  "paths": {
-   "@/*": [
-    "./*"
-   ]
-  }
- },
- "include": [
-  "next-env.d.ts",
-  "**/*.ts",
-  "**/*.tsx",
-  ".next/types/**/*.ts"
- ],
- "exclude": [
-  "node_modules"
- ]
+  "exclude": [
+    "node_modules"
+  ]
 }
