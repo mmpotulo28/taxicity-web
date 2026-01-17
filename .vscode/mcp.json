@@ -3,6 +3,13 @@
     "Sentry": {
       "url": "https://mcp.sentry.dev/mcp/mpotulom/taxicity-web",
       "type": "http"
+    },
+    "next-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "next-devtools-mcp@latest"
+      ]
     }
   }
 }

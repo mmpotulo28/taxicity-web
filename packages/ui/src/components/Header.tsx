@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ endContent, driverMode }) => {
 			<SignedOut>
 				<div className="flex justify-between w-full px-4	items-center">
 					{/* Empty header for signed out state to let the landing page focus on the bottom sheet */}
-					<div className="bg-prismar/70 backdrop-blur-sm rounded-lg px-4 py-2 pointer-events-auto border border-default-100 shadow-sm">
+					<div className="bg-primary/70 backdrop-blur-sm rounded-lg px-4 py-2 pointer-events-auto border border-default-100 shadow-sm">
 						<p className="text-md font-bold text-primary">
 							Welcome
 						</p>

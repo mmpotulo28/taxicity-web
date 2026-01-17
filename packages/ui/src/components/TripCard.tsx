@@ -41,12 +41,12 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onSelect }) => {
 							<div className="w-2 h-2 rounded-full bg-danger" />
 						</div>
 
-						<div className="flex-1">
-							<div className="text-xs text-default-500">
-								{trip.pickup.split(" - ")[0].substring(0, 40) + "..."}
+						<div className="flex-1 min-w-0">
+							<div className="text-xs text-default-500 truncate">
+								{trip.pickup.split(" - ")[0]}
 							</div>
-							<div className="text-xs text-default-500 mt-3">
-								{trip.dropoff.split(" - ")[0].substring(0, 40) + "..."}
+							<div className="text-xs text-default-500 mt-3 truncate">
+								{trip.dropoff.split(" - ")[0]}
 							</div>
 						</div>
 					</div>
