@@ -67,6 +67,10 @@ COPY --from=builder /app/apps/user/public ./apps/user/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/user/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/user/.next/static ./apps/user/.next/static
 
+# Fix for "type": "module" in package.json causing server.js to run as ESM
+# We rename to .cjs to force Node to treat it as CommonJS
+RUN mv apps/user/server.js apps/user/server.cjs
+
 USER nextjs
 
 EXPOSE 3000
@@ -74,4 +78,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/user/server.js"]
+CMD ["node", "apps/user/server.cjs"]
