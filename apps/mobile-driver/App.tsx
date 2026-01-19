@@ -76,15 +76,15 @@ const getHost = () => {
     if (Platform.OS === 'android') {
       // Use 10.0.2.2 for Android Emulator to reach host's localhost
       // Or use the explicit IP: '192.168.18.246'
-      return '192.168.18.246:3000';
+      return 'http://192.168.18.246:3000';
     }
-    return 'localhost:3000';
+    return 'http://localhost:3000';
   }
 
-  return 'taxicity-driver.mpotulo.com';
+  return 'https://taxicity-driver.mpotulo.com';
 };
 
-const USER_APP_URL = `http://${getHost()}`;
+const USER_APP_URL = getHost();
 
 export default function App() {
 

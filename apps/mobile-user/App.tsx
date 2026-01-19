@@ -72,19 +72,19 @@ AppRegistry.registerComponent(packageJson.name, () => App);
 // On Android Emulator, localhost refers to the device itself.
 // Use 10.0.2.2 for Android Emulator, or your machine's LAN IP (192.168.18.246) for physical devices.
 const getHost = () => {
-  if (process.env.NODE_ENV === 'developmentssss') {
+  if (process.env.NODE_ENV === 'development') {
     if (Platform.OS === 'android') {
       // Use 10.0.2.2 for Android Emulator to reach host's localhost
       // Or use the explicit IP: '192.168.18.246'
-      return '192.168.18.246:3000';
+      return 'http://192.168.18.246:3000';
     }
-    return 'localhost:3000';
+    return 'http://localhost:3000';
   }
 
-  return 'taxicity.mpotulo.com';
+  return 'https://taxicity.mpotulo.com';
 };
 
-const USER_APP_URL = `http://${getHost()}`;
+const USER_APP_URL = getHost();;
 
 export default function App() {
 
