@@ -6,6 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import NewRelic from 'newrelic-react-native-agent';
 import * as packageJson from './package.json';
+import * as Updates from 'expo-updates';
 
 let appToken;
 
@@ -87,6 +88,19 @@ const getHost = () => {
 const USER_APP_URL = getHost();;
 
 export default function App() {
+
+
+  useEffect(() => {
+    Updates.checkForUpdateAsync().then((update) => {
+      if (update.isAvailable) {
+        console.log('Update available, fetching update...');
+        Updates.fetchUpdateAsync().then(() => {
+          console.log('Update fetched, reloading app...');
+          Updates.reloadAsync();
+        });
+      }
+    });
+  }, []);
 
   // Request location permissions on app start
   useEffect(() => {
