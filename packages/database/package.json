@@ -9,12 +9,11 @@
 	},
 	"type": "module",
 	"scripts": {
-		"postinstall": "pnpm generate",
 		"build": "pnpm generate && tsc",
 		"generate": "prisma generate",
 		"db:push": "prisma db push",
 		"studio": "prisma studio",
-		"check": "tsc --noEmit"
+		"check": "pnpm generate && tsc --noEmit"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.36.8",

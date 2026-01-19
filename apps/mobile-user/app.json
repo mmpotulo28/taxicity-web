@@ -1,41 +1,49 @@
 {
-	"expo": {
-		"name": "Taxicity",
-		"slug": "mobile-user",
-		"version": "1.0.0",
-		"orientation": "portrait",
-		"icon": "./assets/icon.png",
-		"plugins": ["./plugins/withNewRelic"],
-		"userInterfaceStyle": "dark",
-		"newArchEnabled": true,
-		"splash": {
-			"image": "./assets/splash.png",
-			"resizeMode": "contain",
-			"backgroundColor": "#000000",
-			"imageWith": 150
-		},
-		"ios": {
-			"supportsTablet": true,
-			"bundleIdentifier": "com.taxicity.user",
-			"infoPlist": {
-				"NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby taxis and track your trip."
-			}
-		},
-		"android": {
-			"adaptiveIcon": {
-				"foregroundImage": "./assets/adaptive-icon.png",
-				"backgroundColor": "#000000"
-			},
-			"edgeToEdgeEnabled": true,
-			"package": "com.taxicity.user"
-		},
-		"web": {
-			"favicon": "./assets/favicon.png"
-		},
-		"extra": {
-			"eas": {
-				"projectId": "44d6dd98-69c1-4647-aae1-f33414efcc6e"
-			}
-		}
-	}
+  "expo": {
+    "name": "Taxicity",
+    "slug": "mobile-user",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "plugins": [
+      "./plugins/withNewRelic"
+    ],
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000",
+      "imageWith": 150
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.taxicity.user",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby taxis and track your trip."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.taxicity.user"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "44d6dd98-69c1-4647-aae1-f33414efcc6e"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/44d6dd98-69c1-4647-aae1-f33414efcc6e"
+    }
+  }
 }
