@@ -69,20 +69,12 @@ NewRelic.setJSAppVersion(packageJson.version);
 AppRegistry.registerComponent(packageJson.name, () => App);
 
 
-// Configuration
-// On Android Emulator, localhost refers to the device itself.
-// Use 10.0.2.2 for Android Emulator, or your machine's LAN IP (192.168.18.246) for physical devices.
-const getHost = () => {
-  if (process.env.NODE_ENV === 'development') {
-    if (Platform.OS === 'android') {
-      // Use 10.0.2.2 for Android Emulator to reach host's localhost
-      // Or use the explicit IP: '192.168.18.246'
-      return 'http://192.168.18.246:3000';
-    }
-    return 'http://localhost:3000';
-  }
 
-  return 'https://taxicity.mpotulo.com';
+// Always use HTTPS for your production domain to avoid cleartext errors on Android
+const getHost = () => {
+  const host = 'https://taxicity.mpotulo.com';
+  console.log('Using host:', host);
+  return host;
 };
 
 const USER_APP_URL = getHost();;

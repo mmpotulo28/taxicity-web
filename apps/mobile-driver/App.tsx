@@ -68,21 +68,10 @@ NewRelic.startAgent(appToken, agentConfiguration);
 NewRelic.setJSAppVersion(packageJson.version);
 AppRegistry.registerComponent(packageJson.name, () => App);
 
-
-// Configuration
-// On Android Emulator, localhost refers to the device itself.
-// Use 10.0.2.2 for Android Emulator, or your machine's LAN IP (192.168.18.246) for physical devices.
 const getHost = () => {
-  if (process.env.NODE_ENV === 'developmentssss') {
-    if (Platform.OS === 'android') {
-      // Use 10.0.2.2 for Android Emulator to reach host's localhost
-      // Or use the explicit IP: '192.168.18.246'
-      return 'http://192.168.18.246:3000';
-    }
-    return 'http://localhost:3000';
-  }
-
-  return 'https://taxicity-d.mpotulo.com';
+  const host = 'https://taxicity-driver.mpotulo.com';
+  console.log('Using host:', host);
+  return host;
 };
 
 const USER_APP_URL = getHost();
@@ -116,7 +105,7 @@ export default function App() {
       <SafeAreaView style={styles.container} edges={["bottom"]} >
         <StatusBar style="auto" animated={true} backgroundColor="#000000" hidden={true} />
         <WebView
-          source={{ uri: USER_APP_URL }}
+          source={{ uri: USER_APP_URL, baseUrl: USER_APP_URL }}
           style={styles.webview}
           geolocationEnabled={true}
           webviewDebuggingEnabled={true}
