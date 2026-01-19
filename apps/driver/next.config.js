@@ -1,12 +1,13 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
+console.log("env", process.env.NODE_ENV);
 const nextConfig = {
 	output: "standalone",
 	transpilePackages: ["@taxicity/ui", "@taxicity/utils"],
 	experimental: {
 		authInterrupts: true,
-		turbopackUseSystemTlsCerts: true,
+		turbopackUseSystemTlsCerts: process.env.NODE_ENV != "development",
 	},
 	images: {
 		remotePatterns: [{ hostname: "img.heroui.chat" }, { hostname: "images.unsplash.com" }],

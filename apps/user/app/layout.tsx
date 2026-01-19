@@ -47,7 +47,18 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html suppressHydrationWarning lang="en">
-			<head />
+			<head>
+				{/* Manually load fonts to bypass build-time fetch errors in Docker */}
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+				<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+				<style>{`
+                  :root {
+                    --font-sans: 'Inter', sans-serif;
+                    --font-mono: 'Fira Code', monospace;
+                  }
+                `}</style>
+			</head>
 			<body
 				className={clsx(
 					"max-h-screen text-foreground bg-background font-sans antialiased max-w-lg",

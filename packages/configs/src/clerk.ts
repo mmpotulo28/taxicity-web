@@ -16,4 +16,5 @@ export const clerkConfig = {
 			colorForeground: "hsl(var(--heroui-text) / 1)",
 		},
 	},
+
 };

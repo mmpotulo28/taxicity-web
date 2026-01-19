@@ -11,7 +11,7 @@
 		"check": "eslint . && tsc --noEmit"
 	},
 	"dependencies": {
-		"@clerk/nextjs": "^6.12.0",
+		"@clerk/nextjs": "^6.36.8",
 		"@heroui/system": "2.4.22",
 		"@heroui/toast": "2.0.16",
 		"@sentry/nextjs": "^10.32.1",
@@ -36,6 +36,7 @@
 		"zod": "^4.3.5"
 	},
 	"devDependencies": {
+		"@react-types/shared": "^3.32.1",
 		"@taxicity/configs": "workspace:*",
 		"@types/google.maps": "^3.58.1",
 		"@types/node": "20.5.7",
