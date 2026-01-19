@@ -64,10 +64,6 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/apps/driver/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/driver/.next/static ./apps/driver/.next/static
 
-# Fix for "type": "module" in package.json causing server.js to run as ESM
-# We rename to .cjs to force Node to treat it as CommonJS
-RUN mv apps/driver/server.js apps/driver/server.cjs
-
 USER nextjs
 
 EXPOSE 3000
@@ -75,4 +71,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/driver/server.cjs"]
+CMD ["node", "apps/driver/server.js"]
