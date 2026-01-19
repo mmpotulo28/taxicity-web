@@ -10,9 +10,9 @@ import * as packageJson from './package.json';
 let appToken;
 
 if (Platform.OS === 'ios') {
-  appToken = 'AA5e353951de6a9602bf82345b6d3c16ffd8e95b09-NRMA';
+  appToken = process.env.EXPO_PUBLIC_NEWRELIC_IOS_APP_TOKEN;
 } else {
-  appToken = 'AAe06a5b2525f355a3e5c91b4b167ba75af2f37482-NRMA';
+  appToken = process.env.EXPO_PUBLIC_NEWRELIC_ANDROID_APP_TOKEN;
 }
 
 const agentConfiguration = {
@@ -72,7 +72,7 @@ AppRegistry.registerComponent(packageJson.name, () => App);
 // On Android Emulator, localhost refers to the device itself.
 // Use 10.0.2.2 for Android Emulator, or your machine's LAN IP (192.168.18.246) for physical devices.
 const getHost = () => {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'developmentssss') {
     if (Platform.OS === 'android') {
       // Use 10.0.2.2 for Android Emulator to reach host's localhost
       // Or use the explicit IP: '192.168.18.246'
