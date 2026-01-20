@@ -166,13 +166,22 @@ Run these from the **root** of the monorepo to ensure the build context includes
 **User App:**
 
 ```bash
-docker build -f apps/user/Dockerfile -t taxicity-user .
+docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxicity-user:latest .
+docker push mmpotulo28/taxicity-user:latest
 ```
 
 **Driver App:**
 
 ```bash
-docker build -f apps/driver/Dockerfile -t taxicity-driver .
+docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxicity-driver:latest .
+docker push mmpotulo28/taxicity-driver:latest
+```
+
+**Push to Production Server:**
+
+```bash
+docker compose pull
+docker compose up -d --force-recreate
 ```
 
 > **Note:** We use a multi-stage Dockerfile that `prunes` the monorepo using `turbo prune` to isolate only necessary package dependencies, keeping images small.

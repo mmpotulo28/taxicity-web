@@ -8,7 +8,9 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "eslint .",
-		"check": "eslint . && tsc --noEmit"
+		"check": "eslint . && tsc --noEmit",
+		"docker:build": "docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxicity-user:latest .",
+		"docker:push": "docker push mmpotulo28/taxicity-user:latest"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.36.8",

@@ -11,7 +11,10 @@
 		"start": "turbo start",
 		"lint": "turbo lint",
 		"check": "turbo check",
-		"db:generate": "pnpm --filter @taxicity/database generate"
+		"db:generate": "pnpm --filter @taxicity/database generate",
+		"docker:build-user": "docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxicity-user:latest .",
+		"docker:build-driver": "docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxicity-driver:latest .",
+		"docker:push": "pnpm --filter apps/user docker:push && pnpm --filter apps/driver docker:push"
 	},
 	"prisma": {
 		"seed": "node --loader ts-node/esm prisma/seed.ts"
