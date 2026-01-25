@@ -69,7 +69,7 @@ NewRelic.setJSAppVersion(packageJson.version);
 AppRegistry.registerComponent(packageJson.name, () => App);
 
 const getHost = () => {
-  const host = 'https://taxyciti-driver.mpotulo.com';
+  const host = process.env.EXPO_PUBLIC_DRIVER_APP_URL || 'https://driver.taxyciti.net';
   console.log('Using host:', host);
   return host;
 };
