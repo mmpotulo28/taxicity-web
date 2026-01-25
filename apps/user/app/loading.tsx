@@ -1,4 +1,4 @@
-import { Loading } from "@taxicity/ui";
+import { Loading } from "@taxyciti/ui";
 
 export default function LoadingPage() {
  return <Loading />;

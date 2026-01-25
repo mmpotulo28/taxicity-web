@@ -1,4 +1,4 @@
-import "@taxicity/ui/styles/global.css";
+import "@taxyciti/ui/styles/global.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 

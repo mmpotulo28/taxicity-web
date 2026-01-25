@@ -1,6 +1,6 @@
 {
 	"expo": {
-		"name": "Taxicity Driver",
+		"name": "TaxyCiTi Driver",
 		"slug": "mobile-driver",
 		"version": "1.1.0",
 		"orientation": "portrait",
@@ -17,7 +17,7 @@
 		},
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.taxicity.driver",
+			"bundleIdentifier": "com.taxyciti.driver",
 			"infoPlist": {
 				"NSLocationWhenInUseUsageDescription": "This app uses your location to receive trips nearby."
 			}
@@ -28,7 +28,7 @@
 				"backgroundColor": "#000000"
 			},
 			"edgeToEdgeEnabled": true,
-			"package": "com.taxicity.driver"
+			"package": "com.taxyciti.driver"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png"

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@taxicity/database";
+import { prisma } from "@taxyciti/database";
 // Fetch open trips that haven't been assigned a taxi yet
 export async function GET(req: NextRequest) {
 	// In a real app, we'd verify the user is a driver here.

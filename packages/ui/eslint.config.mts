@@ -1,4 +1,4 @@
-import config from "@taxicity/configs/eslint";
+import config from "@taxyciti/configs/eslint";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 

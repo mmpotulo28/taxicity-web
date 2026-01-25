@@ -1,6 +1,6 @@
 {
 	"expo": {
-		"name": "Taxicity",
+		"name": "TaxyCiTi",
 		"slug": "mobile-user",
 		"version": "1.1.0",
 		"orientation": "portrait",
@@ -17,7 +17,7 @@
 		},
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.taxicity.user",
+			"bundleIdentifier": "com.taxyciti.user",
 			"infoPlist": {
 				"NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby taxis and track your trip."
 			}
@@ -28,7 +28,7 @@
 				"backgroundColor": "#000000"
 			},
 			"edgeToEdgeEnabled": true,
-			"package": "com.taxicity.user"
+			"package": "com.taxyciti.user"
 		},
 		"web": {
 			"favicon": "./assets/favicon.png"

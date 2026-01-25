@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth, currentUser } from "@clerk/nextjs/server";
-import { prisma } from "@taxicity/database";
+import { prisma } from "@taxyciti/database";
 
 export async function GET(req: NextRequest) {
 	try {

@@ -17,8 +17,8 @@ We chose AWS App Runner because:
 
 1.  **AWS Account**: You must have access to the AWS Console.
 2.  **Docker Hub Images**: Ensure the following images are pushed and accessible (public or authenticated):
-    - `mmpotulo28/taxicity-user:latest`
-    - `mmpotulo28/taxicity-driver:latest`
+    - `mmpotulo28/taxyciti-user:latest`
+    - `mmpotulo28/taxyciti-driver:latest`
 
 ---
 
@@ -31,11 +31,11 @@ We chose AWS App Runner because:
 3.  **Source:**
     - Repository type: **Container Registry**.
     - Provider: **Amazon ECR / Public** (or your private Docker Hub provider settings).
-    - Container Image URI: `mmpotulo28/taxicity-user:latest`
+    - Container Image URI: `mmpotulo28/taxyciti-user:latest`
 4.  **Deployment triggers:**
     - Select **Automatic**. (This ensures that whenever you run `docker push` locally or via GitHub Actions, AWS updates the site automatically).
 5.  **Configuration:**
-    - **Service name:** `taxicity-user-app`
+    - **Service name:** `taxyciti-user-app`
     - **Virtual CPU & Memory:** `1 vCPU / 2 GB` (Start small, scale up if needed).
     - **Port:** `3000` (Our Docker container exposes port 3000).
 6.  **Environment Variables:**
@@ -63,11 +63,11 @@ We chose AWS App Runner because:
 
 1.  Go back to the App Runner dashboard and click **Create Service**.
 2.  **Source:**
-    - Container Image URI: `mmpotulo28/taxicity-driver:latest`
+    - Container Image URI: `mmpotulo28/taxyciti-driver:latest`
 3.  **Deployment triggers:**
     - Select **Automatic**.
 4.  **Configuration:**
-    - **Service name:** `taxicity-driver-app`
+    - **Service name:** `taxyciti-driver-app`
     - **Virtual CPU & Memory:** `1 vCPU / 2 GB`
     - **Port:** `3000` (Caution: Ensure you set Port 3000, even though we develop on 3001 locally, the Docker container standardizes on 3000).
 5.  **Environment Variables:**
@@ -83,7 +83,7 @@ We chose AWS App Runner because:
 App Runner gives you a default URL (e.g., `https://xyz123.awsapprunner.com`). To use your own domain:
 
 1.  Go to the **Custom Domains** tab in your App Runner service.
-2.  Add your domain (e.g., `app.taxicity.co.za`).
+2.  Add your domain (e.g., `app.taxyciti.co.za`).
 3.  Add the provided CNAME records to your DNS provider (GoDaddy, Cloudflare, etc.).
 4.  App Runner handles the SSL certificate validation automatically.
 

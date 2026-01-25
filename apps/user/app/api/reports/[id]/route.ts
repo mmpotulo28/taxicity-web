@@ -2,7 +2,7 @@ import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { prisma } from "@taxicity/database";
+import { prisma } from "@taxyciti/database";
 
 const UpdateReportSchema = z.object({
 	status: z.enum(["OPEN", "UNDER_REVIEW", "RESOLVED", "CLOSED"]).optional(),

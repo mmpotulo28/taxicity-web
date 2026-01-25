@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Taxi } from "@taxicity/database/types";
+import { Taxi } from "@taxyciti/database/types";
 import { addToast } from "@heroui/toast";
 
 export const useTaxis = () => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { prisma } from "@taxicity/database";
+import { prisma } from "@taxyciti/database";
 import { z } from "zod";
 
 const UpdateStatusSchema = z.object({

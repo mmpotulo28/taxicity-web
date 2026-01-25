@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Providers } from "./providers";
-import "@taxicity/ui/styles/global.css";
+import "@taxyciti/ui/styles/global.css";
 import { NotificationBell } from "@/components/NotificationBell";
-import { DriverTabs, Header } from "@taxicity/ui";
+import { DriverTabs, Header } from "@taxyciti/ui";
 
 export const metadata: Metadata = {
  title: "TaxiCity Driver",

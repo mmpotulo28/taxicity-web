@@ -2,8 +2,7 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
 	name: "TaxiCity",
-	description:
-		"South Africa's premier taxi booking platform. Connect with registered taxi drivers for safe, reliable transportation across major cities.",
+	description: "South Africa's premier taxi booking platform. Connect with registered taxi drivers for safe, reliable transportation across major cities.",
 	navItems: [
 		{
 			label: "Home",
@@ -53,10 +52,10 @@ export const siteConfig = {
 		},
 	],
 	links: {
-		github: "https://github.com/taxicity/taxicity-app",
-		twitter: "https://twitter.com/taxicity_za",
-		docs: "https://docs.taxicity.co.za",
-		discord: "https://discord.gg/taxicity",
-		sponsor: "https://taxicity.co.za/sponsor",
+		github: "https://github.com/taxyciti/taxyciti-app",
+		twitter: "https://twitter.com/taxyciti_za",
+		docs: "https://docs.taxyciti.co.za",
+		discord: "https://discord.gg/taxyciti",
+		sponsor: "https://taxyciti.co.za/sponsor",
 	},
 };

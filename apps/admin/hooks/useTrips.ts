@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Trip, VehicleTrip, Driver, Route, Taxi } from "@taxicity/database/types";
+import { Trip, VehicleTrip, Driver, Route, Taxi } from "@taxyciti/database/types";
 import { addToast } from "@heroui/toast";
 
 // Extended Trip type including relations

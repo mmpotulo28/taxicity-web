@@ -72,7 +72,7 @@ AppRegistry.registerComponent(packageJson.name, () => App);
 
 // Always use HTTPS for your production domain to avoid cleartext errors on Android
 const getHost = () => {
-  const host = 'https://taxicity.mpotulo.com';
+  const host = 'https://taxyciti.mpotulo.com';
   console.log('Using host:', host);
   return host;
 };

@@ -28,7 +28,7 @@ import { useRouter } from "next/navigation";
 const currentUser = {
 	id: "admin1",
 	name: "Sarah Johnson",
-	email: "sarah.johnson@taxicity.co.za",
+	email: "sarah.johnson@taxyciti.co.za",
 	role: "Super Admin",
 	avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin1",
 	phone: "+27 71 234 5678",
@@ -41,7 +41,7 @@ export default function SettingsPage() {
 	// State for form inputs
 	const [generalSettings, setGeneralSettings] = useState({
 		appName: "TaxiCity Admin",
-		contactEmail: "admin@taxicity.co.za",
+		contactEmail: "admin@taxyciti.co.za",
 		supportPhone: "+27 86 000 8324",
 		timeZone: "Africa/Johannesburg",
 		dateFormat: "DD/MM/YYYY",
@@ -79,7 +79,7 @@ export default function SettingsPage() {
 
 	const [apiSettings, setApiSettings] = useState({
 		apiKey: "sk_test_TaxiCity2023SecureAPIKeyExample",
-		webhookUrl: "https://api.taxicity.co.za/webhooks/events",
+		webhookUrl: "https://api.taxyciti.co.za/webhooks/events",
 		rateLimit: "100",
 		enableTracking: true,
 		logLevel: "info",
@@ -920,7 +920,7 @@ export default function SettingsPage() {
 											variant="flat"
 											onPress={() =>
 												window.open(
-													"https://docs.taxicity.co.za/api",
+													"https://docs.taxyciti.co.za/api",
 													"_blank",
 												)
 											}>

@@ -15,7 +15,7 @@ export interface TelemetryProviderProps {
 
 export function TelemetryProvider({
  children,
- appName = 'Taxicity',
+ appName = 'TaxyCiTi',
  version = '1.0.0',
  environment = 'production'
 }: TelemetryProviderProps) {

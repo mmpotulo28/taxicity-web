@@ -85,7 +85,7 @@ Create a `.env` file in the root (or specific app folders) with the following ke
 
 ```bash
 # Database
-DATABASE_URL="postgresql://user:password@host:5432/taxicity"
+DATABASE_URL="postgresql://user:password@host:5432/taxyciti"
 
 # Auth (Clerk)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
@@ -166,15 +166,15 @@ Run these from the **root** of the monorepo to ensure the build context includes
 **User App:**
 
 ```bash
-docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxicity-user:latest .
-docker push mmpotulo28/taxicity-user:latest
+docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxyciti-user:latest .
+docker push mmpotulo28/taxyciti-user:latest
 ```
 
 **Driver App:**
 
 ```bash
-docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxicity-driver:latest .
-docker push mmpotulo28/taxicity-driver:latest
+docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxyciti-driver:latest .
+docker push mmpotulo28/taxyciti-driver:latest
 ```
 
 **Push to Production Server:**

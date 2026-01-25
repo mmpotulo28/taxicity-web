@@ -69,7 +69,7 @@ NewRelic.setJSAppVersion(packageJson.version);
 AppRegistry.registerComponent(packageJson.name, () => App);
 
 const getHost = () => {
-  const host = 'https://taxicity-driver.mpotulo.com';
+  const host = 'https://taxyciti-driver.mpotulo.com';
   console.log('Using host:', host);
   return host;
 };

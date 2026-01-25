@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Rank } from "@taxicity/database/types";
+import { Rank } from "@taxyciti/database/types";
 import { addToast } from "@heroui/toast";
 
 export const useRanks = () => {

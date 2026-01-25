@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
-import { cn } from "@taxicity/utils";
+import { cn } from "@taxyciti/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";

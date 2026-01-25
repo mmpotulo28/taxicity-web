@@ -1,8 +1,8 @@
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@taxicity/database";
-import type { Report } from "@taxicity/database/types";
+import { prisma } from "@taxyciti/database";
+import type { Report } from "@taxyciti/database/types";
 
 const CreateReportSchema = z.object({
 	reporterType: z.enum(["USER", "DRIVER", "ADMIN"]),

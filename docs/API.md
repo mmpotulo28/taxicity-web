@@ -7,7 +7,7 @@ Welcome to the comprehensive API documentation for the TaxiCity platform. This d
 Visit the interactive API documentation at:
 
 - **Development**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-- **Production**: [https://taxicity.vercel.app/api-docs](https://taxicity.vercel.app/api-docs)
+- **Production**: [https://taxyciti.vercel.app/api-docs](https://taxyciti.vercel.app/api-docs)
 
 ## 🔗 OpenAPI Specification
 
@@ -259,7 +259,7 @@ The current API version is v1. Future versions will be accessible via:
 
 For API support and questions:
 
-- Email: support@taxicity.com
+- Email: support@taxyciti.com
 - Documentation Issues: Create an issue in the repository
 - Feature Requests: Contact the development team
 

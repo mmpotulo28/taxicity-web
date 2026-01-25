@@ -7,10 +7,10 @@ import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
-import { clerkConfig } from "@taxicity/configs/clerk";
+import { clerkConfig } from "@taxyciti/configs/clerk";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { PusherProvider, TelemetryProvider } from "@taxicity/ui";
+import { PusherProvider, TelemetryProvider } from "@taxyciti/ui";
 
 export interface ProvidersProps {
  children: React.ReactNode;
@@ -32,7 +32,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
  return (
   <ClerkProvider appearance={clerkConfig.appearance}>
-   <TelemetryProvider appName="Taxicity Admin" version="1.0.0">
+   <TelemetryProvider appName="TaxyCiTi Admin" version="1.0.0">
     <QueryClientProvider client={queryClient}>
      <ReactQueryDevtools initialIsOpen={false} />
      <HeroUIProvider navigate={router.push}>

@@ -11,8 +11,8 @@ import QRCode from "react-qr-code";
 import { motion } from "framer-motion";
 import { addToast } from "@heroui/toast";
 import { useDriver, Trip } from "../context/DriverContext";
-import { MapView } from "@taxicity/ui";
-import { formatCurrency } from "@taxicity/utils";
+import { MapView } from "@taxyciti/ui";
+import { formatCurrency } from "@taxyciti/utils";
 import { RankQueue } from "./RankQueue";
 import { RequestModal } from "./RequestModal";
 

@@ -5,7 +5,7 @@ import { Button, Card, CardBody, CardHeader, Divider, Chip, useDisclosure } from
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { useRide, TripModal, MapView } from "@taxicity/ui";
+import { useRide, TripModal, MapView } from "@taxyciti/ui";
 
 
 const TripDetails: React.FC = () => {

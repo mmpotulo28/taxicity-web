@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@taxicity/database";
+import { prisma } from "@taxyciti/database";
 
 // GET /api/taxis/[id]/location/history - Get taxi's location history
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

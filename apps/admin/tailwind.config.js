@@ -1,5 +1,5 @@
 import { heroui } from "@heroui/theme";
-import sharedConfig from "@taxicity/ui/tailwind.config";
+import sharedConfig from "@taxyciti/ui/tailwind.config";
 
 /** @type {import('tailwindcss').Config} */
 const config = {

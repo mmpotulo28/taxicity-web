@@ -9,8 +9,8 @@
 		"start": "next start",
 		"lint": "eslint .",
 		"check": "eslint . && tsc --noEmit",
-		"docker:build": "docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxicity-user:latest .",
-		"docker:push": "docker push mmpotulo28/taxicity-user:latest"
+		"docker:build": "docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxyciti-user:latest .",
+		"docker:push": "docker push mmpotulo28/taxyciti-user:latest"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.36.8",
@@ -18,9 +18,9 @@
 		"@react-google-maps/api": "^2.20.8",
 		"@sentry/nextjs": "^10.32.1",
 		"@tanstack/react-query": "^5.90.16",
-		"@taxicity/database": "workspace:*",
-		"@taxicity/ui": "workspace:*",
-		"@taxicity/utils": "workspace:*",
+		"@taxyciti/database": "workspace:*",
+		"@taxyciti/ui": "workspace:*",
+		"@taxyciti/utils": "workspace:*",
 		"@vercel/blob": "^2.0.0",
 		"axios": "^1.13.2",
 		"framer-motion": "^11.18.2",
@@ -33,7 +33,7 @@
 	},
 	"devDependencies": {
 		"@react-types/shared": "^3.32.1",
-		"@taxicity/configs": "workspace:*",
+		"@taxyciti/configs": "workspace:*",
 		"@types/google.maps": "^3.58.1",
 		"@types/node": "20.5.7",
 		"@types/react": "19.2.8",

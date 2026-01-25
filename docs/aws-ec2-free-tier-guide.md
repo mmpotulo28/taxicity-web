@@ -21,14 +21,14 @@ Run these commands on your **Local Machine**:
 
 ```bash
 # Build User App
-docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxicity-user:latest .
+docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxyciti-user:latest .
 
 # Build Driver App
-docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxicity-driver:latest .
+docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxyciti-driver:latest .
 
 # Push to Docker Hub
-docker push mmpotulo28/taxicity-user:latest
-docker push mmpotulo28/taxicity-driver:latest
+docker push mmpotulo28/taxyciti-user:latest
+docker push mmpotulo28/taxyciti-driver:latest
 ```
 
 ---
@@ -39,7 +39,7 @@ docker push mmpotulo28/taxicity-driver:latest
 2.  **Name:** `TaxiCity-Server`
 3.  **OS:** Ubuntu Server 24.04 LTS (HVM).
 4.  **Instance Type:** `t2.micro` (Free Tier Eligible).
-5.  **Key Pair:** Create a new key pair (e.g., `taxicity-key`). **Download the .pem file** and keep it safe.
+5.  **Key Pair:** Create a new key pair (e.g., `taxyciti-key`). **Download the .pem file** and keep it safe.
 6.  **Network Settings**:
     - Allow **SSH** traffic from **Anywhere** (or My IP).
     - Allow **HTTP** traffic from the internet.
@@ -82,7 +82,7 @@ Go to your domain registrar (GoDaddy, Namecheap, Route53, Cloudflare, etc.) and 
 
 ### DNS Records Setup
 
-Assuming your domain is `taxicity.com` and your EC2 Elastic IP is `54.123.45.67`.
+Assuming your domain is `taxyciti.com` and your EC2 Elastic IP is `54.123.45.67`.
 
 | Type  | Name / Host       | Value / Target      | Proxy Status (Cloudflare) |
 | :---- | :---------------- | :------------------ | :------------------------ |
@@ -91,8 +91,8 @@ Assuming your domain is `taxicity.com` and your EC2 Elastic IP is `54.123.45.67`
 
 _Example outcome:_
 
-- User App: `app.taxicity.com` -> `54.123.45.67`
-- Driver App: `driver.taxicity.com` -> `54.123.45.67`
+- User App: `app.taxyciti.com` -> `54.123.45.67`
+- Driver App: `driver.taxyciti.com` -> `54.123.45.67`
 
 ---
 
@@ -102,8 +102,8 @@ Open your terminal (Mac/Linux) or PowerShell (Windows).
 Move your key file to a safe folder (e.g., `~/.ssh/`).
 
 ```bash
-chmod 400 ~/.ssh/taxicity-key.pem
-ssh -i "~/.ssh/taxicity-key.pem" ubuntu@<YOUR_ELASTIC_IP>
+chmod 400 ~/.ssh/taxyciti-key.pem
+ssh -i "~/.ssh/taxyciti-key.pem" ubuntu@<YOUR_ELASTIC_IP>
 ```
 
 ### Install Docker, Nginx & Certbot
@@ -146,7 +146,7 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ```bash
 exit
-ssh -i "~/.ssh/taxicity-key.pem" ubuntu@<YOUR_ELASTIC_IP>
+ssh -i "~/.ssh/taxyciti-key.pem" ubuntu@<YOUR_ELASTIC_IP>
 ```
 
 ---
@@ -190,7 +190,7 @@ Delete default config and create a new one:
 
 ```bash
 sudo rm /etc/nginx/sites-enabled/default
-sudo nano /etc/nginx/sites-available/taxicity
+sudo nano /etc/nginx/sites-available/taxyciti
 ```
 
 **Paste the following configuration** (Replace `app.yourdomain.com` and `driver.yourdomain.com` with your actual domains):
@@ -228,7 +228,7 @@ server {
 ### 2. Activate Config & Test
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/taxicity /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/taxyciti /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```

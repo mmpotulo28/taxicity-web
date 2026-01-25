@@ -9,7 +9,7 @@ import { DriverConsole } from "@/components/DriverConsole";
 import { VehicleRegistration } from "@/components/VehicleRegistration";
 import { NotificationBell } from "@/components/NotificationBell";
 import { motion } from "framer-motion";
-import { Header } from "@taxicity/ui";
+import { Header } from "@taxyciti/ui";
 
 export default function DriverPage() {
   const { driver, isLoading, refreshDriver } = useDriver();

@@ -213,7 +213,7 @@ const Support: React.FC = () => {
 									<div>
 										<p className="text-sm font-medium">Email Support</p>
 										<p className="text-xs text-default-500">
-											support@taxicity.co.za
+											support@taxyciti.co.za
 										</p>
 									</div>
 								</div>

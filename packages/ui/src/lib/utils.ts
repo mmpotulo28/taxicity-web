@@ -1,1 +1,1 @@
-export * from "@taxicity/utils";
+export * from "@taxyciti/utils";
