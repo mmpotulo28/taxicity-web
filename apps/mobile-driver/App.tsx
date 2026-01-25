@@ -7,6 +7,9 @@ import * as Location from 'expo-location';
 import NewRelic from 'newrelic-react-native-agent';
 import * as packageJson from './package.json';
 import * as Updates from 'expo-updates';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 let appToken;
 
@@ -107,6 +110,7 @@ export default function App() {
         <WebView
           source={{ uri: USER_APP_URL, baseUrl: USER_APP_URL }}
           style={styles.webview}
+          onLoad={() => SplashScreen.hideAsync()}
           geolocationEnabled={true}
           webviewDebuggingEnabled={true}
         />
