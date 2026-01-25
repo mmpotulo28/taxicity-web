@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@taxicity/database";
+import { prisma } from "@taxyciti/database";
 import { auth } from "@clerk/nextjs/server";
 
 interface RouteContext {

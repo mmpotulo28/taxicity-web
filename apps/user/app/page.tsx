@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
-import { useRide, TripCard, TripRating, MapView, Header } from "@taxicity/ui";
+import { useRide, TripCard, TripRating, MapView, Header } from "@taxyciti/ui";
 import { NotificationBell } from "@/components/NotificationBell";
 
 export default function Home() {

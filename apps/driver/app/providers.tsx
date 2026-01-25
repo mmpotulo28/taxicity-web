@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
-import { clerkConfig } from "@taxicity/configs/clerk";
+import { clerkConfig } from "@taxyciti/configs/clerk";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MapProvider, RideProvider, PusherProvider, TelemetryProvider } from "@taxicity/ui";
+import { MapProvider, RideProvider, PusherProvider, TelemetryProvider } from "@taxyciti/ui";
 import { DriverProvider } from "../context/DriverContext";
 import { type ThemeProviderProps } from "next-themes"; // Correct import for types
 
@@ -30,7 +30,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 
  return (
   <ClerkProvider {...clerkConfig}>
-   <TelemetryProvider appName="Taxicity Driver" version="1.0.0">
+   <TelemetryProvider appName="TaxyCiTi Driver" version="1.0.0">
     <QueryClientProvider client={queryClient}>
      <HeroUIProvider navigate={router.push}>
       <NextThemesProvider {...themeProps}>

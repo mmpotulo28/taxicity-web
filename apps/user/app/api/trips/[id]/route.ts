@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@taxicity/database";
+import { prisma } from "@taxyciti/database";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {

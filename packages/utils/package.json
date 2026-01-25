@@ -1,5 +1,5 @@
 {
-	"name": "@taxicity/utils",
+	"name": "@taxyciti/utils",
 	"version": "0.0.1",
 	"main": "src/index.ts",
 	"types": "src/index.ts",
@@ -14,7 +14,7 @@
 		"tailwind-merge": "^3.4.0"
 	},
 	"devDependencies": {
-		"@taxicity/configs": "workspace:*",
+		"@taxyciti/configs": "workspace:*",
 		"typescript": "5.6.3"
 	}
 }

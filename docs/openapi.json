@@ -1,1694 +1,1431 @@
 {
- "openapi": "3.0.3",
- "info": {
-  "title": "TaxiCity API",
-  "description": "Comprehensive REST API for the TaxiCity taxi booking platform",
-  "version": "1.0.0",
-  "contact": {
-   "name": "TaxiCity Support",
-   "email": "support@taxicity.com"
-  },
-  "license": {
-   "name": "MIT",
-   "url": "https://opensource.org/licenses/MIT"
-  }
- },
- "servers": [
-  {
-   "url": "http://localhost:3000/api",
-   "description": "Development server"
-  },
-  {
-   "url": "https://taxicity.vercel.app/api",
-   "description": "Production server"
-  }
- ],
- "security": [
-  {
-   "ClerkAuth": []
-  }
- ],
- "components": {
-  "securitySchemes": {
-   "ClerkAuth": {
-    "type": "http",
-    "scheme": "bearer",
-    "bearerFormat": "JWT",
-    "description": "Clerk JWT authentication token"
-   }
-  },
-  "schemas": {
-   "User": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "clerkId": {
-      "type": "string"
-     },
-     "firstName": {
-      "type": "string"
-     },
-     "lastName": {
-      "type": "string"
-     },
-     "email": {
-      "type": "string",
-      "format": "email"
-     },
-     "phoneNumber": {
-      "type": "string"
-     },
-     "role": {
-      "type": "string",
-      "enum": [
-       "USER",
-       "DRIVER",
-       "ADMIN",
-       "SUPPORT"
-      ]
-     },
-     "status": {
-      "type": "string",
-      "enum": [
-       "ACTIVE",
-       "INACTIVE",
-       "SUSPENDED"
-      ]
-     },
-     "profilePicture": {
-      "type": "string",
-      "format": "uri"
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     },
-     "updatedAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "UserLocation": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "userId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "latitude": {
-      "type": "number",
-      "minimum": -90,
-      "maximum": 90
-     },
-     "longitude": {
-      "type": "number",
-      "minimum": -180,
-      "maximum": 180
-     },
-     "address": {
-      "type": "string"
-     },
-     "accuracy": {
-      "type": "number"
-     },
-     "updatedAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "SavedLocation": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "userId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "name": {
-      "type": "string"
-     },
-     "type": {
-      "type": "string",
-      "enum": [
-       "HOME",
-       "WORK",
-       "FAVORITE",
-       "OTHER"
-      ]
-     },
-     "latitude": {
-      "type": "number",
-      "minimum": -90,
-      "maximum": 90
-     },
-     "longitude": {
-      "type": "number",
-      "minimum": -180,
-      "maximum": 180
-     },
-     "address": {
-      "type": "string"
-     },
-     "notes": {
-      "type": "string"
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "Driver": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "firstName": {
-      "type": "string"
-     },
-     "lastName": {
-      "type": "string"
-     },
-     "fullName": {
-      "type": "string"
-     },
-     "phoneNumber": {
-      "type": "string"
-     },
-     "email": {
-      "type": "string",
-      "format": "email"
-     },
-     "licenseNumber": {
-      "type": "string"
-     },
-     "licenseExpiry": {
-      "type": "string",
-      "format": "date"
-     },
-     "status": {
-      "type": "string",
-      "enum": [
-       "PENDING",
-       "ACTIVE",
-       "INACTIVE",
-       "SUSPENDED"
-      ]
-     },
-     "rating": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 5
-     },
-     "profilePicture": {
-      "type": "string",
-      "format": "uri"
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "Taxi": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "registrationNumber": {
-      "type": "string"
-     },
-     "make": {
-      "type": "string"
-     },
-     "model": {
-      "type": "string"
-     },
-     "year": {
-      "type": "integer"
-     },
-     "color": {
-      "type": "string"
-     },
-     "capacity": {
-      "type": "integer"
-     },
-     "status": {
-      "type": "string",
-      "enum": [
-       "AVAILABLE",
-       "BUSY",
-       "OFFLINE",
-       "MAINTENANCE"
-      ]
-     },
-     "currentRouteId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "currentRankId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "driverId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "Route": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "name": {
-      "type": "string"
-     },
-     "sourceRankId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "destinationRankId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "fare": {
-      "type": "number"
-     },
-     "estimatedDuration": {
-      "type": "integer"
-     },
-     "distance": {
-      "type": "number"
-     },
-     "status": {
-      "type": "string",
-      "enum": [
-       "ACTIVE",
-       "INACTIVE",
-       "SUSPENDED"
-      ]
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "Rank": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "name": {
-      "type": "string"
-     },
-     "location": {
-      "type": "object",
-      "properties": {
-       "latitude": {
-        "type": "number",
-        "minimum": -90,
-        "maximum": 90
-       },
-       "longitude": {
-        "type": "number",
-        "minimum": -180,
-        "maximum": 180
-       }
-      }
-     },
-     "address": {
-      "type": "string"
-     },
-     "capacity": {
-      "type": "integer"
-     },
-     "status": {
-      "type": "string",
-      "enum": [
-       "ACTIVE",
-       "INACTIVE",
-       "MAINTENANCE"
-      ]
-     },
-     "operatingHours": {
-      "type": "object",
-      "properties": {
-       "open": {
-        "type": "string"
-       },
-       "close": {
-        "type": "string"
-       }
-      }
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "Report": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "reporterId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "reporterType": {
-      "type": "string",
-      "enum": [
-       "USER",
-       "DRIVER",
-       "ADMIN"
-      ]
-     },
-     "reportedType": {
-      "type": "string",
-      "enum": [
-       "DRIVER",
-       "TAXI",
-       "USER",
-       "ROUTE",
-       "SYSTEM"
-      ]
-     },
-     "reportedId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "category": {
-      "type": "string",
-      "enum": [
-       "SAFETY_CONCERN",
-       "INAPPROPRIATE_BEHAVIOR",
-       "VEHICLE_CONDITION",
-       "ROUTE_ISSUE",
-       "PAYMENT_DISPUTE",
-       "DISCRIMINATION",
-       "TECHNICAL_ISSUE",
-       "OTHER"
-      ]
-     },
-     "title": {
-      "type": "string"
-     },
-     "description": {
-      "type": "string"
-     },
-     "severity": {
-      "type": "string",
-      "enum": [
-       "LOW",
-       "MEDIUM",
-       "HIGH",
-       "CRITICAL"
-      ]
-     },
-     "status": {
-      "type": "string",
-      "enum": [
-       "OPEN",
-       "IN_PROGRESS",
-       "RESOLVED",
-       "DISMISSED"
-      ]
-     },
-     "priority": {
-      "type": "string",
-      "enum": [
-       "LOW",
-       "MEDIUM",
-       "HIGH",
-       "URGENT"
-      ]
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "SupportTicket": {
-    "type": "object",
-    "properties": {
-     "id": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "ticketNumber": {
-      "type": "string"
-     },
-     "userId": {
-      "type": "string",
-      "format": "uuid"
-     },
-     "category": {
-      "type": "string",
-      "enum": [
-       "ACCOUNT_ISSUE",
-       "PAYMENT_PROBLEM",
-       "TECHNICAL_SUPPORT",
-       "BOOKING_ISSUE",
-       "DRIVER_COMPLAINT",
-       "FEATURE_REQUEST",
-       "BUG_REPORT",
-       "OTHER"
-      ]
-     },
-     "subject": {
-      "type": "string"
-     },
-     "description": {
-      "type": "string"
-     },
-     "priority": {
-      "type": "string",
-      "enum": [
-       "LOW",
-       "MEDIUM",
-       "HIGH",
-       "URGENT"
-      ]
-     },
-     "status": {
-      "type": "string",
-      "enum": [
-       "OPEN",
-       "IN_PROGRESS",
-       "WAITING_FOR_USER",
-       "RESOLVED",
-       "CLOSED"
-      ]
-     },
-     "contactMethod": {
-      "type": "string",
-      "enum": [
-       "EMAIL",
-       "PHONE",
-       "IN_APP"
-      ]
-     },
-     "createdAt": {
-      "type": "string",
-      "format": "date-time"
-     }
-    }
-   },
-   "Error": {
-    "type": "object",
-    "properties": {
-     "error": {
-      "type": "string"
-     },
-     "details": {
-      "type": "array",
-      "items": {
-       "type": "object"
-      }
-     }
-    }
-   },
-   "PaginationMeta": {
-    "type": "object",
-    "properties": {
-     "page": {
-      "type": "integer"
-     },
-     "limit": {
-      "type": "integer"
-     },
-     "total": {
-      "type": "integer"
-     },
-     "totalPages": {
-      "type": "integer"
-     }
-    }
-   }
-  }
- },
- "paths": {
-  "/users": {
-   "get": {
-    "tags": [
-     "Users"
-    ],
-    "summary": "Get users list (admin only)",
-    "description": "Retrieve a paginated list of all users. Only accessible by admin users.",
-    "parameters": [
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer",
-       "default": 1
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer",
-       "default": 20,
-       "maximum": 100
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of users",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "users": {
-           "type": "array",
-           "items": {
-            "$ref": "#/components/schemas/User"
-           }
-          },
-          "pagination": {
-           "$ref": "#/components/schemas/PaginationMeta"
-          }
-         }
-        }
-       }
-      }
-     },
-     "401": {
-      "description": "Unauthorized",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/Error"
-        }
-       }
-      }
-     },
-     "403": {
-      "description": "Forbidden - Admin access required"
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "Users"
-    ],
-    "summary": "Create or update user profile",
-    "description": "Create a new user profile or update existing profile information",
-    "requestBody": {
-     "required": true,
-     "content": {
-      "application/json": {
-       "schema": {
-        "type": "object",
-        "required": [
-         "firstName",
-         "lastName",
-         "email"
-        ],
-        "properties": {
-         "firstName": {
-          "type": "string",
-          "minLength": 2,
-          "maxLength": 50
-         },
-         "lastName": {
-          "type": "string",
-          "minLength": 2,
-          "maxLength": 50
-         },
-         "email": {
-          "type": "string",
-          "format": "email"
-         },
-         "phoneNumber": {
-          "type": "string"
-         },
-         "profilePicture": {
-          "type": "string",
-          "format": "uri"
-         }
-        }
-       }
-      }
-     }
-    },
-    "responses": {
-     "200": {
-      "description": "User profile updated",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/User"
-        }
-       }
-      }
-     },
-     "201": {
-      "description": "User profile created",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/User"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Invalid input data"
-     }
-    }
-   }
-  },
-  "/users/location": {
-   "get": {
-    "tags": [
-     "Users"
-    ],
-    "summary": "Get user's current location",
-    "responses": {
-     "200": {
-      "description": "User's current location",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/UserLocation"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Location not found"
-     }
-    }
-   },
-   "put": {
-    "tags": [
-     "Users"
-    ],
-    "summary": "Update user's location",
-    "requestBody": {
-     "required": true,
-     "content": {
-      "application/json": {
-       "schema": {
-        "type": "object",
-        "required": [
-         "latitude",
-         "longitude"
-        ],
-        "properties": {
-         "latitude": {
-          "type": "number",
-          "minimum": -90,
-          "maximum": 90
-         },
-         "longitude": {
-          "type": "number",
-          "minimum": -180,
-          "maximum": 180
-         },
-         "address": {
-          "type": "string"
-         },
-         "accuracy": {
-          "type": "number"
-         }
-        }
-       }
-      }
-     }
-    },
-    "responses": {
-     "200": {
-      "description": "Location updated successfully",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/UserLocation"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/users/saved-locations": {
-   "get": {
-    "tags": [
-     "Users"
-    ],
-    "summary": "Get user's saved locations",
-    "parameters": [
-     {
-      "name": "type",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "HOME",
-        "WORK",
-        "FAVORITE",
-        "OTHER"
-       ]
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of saved locations",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "array",
-         "items": {
-          "$ref": "#/components/schemas/SavedLocation"
-         }
-        }
-       }
-      }
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "Users"
-    ],
-    "summary": "Create a new saved location",
-    "requestBody": {
-     "required": true,
-     "content": {
-      "application/json": {
-       "schema": {
-        "type": "object",
-        "required": [
-         "name",
-         "type",
-         "latitude",
-         "longitude",
-         "address"
-        ],
-        "properties": {
-         "name": {
-          "type": "string",
-          "minLength": 2,
-          "maxLength": 100
-         },
-         "type": {
-          "type": "string",
-          "enum": [
-           "HOME",
-           "WORK",
-           "FAVORITE",
-           "OTHER"
-          ]
-         },
-         "latitude": {
-          "type": "number",
-          "minimum": -90,
-          "maximum": 90
-         },
-         "longitude": {
-          "type": "number",
-          "minimum": -180,
-          "maximum": 180
-         },
-         "address": {
-          "type": "string"
-         },
-         "notes": {
-          "type": "string",
-          "maxLength": 500
-         }
-        }
-       }
-      }
-     }
-    },
-    "responses": {
-     "201": {
-      "description": "Saved location created",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/SavedLocation"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/taxis": {
-   "get": {
-    "tags": [
-     "Taxis"
-    ],
-    "summary": "Get taxis list",
-    "parameters": [
-     {
-      "name": "status",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "AVAILABLE",
-        "BUSY",
-        "OFFLINE",
-        "MAINTENANCE"
-       ]
-      }
-     },
-     {
-      "name": "routeId",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "format": "uuid"
-      }
-     },
-     {
-      "name": "rankId",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "format": "uuid"
-      }
-     },
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer",
-       "default": 1
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer",
-       "default": 20
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of taxis",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "taxis": {
-           "type": "array",
-           "items": {
-            "$ref": "#/components/schemas/Taxi"
-           }
-          },
-          "pagination": {
-           "$ref": "#/components/schemas/PaginationMeta"
-          }
-         }
-        }
-       }
-      }
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "Taxis"
-    ],
-    "summary": "Create a new taxi (admin only)",
-    "requestBody": {
-     "required": true,
-     "content": {
-      "application/json": {
-       "schema": {
-        "type": "object",
-        "required": [
-         "registrationNumber",
-         "make",
-         "model",
-         "year",
-         "capacity"
-        ],
-        "properties": {
-         "registrationNumber": {
-          "type": "string"
-         },
-         "make": {
-          "type": "string"
-         },
-         "model": {
-          "type": "string"
-         },
-         "year": {
-          "type": "integer",
-          "minimum": 1990,
-          "maximum": 2030
-         },
-         "color": {
-          "type": "string"
-         },
-         "capacity": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 20
-         }
-        }
-       }
-      }
-     }
-    },
-    "responses": {
-     "201": {
-      "description": "Taxi created successfully",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/Taxi"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/drivers": {
-   "get": {
-    "tags": [
-     "Drivers"
-    ],
-    "summary": "Get drivers list",
-    "parameters": [
-     {
-      "name": "status",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "PENDING",
-        "ACTIVE",
-        "INACTIVE",
-        "SUSPENDED"
-       ]
-      }
-     },
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer",
-       "default": 1
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer",
-       "default": 20
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of drivers",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "drivers": {
-           "type": "array",
-           "items": {
-            "$ref": "#/components/schemas/Driver"
-           }
-          },
-          "pagination": {
-           "$ref": "#/components/schemas/PaginationMeta"
-          }
-         }
-        }
-       }
-      }
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "Drivers"
-    ],
-    "summary": "Create a new driver",
-    "requestBody": {
-     "required": true,
-     "content": {
-      "application/json": {
-       "schema": {
-        "type": "object",
-        "required": [
-         "firstName",
-         "lastName",
-         "phoneNumber",
-         "email",
-         "licenseNumber",
-         "licenseExpiry"
-        ],
-        "properties": {
-         "firstName": {
-          "type": "string"
-         },
-         "lastName": {
-          "type": "string"
-         },
-         "phoneNumber": {
-          "type": "string"
-         },
-         "email": {
-          "type": "string",
-          "format": "email"
-         },
-         "licenseNumber": {
-          "type": "string"
-         },
-         "licenseExpiry": {
-          "type": "string",
-          "format": "date"
-         }
-        }
-       }
-      }
-     }
-    },
-    "responses": {
-     "201": {
-      "description": "Driver created successfully",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/Driver"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/routes": {
-   "get": {
-    "tags": [
-     "Routes"
-    ],
-    "summary": "Get routes list",
-    "parameters": [
-     {
-      "name": "sourceRankId",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "format": "uuid"
-      }
-     },
-     {
-      "name": "destinationRankId",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "format": "uuid"
-      }
-     },
-     {
-      "name": "status",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "ACTIVE",
-        "INACTIVE",
-        "SUSPENDED"
-       ]
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of routes",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "routes": {
-           "type": "array",
-           "items": {
-            "$ref": "#/components/schemas/Route"
-           }
-          },
-          "pagination": {
-           "$ref": "#/components/schemas/PaginationMeta"
-          }
-         }
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/ranks": {
-   "get": {
-    "tags": [
-     "Ranks"
-    ],
-    "summary": "Get taxi ranks list",
-    "parameters": [
-     {
-      "name": "status",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "ACTIVE",
-        "INACTIVE",
-        "MAINTENANCE"
-       ]
-      }
-     },
-     {
-      "name": "latitude",
-      "in": "query",
-      "schema": {
-       "type": "number"
-      }
-     },
-     {
-      "name": "longitude",
-      "in": "query",
-      "schema": {
-       "type": "number"
-      }
-     },
-     {
-      "name": "radius",
-      "in": "query",
-      "schema": {
-       "type": "number",
-       "default": 10
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of taxi ranks",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "ranks": {
-           "type": "array",
-           "items": {
-            "$ref": "#/components/schemas/Rank"
-           }
-          },
-          "pagination": {
-           "$ref": "#/components/schemas/PaginationMeta"
-          }
-         }
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/reports": {
-   "get": {
-    "tags": [
-     "Reports"
-    ],
-    "summary": "Get reports list",
-    "parameters": [
-     {
-      "name": "status",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "OPEN",
-        "IN_PROGRESS",
-        "RESOLVED",
-        "DISMISSED"
-       ]
-      }
-     },
-     {
-      "name": "category",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "SAFETY_CONCERN",
-        "INAPPROPRIATE_BEHAVIOR",
-        "VEHICLE_CONDITION",
-        "ROUTE_ISSUE",
-        "PAYMENT_DISPUTE",
-        "DISCRIMINATION",
-        "TECHNICAL_ISSUE",
-        "OTHER"
-       ]
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of reports",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "reports": {
-           "type": "array",
-           "items": {
-            "$ref": "#/components/schemas/Report"
-           }
-          },
-          "pagination": {
-           "$ref": "#/components/schemas/PaginationMeta"
-          }
-         }
-        }
-       }
-      }
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "Reports"
-    ],
-    "summary": "Create a new report",
-    "requestBody": {
-     "required": true,
-     "content": {
-      "application/json": {
-       "schema": {
-        "type": "object",
-        "required": [
-         "reporterType",
-         "reportedType",
-         "reportedId",
-         "category",
-         "title",
-         "description"
-        ],
-        "properties": {
-         "reporterType": {
-          "type": "string",
-          "enum": [
-           "USER",
-           "DRIVER",
-           "ADMIN"
-          ]
-         },
-         "reportedType": {
-          "type": "string",
-          "enum": [
-           "DRIVER",
-           "TAXI",
-           "USER",
-           "ROUTE",
-           "SYSTEM"
-          ]
-         },
-         "reportedId": {
-          "type": "string",
-          "format": "uuid"
-         },
-         "category": {
-          "type": "string",
-          "enum": [
-           "SAFETY_CONCERN",
-           "INAPPROPRIATE_BEHAVIOR",
-           "VEHICLE_CONDITION",
-           "ROUTE_ISSUE",
-           "PAYMENT_DISPUTE",
-           "DISCRIMINATION",
-           "TECHNICAL_ISSUE",
-           "OTHER"
-          ]
-         },
-         "title": {
-          "type": "string",
-          "minLength": 5,
-          "maxLength": 200
-         },
-         "description": {
-          "type": "string",
-          "minLength": 10,
-          "maxLength": 2000
-         },
-         "severity": {
-          "type": "string",
-          "enum": [
-           "LOW",
-           "MEDIUM",
-           "HIGH",
-           "CRITICAL"
-          ],
-          "default": "MEDIUM"
-         }
-        }
-       }
-      }
-     }
-    },
-    "responses": {
-     "201": {
-      "description": "Report created successfully",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/Report"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/support": {
-   "get": {
-    "tags": [
-     "Support"
-    ],
-    "summary": "Get support tickets",
-    "parameters": [
-     {
-      "name": "status",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "OPEN",
-        "IN_PROGRESS",
-        "WAITING_FOR_USER",
-        "RESOLVED",
-        "CLOSED"
-       ]
-      }
-     },
-     {
-      "name": "category",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "ACCOUNT_ISSUE",
-        "PAYMENT_PROBLEM",
-        "TECHNICAL_SUPPORT",
-        "BOOKING_ISSUE",
-        "DRIVER_COMPLAINT",
-        "FEATURE_REQUEST",
-        "BUG_REPORT",
-        "OTHER"
-       ]
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "List of support tickets",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "tickets": {
-           "type": "array",
-           "items": {
-            "$ref": "#/components/schemas/SupportTicket"
-           }
-          },
-          "pagination": {
-           "$ref": "#/components/schemas/PaginationMeta"
-          }
-         }
-        }
-       }
-      }
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "Support"
-    ],
-    "summary": "Create a new support ticket",
-    "requestBody": {
-     "required": true,
-     "content": {
-      "application/json": {
-       "schema": {
-        "type": "object",
-        "required": [
-         "category",
-         "subject",
-         "description"
-        ],
-        "properties": {
-         "category": {
-          "type": "string",
-          "enum": [
-           "ACCOUNT_ISSUE",
-           "PAYMENT_PROBLEM",
-           "TECHNICAL_SUPPORT",
-           "BOOKING_ISSUE",
-           "DRIVER_COMPLAINT",
-           "FEATURE_REQUEST",
-           "BUG_REPORT",
-           "OTHER"
-          ]
-         },
-         "subject": {
-          "type": "string",
-          "minLength": 5,
-          "maxLength": 200
-         },
-         "description": {
-          "type": "string",
-          "minLength": 10,
-          "maxLength": 5000
-         },
-         "priority": {
-          "type": "string",
-          "enum": [
-           "LOW",
-           "MEDIUM",
-           "HIGH",
-           "URGENT"
-          ],
-          "default": "MEDIUM"
-         }
-        }
-       }
-      }
-     }
-    },
-    "responses": {
-     "201": {
-      "description": "Support ticket created successfully",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/SupportTicket"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/search": {
-   "get": {
-    "tags": [
-     "Search"
-    ],
-    "summary": "Search across multiple entities",
-    "parameters": [
-     {
-      "name": "query",
-      "in": "query",
-      "required": true,
-      "schema": {
-       "type": "string",
-       "minLength": 1,
-       "maxLength": 200
-      },
-      "description": "Search query string"
-     },
-     {
-      "name": "type",
-      "in": "query",
-      "schema": {
-       "type": "string",
-       "enum": [
-        "all",
-        "taxis",
-        "drivers",
-        "routes",
-        "ranks",
-        "users"
-       ],
-       "default": "all"
-      },
-      "description": "Type of entities to search"
-     },
-     {
-      "name": "filters",
-      "in": "query",
-      "schema": {
-       "type": "string"
-      },
-      "description": "JSON string of additional filters"
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "Search results",
-      "content": {
-       "application/json": {
-        "schema": {
-         "type": "object",
-         "properties": {
-          "query": {
-           "type": "string"
-          },
-          "type": {
-           "type": "string"
-          },
-          "results": {
-           "type": "object",
-           "properties": {
-            "taxis": {
-             "type": "array",
-             "items": {
-              "$ref": "#/components/schemas/Taxi"
-             }
-            },
-            "drivers": {
-             "type": "array",
-             "items": {
-              "$ref": "#/components/schemas/Driver"
-             }
-            },
-            "routes": {
-             "type": "array",
-             "items": {
-              "$ref": "#/components/schemas/Route"
-             }
-            },
-            "ranks": {
-             "type": "array",
-             "items": {
-              "$ref": "#/components/schemas/Rank"
-             }
-            }
-           }
-          },
-          "total": {
-           "type": "integer"
-          },
-          "pagination": {
-           "type": "object",
-           "properties": {
-            "page": {
-             "type": "integer"
-            },
-            "limit": {
-             "type": "integer"
-            },
-            "hasMore": {
-             "type": "boolean"
-            }
-           }
-          }
-         }
-        }
-       }
-      }
-     }
-    }
-   }
-  }
- },
- "tags": [
-  {
-   "name": "Users",
-   "description": "User management operations"
-  },
-  {
-   "name": "Drivers",
-   "description": "Driver management operations"
-  },
-  {
-   "name": "Taxis",
-   "description": "Taxi fleet management operations"
-  },
-  {
-   "name": "Routes",
-   "description": "Route management operations"
-  },
-  {
-   "name": "Ranks",
-   "description": "Taxi rank (station) management operations"
-  },
-  {
-   "name": "Reports",
-   "description": "Report and complaint management operations"
-  },
-  {
-   "name": "Support",
-   "description": "Support ticket management operations"
-  },
-  {
-   "name": "Search",
-   "description": "Search operations across multiple entities"
-  }
- ]
+	"openapi": "3.0.3",
+	"info": {
+		"title": "TaxiCity API",
+		"description": "Comprehensive REST API for the TaxiCity taxi booking platform",
+		"version": "1.0.0",
+		"contact": {
+			"name": "TaxiCity Support",
+			"email": "support@taxyciti.com"
+		},
+		"license": {
+			"name": "MIT",
+			"url": "https://opensource.org/licenses/MIT"
+		}
+	},
+	"servers": [
+		{
+			"url": "http://localhost:3000/api",
+			"description": "Development server"
+		},
+		{
+			"url": "https://taxyciti.vercel.app/api",
+			"description": "Production server"
+		}
+	],
+	"security": [
+		{
+			"ClerkAuth": []
+		}
+	],
+	"components": {
+		"securitySchemes": {
+			"ClerkAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"description": "Clerk JWT authentication token"
+			}
+		},
+		"schemas": {
+			"User": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"clerkId": {
+						"type": "string"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"format": "email"
+					},
+					"phoneNumber": {
+						"type": "string"
+					},
+					"role": {
+						"type": "string",
+						"enum": ["USER", "DRIVER", "ADMIN", "SUPPORT"]
+					},
+					"status": {
+						"type": "string",
+						"enum": ["ACTIVE", "INACTIVE", "SUSPENDED"]
+					},
+					"profilePicture": {
+						"type": "string",
+						"format": "uri"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"UserLocation": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"userId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"latitude": {
+						"type": "number",
+						"minimum": -90,
+						"maximum": 90
+					},
+					"longitude": {
+						"type": "number",
+						"minimum": -180,
+						"maximum": 180
+					},
+					"address": {
+						"type": "string"
+					},
+					"accuracy": {
+						"type": "number"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"SavedLocation": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"userId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"name": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string",
+						"enum": ["HOME", "WORK", "FAVORITE", "OTHER"]
+					},
+					"latitude": {
+						"type": "number",
+						"minimum": -90,
+						"maximum": 90
+					},
+					"longitude": {
+						"type": "number",
+						"minimum": -180,
+						"maximum": 180
+					},
+					"address": {
+						"type": "string"
+					},
+					"notes": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Driver": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"fullName": {
+						"type": "string"
+					},
+					"phoneNumber": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"format": "email"
+					},
+					"licenseNumber": {
+						"type": "string"
+					},
+					"licenseExpiry": {
+						"type": "string",
+						"format": "date"
+					},
+					"status": {
+						"type": "string",
+						"enum": ["PENDING", "ACTIVE", "INACTIVE", "SUSPENDED"]
+					},
+					"rating": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 5
+					},
+					"profilePicture": {
+						"type": "string",
+						"format": "uri"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Taxi": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"registrationNumber": {
+						"type": "string"
+					},
+					"make": {
+						"type": "string"
+					},
+					"model": {
+						"type": "string"
+					},
+					"year": {
+						"type": "integer"
+					},
+					"color": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer"
+					},
+					"status": {
+						"type": "string",
+						"enum": ["AVAILABLE", "BUSY", "OFFLINE", "MAINTENANCE"]
+					},
+					"currentRouteId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"currentRankId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"driverId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Route": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"name": {
+						"type": "string"
+					},
+					"sourceRankId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"destinationRankId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"fare": {
+						"type": "number"
+					},
+					"estimatedDuration": {
+						"type": "integer"
+					},
+					"distance": {
+						"type": "number"
+					},
+					"status": {
+						"type": "string",
+						"enum": ["ACTIVE", "INACTIVE", "SUSPENDED"]
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Rank": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"name": {
+						"type": "string"
+					},
+					"location": {
+						"type": "object",
+						"properties": {
+							"latitude": {
+								"type": "number",
+								"minimum": -90,
+								"maximum": 90
+							},
+							"longitude": {
+								"type": "number",
+								"minimum": -180,
+								"maximum": 180
+							}
+						}
+					},
+					"address": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer"
+					},
+					"status": {
+						"type": "string",
+						"enum": ["ACTIVE", "INACTIVE", "MAINTENANCE"]
+					},
+					"operatingHours": {
+						"type": "object",
+						"properties": {
+							"open": {
+								"type": "string"
+							},
+							"close": {
+								"type": "string"
+							}
+						}
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Report": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"reporterId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"reporterType": {
+						"type": "string",
+						"enum": ["USER", "DRIVER", "ADMIN"]
+					},
+					"reportedType": {
+						"type": "string",
+						"enum": ["DRIVER", "TAXI", "USER", "ROUTE", "SYSTEM"]
+					},
+					"reportedId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"category": {
+						"type": "string",
+						"enum": ["SAFETY_CONCERN", "INAPPROPRIATE_BEHAVIOR", "VEHICLE_CONDITION", "ROUTE_ISSUE", "PAYMENT_DISPUTE", "DISCRIMINATION", "TECHNICAL_ISSUE", "OTHER"]
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"severity": {
+						"type": "string",
+						"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+					},
+					"status": {
+						"type": "string",
+						"enum": ["OPEN", "IN_PROGRESS", "RESOLVED", "DISMISSED"]
+					},
+					"priority": {
+						"type": "string",
+						"enum": ["LOW", "MEDIUM", "HIGH", "URGENT"]
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"SupportTicket": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"ticketNumber": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"category": {
+						"type": "string",
+						"enum": ["ACCOUNT_ISSUE", "PAYMENT_PROBLEM", "TECHNICAL_SUPPORT", "BOOKING_ISSUE", "DRIVER_COMPLAINT", "FEATURE_REQUEST", "BUG_REPORT", "OTHER"]
+					},
+					"subject": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"priority": {
+						"type": "string",
+						"enum": ["LOW", "MEDIUM", "HIGH", "URGENT"]
+					},
+					"status": {
+						"type": "string",
+						"enum": ["OPEN", "IN_PROGRESS", "WAITING_FOR_USER", "RESOLVED", "CLOSED"]
+					},
+					"contactMethod": {
+						"type": "string",
+						"enum": ["EMAIL", "PHONE", "IN_APP"]
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Error": {
+				"type": "object",
+				"properties": {
+					"error": {
+						"type": "string"
+					},
+					"details": {
+						"type": "array",
+						"items": {
+							"type": "object"
+						}
+					}
+				}
+			},
+			"PaginationMeta": {
+				"type": "object",
+				"properties": {
+					"page": {
+						"type": "integer"
+					},
+					"limit": {
+						"type": "integer"
+					},
+					"total": {
+						"type": "integer"
+					},
+					"totalPages": {
+						"type": "integer"
+					}
+				}
+			}
+		}
+	},
+	"paths": {
+		"/users": {
+			"get": {
+				"tags": ["Users"],
+				"summary": "Get users list (admin only)",
+				"description": "Retrieve a paginated list of all users. Only accessible by admin users.",
+				"parameters": [
+					{
+						"name": "page",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"default": 1
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"default": 20,
+							"maximum": 100
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of users",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"users": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/User"
+											}
+										},
+										"pagination": {
+											"$ref": "#/components/schemas/PaginationMeta"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden - Admin access required"
+					}
+				}
+			},
+			"post": {
+				"tags": ["Users"],
+				"summary": "Create or update user profile",
+				"description": "Create a new user profile or update existing profile information",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["firstName", "lastName", "email"],
+								"properties": {
+									"firstName": {
+										"type": "string",
+										"minLength": 2,
+										"maxLength": 50
+									},
+									"lastName": {
+										"type": "string",
+										"minLength": 2,
+										"maxLength": 50
+									},
+									"email": {
+										"type": "string",
+										"format": "email"
+									},
+									"phoneNumber": {
+										"type": "string"
+									},
+									"profilePicture": {
+										"type": "string",
+										"format": "uri"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "User profile updated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					},
+					"201": {
+						"description": "User profile created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input data"
+					}
+				}
+			}
+		},
+		"/users/location": {
+			"get": {
+				"tags": ["Users"],
+				"summary": "Get user's current location",
+				"responses": {
+					"200": {
+						"description": "User's current location",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserLocation"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Location not found"
+					}
+				}
+			},
+			"put": {
+				"tags": ["Users"],
+				"summary": "Update user's location",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["latitude", "longitude"],
+								"properties": {
+									"latitude": {
+										"type": "number",
+										"minimum": -90,
+										"maximum": 90
+									},
+									"longitude": {
+										"type": "number",
+										"minimum": -180,
+										"maximum": 180
+									},
+									"address": {
+										"type": "string"
+									},
+									"accuracy": {
+										"type": "number"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Location updated successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserLocation"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/users/saved-locations": {
+			"get": {
+				"tags": ["Users"],
+				"summary": "Get user's saved locations",
+				"parameters": [
+					{
+						"name": "type",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["HOME", "WORK", "FAVORITE", "OTHER"]
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of saved locations",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/SavedLocation"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Users"],
+				"summary": "Create a new saved location",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["name", "type", "latitude", "longitude", "address"],
+								"properties": {
+									"name": {
+										"type": "string",
+										"minLength": 2,
+										"maxLength": 100
+									},
+									"type": {
+										"type": "string",
+										"enum": ["HOME", "WORK", "FAVORITE", "OTHER"]
+									},
+									"latitude": {
+										"type": "number",
+										"minimum": -90,
+										"maximum": 90
+									},
+									"longitude": {
+										"type": "number",
+										"minimum": -180,
+										"maximum": 180
+									},
+									"address": {
+										"type": "string"
+									},
+									"notes": {
+										"type": "string",
+										"maxLength": 500
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Saved location created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SavedLocation"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/taxis": {
+			"get": {
+				"tags": ["Taxis"],
+				"summary": "Get taxis list",
+				"parameters": [
+					{
+						"name": "status",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["AVAILABLE", "BUSY", "OFFLINE", "MAINTENANCE"]
+						}
+					},
+					{
+						"name": "routeId",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "rankId",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "page",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"default": 1
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"default": 20
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of taxis",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"taxis": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Taxi"
+											}
+										},
+										"pagination": {
+											"$ref": "#/components/schemas/PaginationMeta"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Taxis"],
+				"summary": "Create a new taxi (admin only)",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["registrationNumber", "make", "model", "year", "capacity"],
+								"properties": {
+									"registrationNumber": {
+										"type": "string"
+									},
+									"make": {
+										"type": "string"
+									},
+									"model": {
+										"type": "string"
+									},
+									"year": {
+										"type": "integer",
+										"minimum": 1990,
+										"maximum": 2030
+									},
+									"color": {
+										"type": "string"
+									},
+									"capacity": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 20
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Taxi created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Taxi"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/drivers": {
+			"get": {
+				"tags": ["Drivers"],
+				"summary": "Get drivers list",
+				"parameters": [
+					{
+						"name": "status",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["PENDING", "ACTIVE", "INACTIVE", "SUSPENDED"]
+						}
+					},
+					{
+						"name": "page",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"default": 1
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"default": 20
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of drivers",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"drivers": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Driver"
+											}
+										},
+										"pagination": {
+											"$ref": "#/components/schemas/PaginationMeta"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Drivers"],
+				"summary": "Create a new driver",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["firstName", "lastName", "phoneNumber", "email", "licenseNumber", "licenseExpiry"],
+								"properties": {
+									"firstName": {
+										"type": "string"
+									},
+									"lastName": {
+										"type": "string"
+									},
+									"phoneNumber": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string",
+										"format": "email"
+									},
+									"licenseNumber": {
+										"type": "string"
+									},
+									"licenseExpiry": {
+										"type": "string",
+										"format": "date"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Driver created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Driver"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/routes": {
+			"get": {
+				"tags": ["Routes"],
+				"summary": "Get routes list",
+				"parameters": [
+					{
+						"name": "sourceRankId",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "destinationRankId",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						}
+					},
+					{
+						"name": "status",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["ACTIVE", "INACTIVE", "SUSPENDED"]
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of routes",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"routes": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Route"
+											}
+										},
+										"pagination": {
+											"$ref": "#/components/schemas/PaginationMeta"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/ranks": {
+			"get": {
+				"tags": ["Ranks"],
+				"summary": "Get taxi ranks list",
+				"parameters": [
+					{
+						"name": "status",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["ACTIVE", "INACTIVE", "MAINTENANCE"]
+						}
+					},
+					{
+						"name": "latitude",
+						"in": "query",
+						"schema": {
+							"type": "number"
+						}
+					},
+					{
+						"name": "longitude",
+						"in": "query",
+						"schema": {
+							"type": "number"
+						}
+					},
+					{
+						"name": "radius",
+						"in": "query",
+						"schema": {
+							"type": "number",
+							"default": 10
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of taxi ranks",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ranks": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Rank"
+											}
+										},
+										"pagination": {
+											"$ref": "#/components/schemas/PaginationMeta"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/reports": {
+			"get": {
+				"tags": ["Reports"],
+				"summary": "Get reports list",
+				"parameters": [
+					{
+						"name": "status",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["OPEN", "IN_PROGRESS", "RESOLVED", "DISMISSED"]
+						}
+					},
+					{
+						"name": "category",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["SAFETY_CONCERN", "INAPPROPRIATE_BEHAVIOR", "VEHICLE_CONDITION", "ROUTE_ISSUE", "PAYMENT_DISPUTE", "DISCRIMINATION", "TECHNICAL_ISSUE", "OTHER"]
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of reports",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"reports": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/Report"
+											}
+										},
+										"pagination": {
+											"$ref": "#/components/schemas/PaginationMeta"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Reports"],
+				"summary": "Create a new report",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["reporterType", "reportedType", "reportedId", "category", "title", "description"],
+								"properties": {
+									"reporterType": {
+										"type": "string",
+										"enum": ["USER", "DRIVER", "ADMIN"]
+									},
+									"reportedType": {
+										"type": "string",
+										"enum": ["DRIVER", "TAXI", "USER", "ROUTE", "SYSTEM"]
+									},
+									"reportedId": {
+										"type": "string",
+										"format": "uuid"
+									},
+									"category": {
+										"type": "string",
+										"enum": ["SAFETY_CONCERN", "INAPPROPRIATE_BEHAVIOR", "VEHICLE_CONDITION", "ROUTE_ISSUE", "PAYMENT_DISPUTE", "DISCRIMINATION", "TECHNICAL_ISSUE", "OTHER"]
+									},
+									"title": {
+										"type": "string",
+										"minLength": 5,
+										"maxLength": 200
+									},
+									"description": {
+										"type": "string",
+										"minLength": 10,
+										"maxLength": 2000
+									},
+									"severity": {
+										"type": "string",
+										"enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+										"default": "MEDIUM"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Report created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Report"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/support": {
+			"get": {
+				"tags": ["Support"],
+				"summary": "Get support tickets",
+				"parameters": [
+					{
+						"name": "status",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["OPEN", "IN_PROGRESS", "WAITING_FOR_USER", "RESOLVED", "CLOSED"]
+						}
+					},
+					{
+						"name": "category",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["ACCOUNT_ISSUE", "PAYMENT_PROBLEM", "TECHNICAL_SUPPORT", "BOOKING_ISSUE", "DRIVER_COMPLAINT", "FEATURE_REQUEST", "BUG_REPORT", "OTHER"]
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "List of support tickets",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"tickets": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/SupportTicket"
+											}
+										},
+										"pagination": {
+											"$ref": "#/components/schemas/PaginationMeta"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["Support"],
+				"summary": "Create a new support ticket",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["category", "subject", "description"],
+								"properties": {
+									"category": {
+										"type": "string",
+										"enum": ["ACCOUNT_ISSUE", "PAYMENT_PROBLEM", "TECHNICAL_SUPPORT", "BOOKING_ISSUE", "DRIVER_COMPLAINT", "FEATURE_REQUEST", "BUG_REPORT", "OTHER"]
+									},
+									"subject": {
+										"type": "string",
+										"minLength": 5,
+										"maxLength": 200
+									},
+									"description": {
+										"type": "string",
+										"minLength": 10,
+										"maxLength": 5000
+									},
+									"priority": {
+										"type": "string",
+										"enum": ["LOW", "MEDIUM", "HIGH", "URGENT"],
+										"default": "MEDIUM"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Support ticket created successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SupportTicket"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/search": {
+			"get": {
+				"tags": ["Search"],
+				"summary": "Search across multiple entities",
+				"parameters": [
+					{
+						"name": "query",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 200
+						},
+						"description": "Search query string"
+					},
+					{
+						"name": "type",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["all", "taxis", "drivers", "routes", "ranks", "users"],
+							"default": "all"
+						},
+						"description": "Type of entities to search"
+					},
+					{
+						"name": "filters",
+						"in": "query",
+						"schema": {
+							"type": "string"
+						},
+						"description": "JSON string of additional filters"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Search results",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"query": {
+											"type": "string"
+										},
+										"type": {
+											"type": "string"
+										},
+										"results": {
+											"type": "object",
+											"properties": {
+												"taxis": {
+													"type": "array",
+													"items": {
+														"$ref": "#/components/schemas/Taxi"
+													}
+												},
+												"drivers": {
+													"type": "array",
+													"items": {
+														"$ref": "#/components/schemas/Driver"
+													}
+												},
+												"routes": {
+													"type": "array",
+													"items": {
+														"$ref": "#/components/schemas/Route"
+													}
+												},
+												"ranks": {
+													"type": "array",
+													"items": {
+														"$ref": "#/components/schemas/Rank"
+													}
+												}
+											}
+										},
+										"total": {
+											"type": "integer"
+										},
+										"pagination": {
+											"type": "object",
+											"properties": {
+												"page": {
+													"type": "integer"
+												},
+												"limit": {
+													"type": "integer"
+												},
+												"hasMore": {
+													"type": "boolean"
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"tags": [
+		{
+			"name": "Users",
+			"description": "User management operations"
+		},
+		{
+			"name": "Drivers",
+			"description": "Driver management operations"
+		},
+		{
+			"name": "Taxis",
+			"description": "Taxi fleet management operations"
+		},
+		{
+			"name": "Routes",
+			"description": "Route management operations"
+		},
+		{
+			"name": "Ranks",
+			"description": "Taxi rank (station) management operations"
+		},
+		{
+			"name": "Reports",
+			"description": "Report and complaint management operations"
+		},
+		{
+			"name": "Support",
+			"description": "Support ticket management operations"
+		},
+		{
+			"name": "Search",
+			"description": "Search operations across multiple entities"
+		}
+	]
 }

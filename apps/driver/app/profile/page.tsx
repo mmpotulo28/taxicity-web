@@ -121,7 +121,7 @@ export default function DriverProfilePage() {
                     <h2 className="text-xl font-bold">
                         {profile?.firstName} {profile?.lastName}
                     </h2>
-                    <p className="text-gray-500">{profile?.email}</p>
+                    <p className="text-default-500">{profile?.email}</p>
                     <div className="mt-2 px-3 py-1 bg-primary-100 text-primary rounded-full text-sm font-medium">
                         Driver
                     </div>

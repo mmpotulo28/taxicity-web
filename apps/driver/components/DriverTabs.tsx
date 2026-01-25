@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
-import { cn } from "@taxicity/utils";
+import { cn } from "@taxyciti/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,32 +12,32 @@ const tabs = [
   key: "home",
   label: "Console",
   icon: "lucide:car-taxi-front",
-  href: "/driver",
+  href: "/",
  },
  {
   key: "earnings",
   label: "Earnings",
   icon: "lucide:wallet",
-  href: "/driver/earnings",
+  href: "/earnings",
  },
  {
   key: "requests",
   label: "Requests",
   icon: "lucide:bell",
-  href: "/driver/requests",
+  href: "/requests",
   main: true
  },
  {
   key: "vehicle",
   label: "Vehicle",
   icon: "lucide:car",
-  href: "/driver/vehicle",
+  href: "/vehicle",
  },
  {
   key: "profile",
   label: "Profile",
   icon: "lucide:user",
-  href: "/driver/profile",
+  href: "/profile",
  },
 ];
 
@@ -47,7 +47,7 @@ const DriverTabs = () => {
 
  useEffect(() => {
   const handleRouteChange = (url: string) => {
-   if (url === "/driver") setCurrentPage("home");
+   if (url === "/") setCurrentPage("home");
    else if (url.includes("dashboard")) setCurrentPage("stats");
    else if (url.includes("earnings")) setCurrentPage("earnings");
    else if (url.includes("requests")) setCurrentPage("requests");
@@ -58,10 +58,8 @@ const DriverTabs = () => {
   handleRouteChange(pathname || "");
  }, [pathname]);
 
- // Only show on driver pages
- if (!pathname?.startsWith("/driver")) return null;
  // Don't show on the application page
- if (pathname === "/driver/apply" || pathname === "/driver/status") return null;
+ if (pathname === "/apply" || pathname === "/status") return null;
 
  return (
   <footer className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-default-200 shadow-lg h-16 rounded-t-2xl pb-safe">

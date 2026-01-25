@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
-import { prisma } from "@taxicity/database";
-import { pusherServer } from "@taxicity/utils";
+import { prisma } from "@taxyciti/database";
+import { pusherServer } from "@taxyciti/utils";
 
 const CreateTripSchema = z.object({
 	routeId: z.string(),

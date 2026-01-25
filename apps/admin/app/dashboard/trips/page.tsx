@@ -533,7 +533,7 @@ export default function TripsPage() {
 																			i <
 																				(selectedTrip.rating ||
 																					0)
-																				? "text-yellow-500"
+																				? "text-primary-500"
 																				: "text-default-300"
 																		}
 																		icon="lucide:star"
@@ -587,7 +587,7 @@ export default function TripsPage() {
 																</p>
 																<div className="flex items-center text-sm text-default-500 gap-1">
 																	<Icon
-																		className="text-yellow-500"
+																		className="text-primary-500"
 																		icon="lucide:star"
 																	/>
 																	<span>

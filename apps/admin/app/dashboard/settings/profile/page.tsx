@@ -10,7 +10,7 @@ import { addToast } from "@heroui/toast";
 const currentUser = {
 	id: "admin1",
 	name: "Sarah Johnson",
-	email: "sarah.johnson@taxicity.co.za",
+	email: "sarah.johnson@taxyciti.co.za",
 	role: "Super Admin",
 	avatar: "https://img.heroui.chat/image/avatar?w=100&h=100&u=admin1",
 	phone: "+27 71 234 5678",

@@ -32,10 +32,10 @@ const TaxiCard: React.FC<TaxiCardProps> = ({ taxi }) => {
 		return (
 			<div className="flex items-center">
 				{[...Array(fullStars)].map((_, i) => (
-					<Icon key={`star-${i}`} className="text-yellow-500" icon="lucide:star" />
+					<Icon key={`star-${i}`} className="text-primary-500" icon="lucide:star" />
 				))}
 
-				{hasHalfStar && <Icon className="text-yellow-500" icon="lucide:star-half" />}
+				{hasHalfStar && <Icon className="text-primary-500" icon="lucide:star-half" />}
 
 				{[...Array(5 - fullStars - (hasHalfStar ? 1 : 0))].map((_, i) => (
 					<Icon key={`empty-star-${i}`} className="text-default-300" icon="lucide:star" />

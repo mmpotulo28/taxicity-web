@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { prisma } from "@taxicity/database";
-import { pusherServer } from "@taxicity/utils";
+import { prisma } from "@taxyciti/database";
+import { pusherServer } from "@taxyciti/utils";
 
 // POST /api/driver/vehicle-trips/[id]/passengers/[tripId]/accept - Accept a passenger onto the vehicle trip
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string; tripId: string }> }) {

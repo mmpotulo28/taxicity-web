@@ -8,7 +8,7 @@ import { Card, CardBody } from "@heroui/card";
 import { Icon } from "@iconify/react";
 import { Select, SelectItem } from "@heroui/select";
 import { motion, AnimatePresence } from "framer-motion";
-import { Header } from "@taxicity/ui";
+import { Header } from "@taxyciti/ui";
 import { useDriver } from "@/context/DriverContext";
 
 export default function DriverApplicationPage() {

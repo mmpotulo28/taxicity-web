@@ -48,7 +48,7 @@ export default function ApiDocsPage() {
 							description: "Development server",
 						},
 						{
-							url: "https://taxicity.vercel.app/api",
+							url: "https://taxyciti.vercel.app/api",
 							description: "Production server",
 						},
 					],

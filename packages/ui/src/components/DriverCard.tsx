@@ -22,7 +22,7 @@ const DriverCard: React.FC<{ taxi: iTaxi; handleCancelRide: () => void; currentC
 						<p className="font-medium">{taxi.driver}</p>
 						<p className="text-xs text-default-500">{taxi.model}</p>
 						<div className="flex items-center text-xs mt-1">
-							<Icon className="text-yellow-500" icon="lucide:star" />
+							<Icon className="text-primary-500" icon="lucide:star" />
 							<span className="ml-1">{taxi.rating.toFixed(1)}</span>
 						</div>
 					</div>

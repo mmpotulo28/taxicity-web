@@ -2,13 +2,13 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: ["main", "preview"]
+    branches: ["main"]
   workflow_dispatch:
 
 env:
   # Customize these image names if needed
-  USER_IMAGE_NAME: taxicity-user
-  DRIVER_IMAGE_NAME: taxicity-driver
+  USER_IMAGE_NAME: taxyciti-user
+  DRIVER_IMAGE_NAME: taxyciti-driver
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}

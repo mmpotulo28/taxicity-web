@@ -1,3 +1,3 @@
-import config from "@taxicity/ui/postcss.config";
+import config from "@taxyciti/ui/postcss.config";
 
 export default config;

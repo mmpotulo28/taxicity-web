@@ -34,7 +34,7 @@ import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 
 import { useTaxis } from "@/hooks/useTaxis";
-import { Taxi, Driver, TaxiOnRoute, TaxiLocation } from "@taxicity/database/types";
+import { Taxi, Driver, TaxiOnRoute, TaxiLocation } from "@taxyciti/database/types";
 
 type TaxiWithRelations = Taxi & {
 	driver: Driver | null;
