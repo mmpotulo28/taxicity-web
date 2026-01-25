@@ -3,7 +3,7 @@ import React from "react";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { ArrowRight, Shield, Zap, MapPin, BarChart3, Download, QrCode } from 'lucide-react';
+import { ArrowRight, Shield, Zap, BarChart3, Download, QrCode } from 'lucide-react';
 import { Button } from "@heroui/button";
 
 export default function Home() {
