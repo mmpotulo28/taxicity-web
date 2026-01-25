@@ -90,6 +90,8 @@ export default function App() {
           Updates.reloadAsync();
         });
       }
+    }).catch((error) => {
+      console.error('Error checking for updates:', error);
     });
   }, []);
 
