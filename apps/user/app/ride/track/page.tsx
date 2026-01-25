@@ -409,14 +409,14 @@ const TrackRide: React.FC = () => {
 							</ModalHeader>
 							<ModalBody>
 								<div className="flex flex-col items-center justify-center gap-4 py-4">
-									<div className="relative w-64 h-64 bg-zinc-900 rounded-lg overflow-hidden flex items-center justify-center">
+									<div className="relative w-64 h-64 bg-default-900 rounded-lg overflow-hidden flex items-center justify-center">
 										{useSimulation ? (
 											<>
 												{/* Camera View Simulation */}
 												<div className="absolute inset-0 border-2 border-primary/50 z-10 m-8 rounded-lg">
 													<div className="absolute top-0 left-0 w-full h-1 bg-primary/80 animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
 												</div>
-												<div className="flex flex-col items-center gap-2 text-zinc-500">
+												<div className="flex flex-col items-center gap-2 text-default-500">
 													<Icon icon="lucide:camera-off" width={48} />
 													<span className="text-xs font-medium">Camera Simulation</span>
 												</div>

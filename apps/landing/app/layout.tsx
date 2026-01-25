@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@taxyciti/ui/styles/global.css";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -17,8 +18,12 @@ export default function RootLayout({
  children: React.ReactNode;
 }>) {
  return (
-  <html lang="en">
-   <body className={inter.className}>{children}</body>
+  <html lang="en" suppressHydrationWarning>
+   <body className={inter.className}>
+    <Providers>
+     {children}
+    </Providers>
+   </body>
   </html>
  );
 }

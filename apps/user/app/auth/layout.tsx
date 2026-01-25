@@ -6,7 +6,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
 		<div className="flex bg-background text-white gap-8">
 			{/* Left Section: Branding or Additional Info */}
 			<div className="flex flex-1 items-center justify-center p-0 relative w-fit">
-				<Card className="w-fit max-w-md bg-background shadow-2xl p-0 dark:shadow-zinc-800 rounded-2xl">
+				<Card className="w-fit max-w-md bg-background shadow-2xl p-0 dark:shadow-default-800 rounded-2xl">
 					{children}
 				</Card>
 			</div>
