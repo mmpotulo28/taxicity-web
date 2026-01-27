@@ -5,7 +5,17 @@
 		"version": "1.1.0",
 		"orientation": "portrait",
 		"icon": "./assets/icon.png",
-		"plugins": ["./plugins/withNewRelic"],
+		"plugins": [
+			"./plugins/withNewRelic",
+			[
+				"@sentry/react-native/expo",
+				{
+					"url": "https://sentry.io/",
+					"project": "taxyciti-app",
+					"organization": "mpotulom"
+				}
+			]
+		],
 		"userInterfaceStyle": "dark",
 		"newArchEnabled": true,
 		"platforms": ["ios", "android"],

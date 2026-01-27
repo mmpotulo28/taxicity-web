@@ -367,7 +367,7 @@ export default function DriversPage() {
 									<TableCell>{renderStatusChip(driver.status)}</TableCell>
 									<TableCell>
 										<div className="flex items-center gap-1">
-											<Icon className="text-yellow-500" icon="lucide:star" />
+											<Icon className="text-primary-500" icon="lucide:star" />
 											<span>{driver.rating}</span>
 										</div>
 									</TableCell>
@@ -523,7 +523,7 @@ export default function DriversPage() {
 											<div className="mt-4 text-center">
 												<div className="flex items-center justify-center gap-1 mb-2">
 													<Icon
-														className="text-yellow-500"
+														className="text-primary-500"
 														icon="lucide:star"
 													/>
 													<span className="font-bold text-xl">
