@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@babel/runtime": "^7.28.6",
+		"@sentry/react-native": "^7.10.0",
 		"expo": "~54.0.32",
 		"expo-constants": "~18.0.13",
 		"expo-location": "^19.0.8",

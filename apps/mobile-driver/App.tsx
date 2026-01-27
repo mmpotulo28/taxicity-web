@@ -8,6 +8,26 @@ import NewRelic from 'newrelic-react-native-agent';
 import * as packageJson from './package.json';
 import * as Updates from 'expo-updates';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://20303d2c9891e3ffd7f509267b690f2b@o4509553467064320.ingest.us.sentry.io/4510781977788416',
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Enable Logs
+  enableLogs: true,
+
+  // Configure Session Replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 SplashScreen.preventAutoHideAsync();
 
@@ -79,7 +99,7 @@ const getHost = () => {
 
 const USER_APP_URL = getHost();
 
-export default function App() {
+export default Sentry.wrap(function App() {
 
   useEffect(() => {
     Updates.checkForUpdateAsync().then((update) => {
@@ -119,7 +139,7 @@ export default function App() {
       </SafeAreaView>
     </SafeAreaProvider>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
