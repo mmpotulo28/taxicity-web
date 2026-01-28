@@ -4,77 +4,56 @@ import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
 import helmet from "helmet";
-import jwt from "jsonwebtoken";
-import jwksClient from "jwks-rsa";
 import { clerkMiddleware, getAuth, requireAuth } from "@clerk/express";
 
 const app = express();
+app.use(clerkMiddleware());
 const server = createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: process.env.NODE_ENV === "production" ? ["https://taxyciti.mpotulo.com", "https://taxyciti-driver.mpotulo.com"] : ["http://localhost:3000", "http://localhost:3001"],
+		origin: process.env.NODE_ENV === "production" ? ["https://taxyciti.mpotulo.com", "https://taxyciti-driver.mpotulo.com"] : "*", // Allow all in dev for easier testing with IPs
 		methods: ["GET", "POST"],
 	},
 });
-
-// Clerk JWKS client for token verification
-const client = jwksClient({
-	jwksUri: `https://${process.env.CLERK_PUBLISHABLE_KEY?.split("_")[2]}.clerk.accounts.dev/.well-known/jwks.json`,
-});
-
-// Function to get signing key
-function getKey(header: any, callback: any) {
-	client.getSigningKey(header.kid, (err, key) => {
-		if (err) {
-			callback(err);
-		} else {
-			const signingKey = key?.getPublicKey();
-			callback(null, signingKey);
-		}
-	});
-}
 
 // Middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use(clerkMiddleware());
+
+// Helper for type safety
+interface TriggerRequest extends express.Request {
+	body: {
+		channel: string;
+		event: string;
+		data: any;
+	};
+}
+
+// Internal API Trigger Endpoint (Replaces Pusher Trigger)
+app.post("/trigger", (req: express.Request, res: express.Response) => {
+	const { isAuthenticated } = getAuth(req);
+	if (!isAuthenticated) {
+		return res.status(401).json({ error: "Unauthorized" });
+	}
+
+	const { channel, event, data } = req.body;
+
+	if (!channel || !event) {
+		return res.status(400).json({ error: "Missing channel or event" });
+	}
+
+	// Emit the event to the channel
+	io.to(channel).emit(event, data);
+
+	console.log(`[API Trigger] Channel: ${channel}, Event: ${event}`);
+	return res.json({ status: "success" });
+});
 
 // Health check (protected route)
 app.get("/health", requireAuth(), (req, res) => {
 	const { userId } = getAuth(req);
 	res.json({ status: "ok", timestamp: new Date().toISOString(), userId });
-});
-
-// Socket.IO authentication middleware
-io.use(async (socket: Socket, next) => {
-	const token = socket.handshake.auth.token;
-	if (!token) {
-		return next(new Error("Authentication error: No token provided"));
-	}
-
-	try {
-		// Verify JWT token using Clerk's JWKS
-		jwt.verify(
-			token,
-			getKey,
-			{
-				issuer: `https://${process.env.CLERK_PUBLISHABLE_KEY?.split("_")[2]}.clerk.accounts.dev`,
-			},
-			(err: any, decoded: any) => {
-				if (err) {
-					return next(new Error("Authentication error: Invalid token"));
-				}
-
-				socket.data.userId = decoded.sub;
-				socket.data.role = decoded.role || "user";
-				next();
-			},
-		);
-	} catch (err: any) {
-		console.error("Socket authentication error:", err);
-		next(new Error("Authentication error"));
-	}
 });
 
 // Socket.IO connection handling
@@ -86,6 +65,17 @@ io.on("connection", (socket: Socket) => {
 
 	// Join role-based room
 	socket.join(socket.data.role);
+
+	// Dynamic Channel Subscription (Pusher replacement)
+	socket.on("subscribe", (channel: string) => {
+		socket.join(channel);
+		console.log(`User ${socket.data.userId} joined ${channel}`);
+	});
+
+	socket.on("unsubscribe", (channel: string) => {
+		socket.leave(channel);
+		console.log(`User ${socket.data.userId} left ${channel}`);
+	});
 
 	// Handle ride request (from user to drivers)
 	socket.on("ride-request", (data: { pickup: string; destination: string; userId: string }) => {
@@ -131,7 +121,7 @@ io.on("connection", (socket: Socket) => {
 	});
 });
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3006;
 server.listen(PORT, () => {
 	console.log(`WebSocket server running on port ${PORT}`);
 });

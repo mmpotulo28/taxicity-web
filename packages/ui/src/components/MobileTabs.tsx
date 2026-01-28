@@ -56,7 +56,7 @@ const MobileTabs = () => {
 		return () => { };
 	}, [pathname]);
 
-	if (pathname?.startsWith("/driver")) return null;
+	if (pathname?.startsWith("/")) return null;
 
 	return (
 		<footer className="z-50 bg-background border-t border-default-200 shadow-lg h-16 rounded-t-2xl">

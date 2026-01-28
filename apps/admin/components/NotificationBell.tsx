@@ -2,25 +2,25 @@
 import React, { useEffect, useState } from "react";
 import { Badge, Button, Popover, PopoverTrigger, PopoverContent, ScrollShadow } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { pusherClient } from "@/lib/pusher-client";
+import { usePusher } from "@taxyciti/ui";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Notification } from "@/types";
 
 export const NotificationBell = () => {
  const { notifications, mutate } = useNotifications();
  const [unreadCount, setUnreadCount] = useState(0);
+ const { subscribe, unsubscribe } = usePusher();
 
  useEffect(() => {
-  const channel = pusherClient.subscribe("notifications-global");
-  channel.bind("new-notification", () => {
+  subscribe("notifications-global", "new-notification", () => {
    mutate();
-   setUnreadCount(prev => prev + 1);
+   setUnreadCount((prev) => prev + 1);
   });
 
   return () => {
-   pusherClient.unsubscribe("notifications-global");
-  }
- }, [mutate]);
+   unsubscribe("notifications-global");
+  };
+ }, [mutate, subscribe, unsubscribe]);
 
  return (
   <Popover placement="bottom-end">

@@ -7,12 +7,50 @@ import { Icon } from "@iconify/react";
 import { useDriver } from "@/context/DriverContext";
 import { DriverConsole } from "@/components/DriverConsole";
 import { VehicleRegistration } from "@/components/VehicleRegistration";
-import { NotificationBell } from "@/components/NotificationBell";
 import { motion } from "framer-motion";
-import { Header } from "@taxyciti/ui";
+import { useUser } from "@clerk/nextjs";
 
 export default function DriverPage() {
   const { driver, isLoading, refreshDriver } = useDriver();
+  const { user, isLoaded } = useUser()
+
+  if (isLoaded && !user) {
+    return (
+      <div className="flex flex-col justify-center items-center h-[calc(100vh-64px)] bg-default-50 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-md space-y-4"
+        >
+          <div className="w-20 h-20 bg-danger/10 rounded-full flex items-center justify-center mx-auto text-danger">
+            <Icon icon="lucide:alert-circle" width={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-default-900">Not Signed In</h2>
+          <p className="text-default-500">
+            You need to be signed in to access the driver console. Please sign in or create an account.
+          </p>
+          <div className="flex gap-3 justify-center pt-2">
+            <Button
+              as="a"
+              href="/sign-in"
+              color="primary"
+              startContent={<Icon icon="lucide:log-in" />}
+            >
+              Sign In
+            </Button>
+            <Button
+              as="a"
+              href="/sign-up"
+              variant="bordered"
+              startContent={<Icon icon="lucide:user-plus" />}
+            >
+              Create Account
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -41,7 +79,7 @@ export default function DriverPage() {
           <div className="flex gap-3 justify-center pt-2">
             <Button
               as="a"
-              href="/driver/apply"
+              href="/apply"
               color="primary"
               startContent={<Icon icon="lucide:file-text" />}
             >

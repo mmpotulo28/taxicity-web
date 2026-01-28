@@ -342,7 +342,7 @@ const Settings: React.FC = () => {
 										size="sm"
 										color="warning"
 										variant="flat"
-										onPress={() => router.push("/driver")}
+										onPress={() => router.push("/")}
 									>
 										Switch
 									</Button>

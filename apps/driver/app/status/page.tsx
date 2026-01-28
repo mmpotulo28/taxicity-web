@@ -14,7 +14,7 @@ export default function DriverStatusPage() {
 
  useEffect(() => {
   if (!isLoading && driver?.status === "ACTIVE") {
-   router.push("/driver");
+   router.push("/");
   }
  }, [driver, isLoading, router]);
 

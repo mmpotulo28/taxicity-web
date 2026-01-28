@@ -101,7 +101,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isOnline, setIsOnline] = useState(false);
   const [activeVehicleTrip, setActiveVehicleTrip] = useState<VehicleTrip | null>(null);
   const [incomingRequests, setIncomingRequests] = useState<Trip[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { location: trackedLocation, startTracking, stopTracking, isTracking } = useDriverLocation();
   const lastLocationSync = React.useRef<number>(0);
 
@@ -116,7 +116,8 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Sync location to API (Throttled to 5s)
   useEffect(() => {
-    if (!trackedLocation || !activeVehicleTrip) return;
+    if (!trackedLocation || !activeVehicleTrip || !driver) return;
+    console.log("DriverContext: Syncing location to server...", trackedLocation);
 
     const now = Date.now();
     if (now - lastLocationSync.current < 5000) return;
@@ -132,22 +133,27 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }).catch((e) => console.error("Location sync failed:", e));
 
     lastLocationSync.current = now;
-  }, [trackedLocation, activeVehicleTrip]);
+  }, [trackedLocation, activeVehicleTrip, driver]);
 
   // Watch position when active
   useEffect(() => {
-    if (activeVehicleTrip && !isTracking) {
+    if (activeVehicleTrip && !isTracking && driver) {
+      console.log("DriverContext: Starting location tracking...");
       startTracking();
-    } else if (!activeVehicleTrip && isTracking) {
+    } else if (!activeVehicleTrip && isTracking && driver) {
+      console.log("DriverContext: Stopping location tracking...");
       stopTracking();
     }
-  }, [activeVehicleTrip, isTracking, startTracking, stopTracking]);
+  }, [activeVehicleTrip, isTracking, startTracking, stopTracking, driver]);
 
   const fetchDriver = React.useCallback(async () => {
     if (!user) return;
     try {
+      setIsLoading(true);
+      console.log("DriverContext: Fetching driver profile...");
       const res = await fetch("/api/driver/me");
       if (res.ok) {
+        console.log("DriverContext: Driver profile fetched successfully.");
         const data = await res.json();
         setDriver(data);
       }
@@ -161,6 +167,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const fetchActiveVehicleTrip = React.useCallback(async () => {
     if (!driver) return;
     try {
+      console.log("DriverContext: Fetching active vehicle trip...");
       const res = await fetch("/api/driver/vehicle-trips");
       if (res.ok) {
         const trips = await res.json();
@@ -177,26 +184,34 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Fetch driver profile
   useEffect(() => {
     if (!isLoaded || !user) return;
+    console.log("DriverContext: Loading driver profile...");
     fetchDriver();
   }, [isLoaded, user, fetchDriver]);
 
   // Fetch active vehicle trip when driver is loaded
   useEffect(() => {
     if (driver) {
+      console.log("DriverContext: Loading active vehicle trip...");
       fetchActiveVehicleTrip();
     }
   }, [driver, fetchActiveVehicleTrip]);
 
   // Subscribe to Pusher updates for real-time requests and trips
   useEffect(() => {
-    if (!activeVehicleTrip) return;
+    if (!activeVehicleTrip || !driver) return;
 
     const channelName = `route-${activeVehicleTrip.route.id}`;
 
+    console.log(`DriverContext: Subscribing to ${channelName}`);
+
     subscribe(channelName, "new-trip", (newTrip: Trip) => {
-      console.log("New trip received via Pusher:", newTrip);
+      console.log("DriverContext: New trip EVENT received:", newTrip);
       addToast({ title: "New Ride Request", description: "A new passenger request has arrived." });
-      setIncomingRequests((prev) => [newTrip, ...prev]);
+      setIncomingRequests((prev) => {
+        const exists = prev.find((t) => t.id === newTrip.id);
+        if (exists) return prev;
+        return [newTrip, ...prev];
+      });
     });
 
     subscribe(channelName, "trip-cancelled", (data: { id: string; reason?: string }) => {
@@ -230,13 +245,13 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => {
       unsubscribe(channelName);
     };
-  }, [activeVehicleTrip?.route?.id, subscribe, unsubscribe]);
+  }, [activeVehicleTrip, driver, subscribe, unsubscribe]);
 
   // Poll for requests when online (active vehicle trip)
   // Initial fetch for requests when active (no polling, relies on Pusher)
   useEffect(() => {
     const fetchRequests = async () => {
-      if (!activeVehicleTrip) return;
+      if (!activeVehicleTrip || !driver) return;
       try {
         const res = await fetch("/api/driver/requests");
         if (res.ok) {
@@ -253,7 +268,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } else {
       setIncomingRequests([]);
     }
-  }, [activeVehicleTrip?.id]);
+  }, [activeVehicleTrip, activeVehicleTrip?.id, driver]);
 
   const toggleOnline = async () => {
     // This is now mostly controlled by start/end shift
@@ -263,6 +278,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const startShift = async (taxiId: string, routeId: string) => {
     try {
+      console.log(`DriverContext: Starting shift with taxiId=${taxiId} and routeId=${routeId}`);
       const res = await fetch("/api/driver/vehicle-trips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

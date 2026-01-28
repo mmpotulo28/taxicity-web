@@ -1,52 +1,85 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import Pusher from "pusher-js";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { io, Socket } from "socket.io-client";
+import { useAuth } from "@clerk/nextjs";
 
 interface PusherContextType {
- pusher: Pusher | null;
- subscribe: <T = unknown>(channelName: string, eventName: string, callback: (data: T) => void) => void;
+ pusher: Socket | null;
+ subscribe: (channelName: string, eventName: string, callback: (data: any) => void) => void;
  unsubscribe: (channelName: string) => void;
 }
 
 const PusherContext = createContext<PusherContextType | undefined>(undefined);
 
 export const PusherProvider = ({ children }: { children: React.ReactNode }) => {
- const [pusher, setPusher] = useState<Pusher | null>(null);
+ const [socket, setSocket] = useState<Socket | null>(null);
+ const { getToken, userId } = useAuth();
 
+ // Manage socket connection with auth
  useEffect(() => {
-  const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
-  const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
+  let activeSocket: Socket | null = null;
 
-  if (!key || !cluster) {
-   console.warn("Pusher credentials not found in environment variables");
-   return;
-  }
+  const connect = async () => {
+   if (!userId) return;
 
-  const pusherInstance = new Pusher(key, {
-   cluster: cluster,
-  });
+   try {
+    const token = await getToken();
+    const url = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:3006";
 
-  setPusher(pusherInstance);
+    console.log("Initializing WebSocket connection to:", url);
+
+    const socketInstance = io(url, {
+     auth: { token: token || "" },
+     autoConnect: false,
+     reconnection: true,
+     reconnectionAttempts: 5,
+     reconnectionDelay: 1000,
+    });
+
+    socketInstance.connect(); // Explicitly connect since autoConnect is false
+
+    socketInstance.on("connect", () => console.log("Socket connected:", socketInstance.id));
+    socketInstance.on("connect_error", (err) => console.error("Socket connection error:", err));
+    socketInstance.on("disconnect", (reason) => console.log("Socket disconnected:", reason));
+
+    setSocket(socketInstance);
+    activeSocket = socketInstance;
+   } catch (err) {
+    console.error("Failed to initialize socket:", err);
+   }
+  };
+
+  connect();
 
   return () => {
-   pusherInstance.disconnect();
+   if (activeSocket) {
+    activeSocket.disconnect();
+   }
   };
- }, []);
+ }, [getToken, userId]);
 
- const subscribe = <T = unknown>(channelName: string, eventName: string, callback: (data: T) => void) => {
-  if (!pusher) return;
-  const channel = pusher.subscribe(channelName);
-  channel.bind(eventName, callback);
- };
 
- const unsubscribe = (channelName: string) => {
-  if (!pusher) return;
-  pusher.unsubscribe(channelName);
- };
+ const subscribe = useCallback((channelName: string, eventName: string, callback: (data: any) => void) => {
+  if (!socket) {
+   console.warn("Socket not connected, cannot subscribe to:", channelName);
+   return;
+  }
+  console.log(`Subscribing to channel: ${channelName}, event: ${eventName}`);
+  socket.emit("subscribe", channelName);
+  socket.on(eventName, callback);
+ }, [socket]);
+
+ const unsubscribe = useCallback((channelName: string) => {
+  if (!socket) return;
+  console.log(`Unsubscribing from channel: ${channelName}`);
+  socket.emit("unsubscribe", channelName);
+ }, [socket]);
+
+ const value = useMemo(() => ({ pusher: socket, subscribe, unsubscribe }), [socket, subscribe, unsubscribe]);
 
  return (
-  <PusherContext.Provider value={{ pusher, subscribe, unsubscribe }}>
+  <PusherContext.Provider value={value}>
    {children}
   </PusherContext.Provider>
  );

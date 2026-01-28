@@ -868,7 +868,7 @@
 				}
 			}
 		},
-		"/drivers": {
+		"/s": {
 			"get": {
 				"tags": ["Drivers"],
 				"summary": "Get drivers list",

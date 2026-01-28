@@ -69,9 +69,9 @@ export default function DriverApplicationPage() {
   useEffect(() => {
     if (!isLoading && driver) {
       if (driver.status === "ACTIVE") {
-        router.push("/driver");
+        router.push("/");
       } else if (driver.status === "PENDING_VERIFICATION") {
-        router.push("/driver/status");
+        router.push("/status");
       }
     }
   }, [driver, isLoading, router]);
@@ -114,7 +114,7 @@ export default function DriverApplicationPage() {
       });
 
       if (res.ok) {
-        router.push("/driver/status");
+        router.push("/status");
       } else {
         const error = await res.json();
         alert(error.error || "Application failed");

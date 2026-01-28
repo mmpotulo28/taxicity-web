@@ -23,12 +23,12 @@ services:
 
   websocket-server:
     build:
-      context: ./apps/websocket-server
+      context: ./apps/websocket
       dockerfile: Dockerfile
     container_name: taxyciti-websocket
     restart: always
     ports:
-      - "127.0.0.1:3002:3002"
+      - "127.0.0.1:3006:3006"
     env_file:
       - .env.production
     networks:

@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
 		const user = await currentUser();
 
 		if (!userId || !user) {
+			console.error("Unauthorized access attempt to /driver/me");
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
 
 		// If no driver found, check if we can link by email (migration path)
 		if (!driver && user.emailAddresses[0]?.emailAddress) {
+			console.log("No driver found by userId, attempting to link by email...");
 			const email = user.emailAddresses[0].emailAddress;
 			driver = await prisma.driver.findUnique({
 				where: { email },
@@ -49,6 +51,7 @@ export async function GET(req: NextRequest) {
 
 			if (driver) {
 				// Link the account
+				console.log(`Linking driver ${driver.id} to userId ${userId}`);
 				driver = await prisma.driver.update({
 					where: { id: driver.id },
 					data: { userId },
@@ -70,6 +73,7 @@ export async function GET(req: NextRequest) {
 
 		// If still no driver, return 404 so the frontend knows to redirect to application
 		if (!driver) {
+			console.error("Driver not found for userId:", userId);
 			return NextResponse.json({ error: "Driver not found" }, { status: 404 });
 		}
 
