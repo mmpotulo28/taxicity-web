@@ -177,6 +177,13 @@ docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxy
 docker push mmpotulo28/taxyciti-driver:latest
 ```
 
+**Websocket Server:**
+
+```bash
+docker build --platform linux/amd64 -f apps/websocket/Dockerfile -t mmpotulo28/taxyciti-websocket:latest .
+docker push mmpotulo28/taxyciti-websocket:latest
+```
+
 **Push to Production Server:**
 
 ```bash

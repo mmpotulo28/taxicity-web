@@ -1,4 +1,3 @@
-import { heroui } from "@heroui/theme";
 import sharedConfig from "@taxyciti/ui/tailwind.config";
 
 /** @type {import('tailwindcss').Config} */

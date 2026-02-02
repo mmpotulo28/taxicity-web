@@ -15,22 +15,21 @@ services:
     container_name: taxyciti-driver
     restart: always
     ports:
-      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:3001:3001"
     env_file:
       - .env.production
     networks:
       - taxyciti-net
 
   websocket-server:
-    build:
-      context: ./apps/websocket
-      dockerfile: Dockerfile
+    image: mmpotulo28/taxyciti-websocket:latest
     container_name: taxyciti-websocket
     restart: always
     ports:
       - "127.0.0.1:3006:3006"
     env_file:
       - .env.production
+      - .env.local
     networks:
       - taxyciti-net
 

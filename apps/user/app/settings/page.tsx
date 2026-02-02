@@ -519,7 +519,7 @@ const Settings: React.FC = () => {
 									)}
 
 
-									{!isLoadingSavedLocations && savedLocations?.map((place: any, i: number) => (
+									{!isLoadingSavedLocations && savedLocations?.map((place, i: number) => (
 										<React.Fragment key={place.id}>
 											<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
 												<div className="flex items-center gap-3">

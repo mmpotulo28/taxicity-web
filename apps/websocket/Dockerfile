@@ -1,27 +1,57 @@
-# Use Node.js 20 Alpine for smaller image
-FROM node:20-alpine
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-# Set working directory
+# 1. Prune the workspace
+FROM base AS pruner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install -g turbo
+COPY . .
+RUN turbo prune --scope=websocket-server --docker
+
+# 2. Install dependencies & Build
+FROM base AS builder
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy lockfile and package.json's from pruner
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Install dependencies
-RUN npm ci --only=production
+# Install deps (frozen lockfile for reproducibility)
+RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY . .
+# Copy source code from pruner
+COPY --from=pruner /app/out/full/ .
 
-# Build TypeScript
-RUN npm run build
+# Build the project
+RUN pnpm turbo build --filter=websocket-server...
 
-# Expose port
+# 3. Production Runner
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 expressjs
+
+# Copy the entire workspace from builder (simplest for non-bundled Node apps)
+# This ensures all node_modules and structure are present
+COPY --from=builder --chown=expressjs:nodejs /app .
+
+# Switch to the websocket app directory
+WORKDIR /app/apps/websocket
+
+USER expressjs
+
 EXPOSE 3006
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3006/health || exit 1
+  CMD wget -qO- http://localhost:3006/health || exit 1
 
 # Start the server
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
