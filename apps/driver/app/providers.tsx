@@ -36,10 +36,12 @@ export function Providers({ children, themeProps }: ProvidersProps) {
       <NextThemesProvider {...themeProps}>
        <PusherProvider>
         <MapProvider>
-         <DriverProvider>
-          <ToastProvider placement="top-center" />
-          {children}
-         </DriverProvider>
+         <RideProvider>
+          <DriverProvider>
+           <ToastProvider placement="top-center" />
+           {children}
+          </DriverProvider>
+         </RideProvider>
         </MapProvider>
        </PusherProvider>
       </NextThemesProvider>

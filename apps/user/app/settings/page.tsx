@@ -129,14 +129,14 @@ const Settings: React.FC = () => {
 				try {
 					let address = "Current Location";
 
-					if (window.google && window.google.maps && window.google.maps.Geocoder) {
+					if (globalThis.google?.maps?.Geocoder) {
 						const geocoder = new google.maps.Geocoder();
 						const response = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
 							geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
 								if (status === "OK" && results && results.length > 0) {
 									resolve(results);
 								} else {
-									reject(status);
+									reject(new Error("Geocoder failed due to: " + status));
 								}
 							});
 						});
@@ -505,59 +505,64 @@ const Settings: React.FC = () => {
 							className="space-y-4">
 							<Card className="bg-background/60 backdrop-blur-md border border-default-200 shadow-sm">
 								<CardBody className="p-0">
-									{isLoadingSavedLocations ? (
+									{isLoadingSavedLocations && (
 										<div className="p-8 text-center text-default-500">Loading...</div>
-									) : savedLocations?.length === 0 ? (
+									)}
+
+									{savedLocations?.length === 0 && !isLoadingSavedLocations && (
 										<div className="flex flex-col items-center justify-center p-8 text-center text-default-500">
 											<div className="p-4 bg-default-100 rounded-full mb-3">
 												<Icon icon="lucide:map-pin-off" className="w-6 h-6" />
 											</div>
 											<p>No saved places yet.</p>
 										</div>
-									) : (
-										savedLocations?.map((place: any, i: number) => (
-											<React.Fragment key={place.id}>
-												<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
-													<div className="flex items-center gap-3">
-														<div
-															className={`p-2 rounded-xl ${place.name.toLowerCase() === "home"
-																? "bg-primary/10 text-primary"
-																: place.name.toLowerCase() === "work"
-																	? "bg-secondary/10 text-secondary"
-																	: "bg-default-100 text-default-500"
-																}`}>
-															<Icon
-																icon={
-																	place.name.toLowerCase() === "home"
-																		? "lucide:home"
-																		: place.name.toLowerCase() === "work"
-																			? "lucide:briefcase"
-																			: "lucide:map-pin"
-																}
-																className="w-5 h-5"
-															/>
-														</div>
-														<div>
-															<p className="font-medium capitalization">{place.name}</p>
-															<p className="text-xs text-default-500 line-clamp-1">{place.address}</p>
-														</div>
+									)}
+
+
+									{!isLoadingSavedLocations && savedLocations?.map((place: any, i: number) => (
+										<React.Fragment key={place.id}>
+											<div className="flex items-center justify-between p-4 hover:bg-default-100/50 transition-colors cursor-pointer">
+												<div className="flex items-center gap-3">
+													<div
+														className={`p-2 rounded-xl ${place.name.toLowerCase() === "home"
+															? "bg-primary/10 text-primary"
+															: place.name.toLowerCase() === "work"
+																? "bg-secondary/10 text-secondary"
+																: "bg-default-100 text-default-500"
+															}`}>
+														<Icon
+															icon={
+																place.name.toLowerCase() === "home"
+																	? "lucide:home"
+																	: place.name.toLowerCase() === "work"
+																		? "lucide:briefcase"
+																		: "lucide:map-pin"
+															}
+															className="w-5 h-5"
+														/>
 													</div>
-													<div className="flex items-center gap-2">
-														<Button
-															isIconOnly
-															size="sm"
-															variant="light"
-															color="danger"
-															isDisabled={isDeletingLocation}
-															onPress={() => deleteSavedLocation(place.id)}>
-															<Icon icon="lucide:trash-2" className="w-4 h-4" />
-														</Button>
+													<div>
+														<p className="font-medium capitalization">{place.name}</p>
+														<p className="text-xs text-default-500 line-clamp-1">{place.address}</p>
 													</div>
 												</div>
-												{i < (savedLocations?.length || 0) - 1 && <Divider className="opacity-50" />}
-											</React.Fragment>
-										))
-									)}
+												<div className="flex items-center gap-2">
+													<Button
+														isIconOnly
+														size="sm"
+														variant="light"
+														color="danger"
+														isDisabled={isDeletingLocation}
+														onPress={() => deleteSavedLocation(place.id)}>
+														<Icon icon="lucide:trash-2" className="w-4 h-4" />
+													</Button>
+												</div>
+											</div>
+											{i < (savedLocations?.length || 0) - 1 && <Divider className="opacity-50" />}
+										</React.Fragment>
+									))
+									}
+
 								</CardBody>
 							</Card>
 

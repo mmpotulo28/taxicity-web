@@ -31,10 +31,13 @@ export const PusherProvider = ({ children }: { children: React.ReactNode }) => {
 
     const socketInstance = io(url, {
      auth: { token: token || "" },
+     query: { role: "user" }, // Add role hint or fetch from user metadata
      autoConnect: false,
      reconnection: true,
-     reconnectionAttempts: 5,
+     reconnectionAttempts: 10,
      reconnectionDelay: 1000,
+     reconnectionDelayMax: 5000,
+     randomizationFactor: 0.5,
     });
 
     socketInstance.connect(); // Explicitly connect since autoConnect is false

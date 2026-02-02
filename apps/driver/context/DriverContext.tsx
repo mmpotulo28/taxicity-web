@@ -206,7 +206,6 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     subscribe(channelName, "new-trip", (newTrip: Trip) => {
       console.log("DriverContext: New trip EVENT received:", newTrip);
-      addToast({ title: "New Ride Request", description: "A new passenger request has arrived." });
       setIncomingRequests((prev) => {
         const exists = prev.find((t) => t.id === newTrip.id);
         if (exists) return prev;

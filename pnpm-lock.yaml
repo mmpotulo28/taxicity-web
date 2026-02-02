@@ -177,6 +177,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.90.20
         version: 5.90.20(react@19.2.3)
+      '@types/jsonwebtoken':
+        specifier: ^9.0.10
+        version: 9.0.10
       '@vercel/blob':
         specifier: ^2.0.1
         version: 2.0.1
@@ -195,6 +198,9 @@ importers:
       intl-messageformat:
         specifier: 10.7.16
         version: 10.7.16
+      jsonwebtoken:
+        specifier: ^9.0.3
+        version: 9.0.3
       lucide-react:
         specifier: ^0.545.0
         version: 0.545.0(react@19.2.3)
@@ -1103,9 +1109,6 @@ importers:
       '@taxyciti/configs':
         specifier: workspace:*
         version: link:../configs
-      '@types/google.maps':
-        specifier: ^3.58.1
-        version: 3.58.1
       '@types/react':
         specifier: 19.2.8
         version: 19.2.8

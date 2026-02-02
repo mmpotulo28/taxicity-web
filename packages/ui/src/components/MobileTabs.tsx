@@ -59,7 +59,7 @@ const MobileTabs = () => {
 	if (pathname?.startsWith("/")) return null;
 
 	return (
-		<footer className="z-50 bg-background border-t border-default-200 shadow-lg h-16 rounded-t-2xl">
+		<footer className="z-50 bg-red absolute bottom-0 left-0 right-0 border-t border-default-200 shadow-lg h-16 rounded-t-2xl">
 			<nav className="flex justify-around items-center">
 				{tabs.map((tab) => {
 					const isActive = currentPage === tab.key;

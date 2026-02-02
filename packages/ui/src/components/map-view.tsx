@@ -162,7 +162,15 @@ export const MapView: React.FC<MapViewProps> = ({
 					};
 					setUserLocation(location);
 				},
-				() => console.error("Error getting user location")
+				(error) => {
+					console.warn("Error getting user location:", error.message);
+					// Fallback to default center if location access fails
+				},
+				{
+					enableHighAccuracy: true,
+					timeout: 5000,
+					maximumAge: 0,
+				}
 			);
 		}
 	}, [setUserLocation, userLocation]);
@@ -224,7 +232,6 @@ export const MapView: React.FC<MapViewProps> = ({
 				lng: () => lngLat.lng
 			}
 		};
-		// @ts-ignore - Context expects google.maps.MapMouseEvent
 		contextHandleMapClick(mockEvent);
 
 	}, [modalMap, contextHandleMapClick]);
@@ -263,7 +270,7 @@ export const MapView: React.FC<MapViewProps> = ({
 					zoom: 14
 				}}
 				style={{ width: '100%', height: '100%' }}
-				mapStyle="mapbox://styles/mapbox/streets-v12"
+				mapStyle="mapbox://styles/mmpotulo/cml57j7gg000901qxcy2yepbp"
 				mapboxAccessToken={mapboxToken}
 				onClick={onMapClick}
 				onLoad={onMapLoad}
@@ -387,9 +394,11 @@ export const MapView: React.FC<MapViewProps> = ({
 						longitude={rank.coordinates.lng}
 						anchor="bottom"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" width="24" height="24" className="drop-shadow-md cursor-pointer" title={rank.name}>
-							<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-						</svg>
+						<div title={rank.name} className="cursor-pointer">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ef4444" width="24" height="24" className="drop-shadow-md">
+								<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
+							</svg>
+						</div>
 					</Marker>
 				))}
 			</Map>

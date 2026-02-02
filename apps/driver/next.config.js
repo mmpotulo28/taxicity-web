@@ -4,7 +4,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 console.log("env", process.env.NODE_ENV);
 const nextConfig = {
 	output: "standalone",
-	transpilePackages: ["@taxyciti/ui", "@taxyciti/utils"],
+	transpilePackages: ["@taxyciti/ui", "@taxyciti/utils", "react-map-gl", "mapbox-gl"],
 	experimental: {
 		authInterrupts: true,
 		turbopackUseSystemTlsCerts: process.env.NODE_ENV != "development",
