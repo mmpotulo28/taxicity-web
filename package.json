@@ -64,6 +64,7 @@
 		"@heroui/use-theme": "^2.1.10",
 		"@heroui/user": "2.2.21",
 		"@iconify/react": "^6.0.2",
+		"@next/third-parties": "^16.1.6",
 		"@prisma/client": "^7.3.0",
 		"@prisma/extension-accelerate": "^2.0.2",
 		"@react-aria/ssr": "3.9.10",
