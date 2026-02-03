@@ -1,4 +1,4 @@
-import { Loading } from "@taxyciti/ui";
+import { Loading } from "@taxiciti/ui";
 
 export default function LoadingPage() {
  return <Loading />;

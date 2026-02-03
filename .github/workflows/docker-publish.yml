@@ -7,8 +7,8 @@ on:
 
 env:
   # Customize these image names if needed
-  USER_IMAGE_NAME: taxyciti-user
-  DRIVER_IMAGE_NAME: taxyciti-driver
+  USER_IMAGE_NAME: taxiciti-user
+  DRIVER_IMAGE_NAME: taxiciti-driver
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}

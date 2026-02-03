@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
-import { prisma } from "@taxyciti/database";
+import { prisma } from "@taxiciti/database";
 
 // Validation schemas
 const UpdateTaxiSchema = z.object({

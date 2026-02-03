@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
 import { z } from "zod";
-import { prisma } from "@taxyciti/database";
-import { pusherServer } from "@taxyciti/utils";
+import { prisma } from "@taxiciti/database";
+import { pusherServer } from "@taxiciti/utils";
 
 const statusSchema = z.object({
 	status: z.enum(["REQUESTED", "ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS", "COMPLETED", "CANCELLED"]),

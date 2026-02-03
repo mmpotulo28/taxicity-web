@@ -10,9 +10,9 @@ import { Switch, Card, CardBody, Chip } from "@heroui/react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/modal";
 import { addToast } from "@heroui/toast";
 import { useVehicleTracker } from "../../../hooks/useVehicleTracker";
-import { calculateDistance } from "@taxyciti/utils";
+import { calculateDistance } from "@taxiciti/utils";
 
-import { useRide, MapView, TripCard, TripModal } from "@taxyciti/ui";
+import { useRide, MapView, TripCard, TripModal } from "@taxiciti/ui";
 
 
 const TrackRide: React.FC = () => {

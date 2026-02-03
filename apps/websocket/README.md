@@ -75,11 +75,11 @@ const socket = io("https://your-domain.com", {
 Build and run:
 
 ```bash
-docker build -t taxyciti-websocket .
+docker build -t taxiciti-websocket .
 docker run -p 3002:3002 \
   -e CLERK_PUBLISHABLE_KEY=your_key \
   -e CLERK_SECRET_KEY=your_secret \
-  taxyciti-websocket
+  taxiciti-websocket
 ```
 
 ## Nginx Configuration
@@ -135,4 +135,4 @@ function useSocket() {
 ## API Endpoints
 
 - `GET /health`: Protected health check endpoint (requires authentication)</content>
-  <parameter name="filePath">/Users/ManelisiM/Documents/my-projects/nextjs/heroui/taxyciti-web/apps/websocket-server/README.md
+  <parameter name="filePath">/Users/ManelisiM/Documents/my-projects/nextjs/heroui/taxiciti-web/apps/websocket-server/README.md

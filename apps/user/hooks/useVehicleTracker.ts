@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { usePusher } from "@taxyciti/ui";
+import { usePusher } from "@taxiciti/ui";
 
 interface VehicleLocation {
 	lat: number;

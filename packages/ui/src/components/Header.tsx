@@ -1,7 +1,7 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
 import AuthButton from "./AuthButton";
-import { cn } from "@taxyciti/utils";
+import { cn } from "@taxiciti/utils";
 
 interface HeaderProps {
 	endContent?: React.ReactNode;

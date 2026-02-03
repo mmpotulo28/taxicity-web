@@ -1,7 +1,5 @@
-const path = require("path");
-const {
-  getSentryExpoConfig
-} = require("@sentry/react-native/metro");
+const path = require("node:path");
+const { getSentryExpoConfig } = require("@sentry/react-native/metro");
 
 // Find the project and workspace directories
 const projectRoot = __dirname;

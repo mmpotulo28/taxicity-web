@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { prisma } from "@taxyciti/database";
-import type { TripStatus } from "@taxyciti/database/types";
-import { pusherServer } from "@taxyciti/utils";
+import { prisma } from "@taxiciti/database";
+import type { TripStatus } from "@taxiciti/database/types";
+import { pusherServer } from "@taxiciti/utils";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {

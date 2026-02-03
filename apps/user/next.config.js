@@ -3,7 +3,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	output: "standalone",
-	transpilePackages: ["@taxyciti/ui", "@taxyciti/utils", "react-map-gl", "mapbox-gl"],
+	transpilePackages: ["@taxiciti/ui", "@taxiciti/utils", "react-map-gl", "mapbox-gl"],
 	experimental: {
 		authInterrupts: true,
 		turbopackUseSystemTlsCerts: process.env.NODE_ENV != "development",
@@ -18,7 +18,7 @@ export default withSentryConfig(nextConfig, {
 	// https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
 	org: "mpotulom",
-	project: "taxyciti-web",
+	project: "taxiciti-web",
 
 	// Only print logs for uploading source maps in CI
 	silent: !process.env.CI,

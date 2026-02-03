@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { prisma, redis } from "@taxyciti/database";
+import { prisma, redis } from "@taxiciti/database";
 import { pusherServer } from "../../../../lib/pusher";
 import { z } from "zod";
 

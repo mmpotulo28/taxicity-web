@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	transpilePackages: ["@taxyciti/ui", "@taxyciti/configs"],
+	transpilePackages: ["@taxiciti/ui", "@taxiciti/configs"],
 };
 
 export default nextConfig;

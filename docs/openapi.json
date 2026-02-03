@@ -6,7 +6,7 @@
 		"version": "1.0.0",
 		"contact": {
 			"name": "TaxiCity Support",
-			"email": "support@taxyciti.com"
+			"email": "support@taxiciti.com"
 		},
 		"license": {
 			"name": "MIT",
@@ -19,7 +19,7 @@
 			"description": "Development server"
 		},
 		{
-			"url": "https://taxyciti.vercel.app/api",
+			"url": "https://taxiciti.vercel.app/api",
 			"description": "Production server"
 		}
 	],

@@ -1,5 +1,5 @@
 {
-	"name": "@taxyciti/ui",
+	"name": "@taxiciti/ui",
 	"version": "0.0.1",
 	"type": "module",
 	"main": "src/index.ts",
@@ -7,6 +7,7 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./styles/global.css": "./src/styles/global.css",
+		"./styles/app.styles": "./src/styles/app.styles.ts",
 		"./components/*": "./src/components/*",
 		"./tailwind.config": "./tailwind.config.js",
 		"./postcss.config": "./postcss.config.js"
@@ -66,7 +67,7 @@
 		"@iconify/react": "^6.0.2",
 		"@next/third-parties": "^16.1.6",
 		"@tanstack/react-query": "^5.90.16",
-		"@taxyciti/utils": "workspace:*",
+		"@taxiciti/utils": "workspace:*",
 		"axios": "^1.13.2",
 		"clsx": "2.1.1",
 		"framer-motion": "^11.18.2",
@@ -83,7 +84,7 @@
 	},
 	"devDependencies": {
 		"@tailwindcss/postcss": "4.1.11",
-		"@taxyciti/configs": "workspace:*",
+		"@taxiciti/configs": "workspace:*",
 		"@types/react": "19.2.8",
 		"@types/react-dom": "19.2.3",
 		"postcss": "8.5.6",

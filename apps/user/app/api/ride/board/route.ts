@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-import { prisma } from "@taxyciti/database";
+import { prisma } from "@taxiciti/database";
 import { z } from "zod";
 
 const BoardingSchema = z.object({

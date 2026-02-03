@@ -1,4 +1,4 @@
-import "@taxyciti/ui/styles/global.css";
+import "@taxiciti/ui/styles/global.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 
@@ -7,7 +7,7 @@ import { Main } from "./Main";
 
 import { fontSans } from "@/lib/config/fonts";
 import { siteConfig } from "@/lib/config/site";
-import { MobileTabs, GlobalModals } from "@taxyciti/ui";
+import { MobileTabs, GlobalModals } from "@taxiciti/ui";
 
 export const metadata: Metadata = {
 	title: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "en_ZA",
-		url: "https://taxyciti.co.za",
+		url: "https://taxiciti.co.za",
 		title: siteConfig.name,
 		description: siteConfig.description,
 		siteName: siteConfig.name,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 		card: "summary_large_image",
 		title: siteConfig.name,
 		description: siteConfig.description,
-		creator: "@taxyciti_za",
+		creator: "@taxiciti_za",
 	},
 	icons: {
 		icon: "/favicon.ico",
@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 						defaultTheme: "dark",
 						enableColorScheme: true,
 						enableSystem: true,
-						storageKey: "taxyciti_theme",
+						storageKey: "taxiciti_theme",
 						themes: ["light", "dark"],
 					}}>
 					<div className="flex flex-col h-screen mx-auto text-foreground bg-background">

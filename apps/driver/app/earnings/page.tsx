@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
-import { formatCurrency } from "@taxyciti/utils";
+import { formatCurrency } from "@taxiciti/utils";
 import { Icon } from "@iconify/react";
 import { Pagination } from "@heroui/pagination";
 import { ScrollShadow } from "@heroui/scroll-shadow";

@@ -33,7 +33,7 @@ import {
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 import { useDrivers } from "@/hooks/useDrivers";
-import type { Driver } from "@taxyciti/database/types";
+import type { Driver } from "@taxiciti/database/types";
 
 // Local definition to avoid runtime import of Prisma Enum in Client Component
 type DriverStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION" | "BLOCKED";

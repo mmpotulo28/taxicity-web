@@ -1,3 +1,3 @@
-import config from "@taxyciti/ui/postcss.config";
+import config from "@taxiciti/ui/postcss.config";
 
 export default config;

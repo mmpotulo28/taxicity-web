@@ -1,10 +1,10 @@
 {
 	"name": "mobile-driver",
 	"version": "1.0.0",
-	"main": "index.js",
+	"main": "index.ts",
 	"scripts": {
-		"dev": "expo start -p 3004",
-		"start": "expo start -p 3004",
+		"dev": "pnpm start",
+		"start": "expo start -p 3005",
 		"android": "expo run:android",
 		"ios": "expo run:ios",
 		"web": "expo start --web",
@@ -13,9 +13,12 @@
 	},
 	"dependencies": {
 		"@babel/runtime": "^7.28.6",
-		"@sentry/react-native": "^7.10.0",
-		"expo": "~54.0.32",
+		"@expo/vector-icons": "^15.0.3",
+		"@sentry/react-native": "^7.2.0",
+		"expo": "~54.0.33",
 		"expo-constants": "~18.0.13",
+		"expo-dev-client": "~6.0.20",
+		"expo-insights": "~0.10.8",
 		"expo-location": "^19.0.8",
 		"expo-splash-screen": "^31.0.13",
 		"expo-status-bar": "~3.0.9",

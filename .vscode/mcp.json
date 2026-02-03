@@ -1,7 +1,7 @@
 {
   "servers": {
     "Sentry": {
-      "url": "https://mcp.sentry.dev/mcp/mpotulom/taxyciti-web",
+      "url": "https://mcp.sentry.dev/mcp/mpotulom/taxiciti-web",
       "type": "http"
     },
     "next-devtools": {

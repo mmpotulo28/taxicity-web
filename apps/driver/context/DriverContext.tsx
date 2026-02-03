@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { addToast } from "@heroui/toast";
-import { usePusher } from "@taxyciti/ui";
+import { usePusher } from "@taxiciti/ui";
 import { useDriverLocation } from "../hooks/useDriverLocation";
 
 export interface Driver {

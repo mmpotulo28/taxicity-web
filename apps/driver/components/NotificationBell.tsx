@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Badge, Button, Popover, PopoverTrigger, PopoverContent, ScrollShadow } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { usePusher } from "@taxyciti/ui";
+import { usePusher } from "@taxiciti/ui";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useUser } from "@clerk/nextjs";
 

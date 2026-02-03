@@ -1,12 +1,13 @@
 {
-	"name": "@taxyciti/configs",
+	"name": "@taxiciti/configs",
 	"version": "0.0.1",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"exports": {
 		"./eslint": "./eslint.config.mts",
 		"./tsconfig": "./base.json",
-		"./clerk": "./src/clerk.ts"
+		"./clerk": "./src/clerk.ts",
+		"./telemetry": "./src/telemetry.ts"
 	},
 	"files": [
 		"dist",

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { addToast } from "@heroui/toast";
-import { SupportTicket, SupportMessage } from "@taxyciti/database/types";
+import { SupportTicket, SupportMessage } from "@taxiciti/database/types";
 
 export type SupportTicketWithMessages = SupportTicket & {
 	messages: SupportMessage[];

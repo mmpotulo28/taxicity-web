@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 import { useLoadScript } from "@react-google-maps/api";
 import { addToast } from "@heroui/toast";
 
-import { useRide } from "@taxyciti/ui";
+import { useRide } from "@taxiciti/ui";
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
