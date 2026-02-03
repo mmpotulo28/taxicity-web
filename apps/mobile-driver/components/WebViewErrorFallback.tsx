@@ -28,7 +28,7 @@ export const WebViewErrorFallback = ({
     </View>
 
     {/* Main Text */}
-    <Text style={styles.title}>Connection Lost</Text>
+    <Text style={styles.title}>{errorDomain || "Error Loading Content"}</Text>
     <Text style={styles.description}>
      We couldn't reach the {appConfig.name} servers. Please check your internet connection.
     </Text>

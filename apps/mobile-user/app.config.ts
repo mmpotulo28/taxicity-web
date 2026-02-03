@@ -40,10 +40,7 @@ const appConfig: ExpoConfig = {
 		},
 		edgeToEdgeEnabled: true,
 		package: "com.taxiciti.user",
-		// @ts-ignore
-		usesCleartextTraffic: true,
 	},
-
 	web: {
 		favicon: "./assets/favicon.png",
 	},
@@ -54,9 +51,6 @@ const appConfig: ExpoConfig = {
 	},
 	runtimeVersion: {
 		policy: "appVersion",
-	},
-	updates: {
-		url: "https://u.expo.dev/44d6dd98-69c1-4647-aae1-f33414efcc6e",
 	},
 };
 
