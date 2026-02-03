@@ -1,5 +1,5 @@
 {
-	"name": "next-app-template",
+	"name": "taxicity-web",
 	"version": "0.0.1",
 	"packageManager": "pnpm@10.23.0",
 	"type": "module",
@@ -14,7 +14,8 @@
 		"db:generate": "pnpm --filter @taxyciti/database generate",
 		"docker:build-user": "docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxyciti-user:latest .",
 		"docker:build-driver": "docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxyciti-driver:latest .",
-		"docker:push": "pnpm --filter apps/user docker:push && pnpm --filter apps/driver docker:push"
+		"docker:push": "pnpm --filter apps/user docker:push && pnpm --filter apps/driver docker:push",
+		"cli": "node --loader ts-node/esm scripts/manage.ts"
 	},
 	"prisma": {
 		"seed": "node --loader ts-node/esm prisma/seed.ts"
@@ -95,6 +96,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
+		"@inquirer/prompts": "^8.2.0",
 		"@next/eslint-plugin-next": "15.3.4",
 		"@react-types/shared": "3.30.0",
 		"@tailwindcss/postcss": "4.1.11",
@@ -104,6 +106,7 @@
 		"@types/react-dom": "19.2.3",
 		"@typescript-eslint/eslint-plugin": "8.34.1",
 		"@typescript-eslint/parser": "8.34.1",
+		"chalk": "^5.6.2",
 		"eslint": "9.25.1",
 		"eslint-config-next": "15.3.4",
 		"eslint-config-prettier": "9.1.0",
@@ -114,7 +117,9 @@
 		"eslint-plugin-react": "7.37.5",
 		"eslint-plugin-react-hooks": "5.2.0",
 		"eslint-plugin-unused-imports": "4.1.4",
+		"execa": "^9.6.1",
 		"globals": "16.0.0",
+		"inquirer": "^13.2.2",
 		"jiti": "^2.6.1",
 		"postcss": "8.5.6",
 		"prettier": "3.5.3",
