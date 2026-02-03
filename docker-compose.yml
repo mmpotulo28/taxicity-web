@@ -29,7 +29,6 @@ services:
       - "127.0.0.1:3006:3006"
     env_file:
       - .env.production
-      - .env.local
     networks:
       - taxiciti-net
 
