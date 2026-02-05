@@ -4,10 +4,10 @@
 	"main": "index.ts",
 	"scripts": {
 		"dev": "pnpm start",
-		"start": "expo start -p 3005",
-		"android": "expo run:android",
-		"ios": "expo run:ios",
-		"web": "expo start --web",
+		"start": "dotenv -e ../../.env -- expo start -p 3004",
+		"android": "dotenv -e ../../.env -- expo run:android",
+		"ios": "dotenv -e ../../.env -- expo run:ios",
+		"web": "dotenv -e ../../.env -- expo start --web",
 		"build:apps": "eas build --platform android --non-interactive",
 		"type-check": "tsc --noEmit"
 	},

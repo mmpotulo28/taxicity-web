@@ -31,8 +31,12 @@ RUN pnpm turbo build --filter=websocket-server...
 
 # 3. Production Runner
 FROM base AS runner
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 ENV NODE_ENV=production
+ENV NEW_RELIC_NO_CONFIG_FILE=true
+ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+ENV NEW_RELIC_LOG=info
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \

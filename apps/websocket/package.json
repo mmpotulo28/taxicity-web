@@ -4,7 +4,7 @@
 	"description": "Socket.IO WebSocket server for TaxiCity realtime updates",
 	"main": "dist/index.js",
 	"scripts": {
-		"dev": "ts-node src/index.ts",
+		"dev": "dotenv -e ../../.env -- ts-node src/index.ts",
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"type-check": "tsc --noEmit"
@@ -17,6 +17,7 @@
 		"helmet": "^7.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"jwks-rsa": "^3.1.0",
+		"newrelic": "^13.12.0",
 		"socket.io": "^4.7.4"
 	},
 	"devDependencies": {
