@@ -5,22 +5,26 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import cors from "cors";
 import helmet from "helmet";
-import { clerkMiddleware } from "@clerk/express";
+import { clerkMiddleware, createClerkClient } from "@clerk/express";
 import { config } from "./config/env";
 import { logger } from "./utils/logger";
 import { socketAuthMiddleware } from "./middleware/auth";
 import { setupSocket } from "./handlers/socketHandlers";
 import { createApiRouter } from "./routes/api";
 
+console.log("CLERK SECRET", process.env.CLERK_SECRET_KEY);
+console.log("CLERK PUBLISHABLE", process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
 const startServer = () => {
 	const app = express();
 	const server = createServer(app);
+	const clerkClient = createClerkClient({ publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!, secretKey: process.env.CLERK_SECRET_KEY });
 
 	// Security & Middleware
 	app.use(helmet());
 	app.use(cors());
 	app.use(express.json());
-	app.use(clerkMiddleware());
+	app.use(clerkMiddleware({ clerkClient }));
 
 	// Socket.IO Setup
 	const io = new Server(server, {
