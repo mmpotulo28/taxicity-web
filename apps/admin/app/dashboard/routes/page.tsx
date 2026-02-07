@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/breadcrumbs";
 import {
@@ -9,6 +9,12 @@ import {
 	DropdownTrigger,
 	DropdownMenu,
 	DropdownItem,
+	Modal,
+	ModalContent,
+	ModalHeader,
+	ModalBody,
+	ModalFooter,
+	useDisclosure,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { Pagination } from "@heroui/pagination";
@@ -17,20 +23,48 @@ import { addToast } from "@heroui/toast";
 
 // Import mock data (fallback)
 import { routes as mockRoutes, ranks } from "@/lib/data";
-import { useRoutes } from "@/hooks/useRoutes";
+import { useRoutes, RouteWithRanks } from "@/hooks/useRoutes";
+import RouteBuilderMap from "@/components/routes/RouteBuilderMap";
 
 export default function RoutesPage() {
-	const { routes: realRoutes, isLoading: isRoutesLoading, updateRoute } = useRoutes();
+	const { routes: realRoutes, updateRoute } = useRoutes();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
+	// Modal state
+	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+	const [selectedRoute, setSelectedRoute] = useState<RouteWithRanks | null>(null);
+	const [routeUpdates, setRouteUpdates] = useState<{
+		polyline?: string;
+		distance?: number;
+		duration?: number;
+		summary?: string;
+	} | null>(null);
+	const [isSaving, setIsSaving] = useState(false);
+
+	const handleRouteChanged = useCallback((data: {
+		polyline: string;
+		distance: number;
+		duration: number;
+		summary: string;
+	}) => {
+		setRouteUpdates({
+			polyline: data.polyline,
+			distance: parseFloat((data.distance / 1000).toFixed(2)), // meters -> km
+			duration: Math.ceil(data.duration / 60), // seconds -> minutes
+			summary: data.summary
+		});
+	}, []);
+
 	// Combine routes data with rank information
 	const dataToUse = realRoutes && realRoutes.length > 0 ? realRoutes : null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let routesWithRanks: any[] = [];
 
 	if (dataToUse) {
 		routesWithRanks = dataToUse.map(r => ({
+			...r,
 			id: r.id,
 			name: r.name,
 			originRank: r.sourceRank,
@@ -50,8 +84,9 @@ export default function RoutesPage() {
 
 			return {
 				...route,
+				sourceRank: originRank, // Make sure structure matches real data for consistent access
+				destRank: destRank,
 				originRank,
-				destRank,
 			};
 		});
 	}
@@ -86,12 +121,59 @@ export default function RoutesPage() {
 		}
 	};
 
-	const handleEdit = (id: string) => {
-		addToast({
-			title: "Edit Route",
-			description: `Editing route with ID: ${id}`,
-			color: "primary",
-		});
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const handleEdit = (route: any) => {
+		// Need to find the typed route object
+		// Logic: passed route is formatted for table, we need original shape mostly for lat/lng
+		// However, we mapped originRank/destRank which have the coords.
+		const original = dataToUse?.find(r => r.id === route.id);
+
+		if (original) {
+			setSelectedRoute(original);
+			onOpen();
+		} else if (!dataToUse && route.originRank && route.destRank) {
+			// Handle mock data case if needed, or just warn
+			// Convert route to RouteWithRanks shape loosely for the modal
+			setSelectedRoute({
+				...route,
+				sourceRank: route.originRank,
+				destRank: route.destRank
+			} as RouteWithRanks);
+			onOpen();
+		}
+	};
+
+	const handleSaveRoute = async () => {
+		if (!selectedRoute || !routeUpdates) return;
+
+		setIsSaving(true);
+		try {
+			await updateRoute({
+				id: selectedRoute.id,
+				data: {
+					polyline: routeUpdates.polyline,
+					distance: routeUpdates.distance, // Ensure backend handles number vs string if needed
+					estimatedDuration: routeUpdates.duration // Ensure backend handles math
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				} as any // relaxing type for partial update structure
+			});
+
+			addToast({
+				title: "Route Updated",
+				description: "Route path has been successfully updated.",
+				color: "success",
+			});
+			onOpenChange(); // Close modal
+		} catch (error) {
+			console.error("Failed to update route", error);
+			addToast({
+				title: "Error",
+				description: "Failed to update route.",
+				color: "danger",
+			});
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	const handleToggleStatus = (id: string, currentStatus: string) => {
@@ -107,6 +189,78 @@ export default function RoutesPage() {
 
 	return (
 		<div className="space-y-6">
+			<Modal
+				isOpen={isOpen}
+				onOpenChange={onOpenChange}
+				size="4xl"
+				scrollBehavior="inside"
+			>
+				<ModalContent>
+					{(onClose) => (
+						<>
+							<ModalHeader className="flex flex-col gap-1">
+								Edit Route: {selectedRoute?.name}
+							</ModalHeader>
+							<ModalBody>
+								<p className="text-sm text-default-500 mb-4">
+									Drag the route line on the map to modify the path. The new distance and duration will be calculated automatically.
+								</p>
+
+								{selectedRoute && selectedRoute.sourceRank && selectedRoute.destRank ? (
+									<RouteBuilderMap
+										apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
+										origin={{
+											lat: selectedRoute.sourceRank.lat,
+											lng: selectedRoute.sourceRank.lng
+										}}
+										destination={{
+											lat: selectedRoute.destRank.lat,
+											lng: selectedRoute.destRank.lng
+										}}
+										onRouteChanged={handleRouteChanged}
+										className="w-full h-[500px] border border-default-200 rounded-xl"
+									/>
+								) : (
+									<div className="h-[300px] flex items-center justify-center bg-content2 rounded-lg">
+										Loading Map Data...
+									</div>
+								)}
+
+								{routeUpdates && (
+									<div className="mt-4 grid grid-cols-3 gap-4">
+										<div className="p-3 bg-content2 rounded-lg">
+											<p className="text-xs text-default-500">New Distance</p>
+											<p className="text-lg font-semibold">{routeUpdates.distance} km</p>
+										</div>
+										<div className="p-3 bg-content2 rounded-lg">
+											<p className="text-xs text-default-500">New Duration</p>
+											<p className="text-lg font-semibold">{routeUpdates.duration} min</p>
+										</div>
+										<div className="p-3 bg-content2 rounded-lg">
+											<p className="text-xs text-default-500">Route Summary</p>
+											<p className="text-lg font-semibold truncate">{routeUpdates.summary}</p>
+										</div>
+									</div>
+								)}
+							</ModalBody>
+							<ModalFooter>
+								<Button color="danger" variant="light" onPress={onClose}>
+									Cancel
+								</Button>
+								<Button
+									color="primary"
+									onPress={handleSaveRoute}
+									isLoading={isSaving}
+									isDisabled={!routeUpdates}
+								>
+									Save Changes
+								</Button>
+							</ModalFooter>
+						</>
+					)}
+				</ModalContent>
+			</Modal>
+
 			<div className="flex justify-between items-center">
 				<div>
 					<h1 className="text-2xl font-bold">Routes Management</h1>
@@ -224,7 +378,7 @@ export default function RoutesPage() {
 													isIconOnly
 													size="sm"
 													variant="light"
-													onPress={() => handleEdit(route.id)}>
+													onPress={() => handleEdit(route)}>
 													<Icon icon="lucide:edit-2" />
 												</Button>
 

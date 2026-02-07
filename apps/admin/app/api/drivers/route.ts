@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 		}
 
 		const body = await req.json();
-		const { firstName, lastName, phone, licenseNumber, licenseExpiry, email, password } = body;
+		const { firstName, lastName, phone, licenseNumber, licenseExpiry, email } = body;
 
 		// Basic validation
 		if (!firstName || !lastName || !phone || !licenseNumber || !licenseExpiry) {

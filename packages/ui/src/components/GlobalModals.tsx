@@ -7,7 +7,7 @@ const GlobalModals = () => {
 
  return (
   <RatingModal
-   isOpen={!!ratingTrip}
+   isOpen={false}
    onOpenChange={(isOpen: boolean) => !isOpen && setRatingTrip(null)}
    trip={ratingTrip}
    onClose={() => {

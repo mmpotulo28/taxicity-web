@@ -67,17 +67,17 @@ export function MapProvider({ children }: Readonly<{ children: React.ReactNode }
 		}
 	}, [selectionMode]);
 
-	// Reverse geocoding using Mapbox API
+	// Reverse geocoding using Google Maps API
 	const getAddressFromLatLng = useCallback(async (latLng: LatLng): Promise<string> => {
-		const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-		if (!token) {
-			console.warn("Mapbox token missing for geocoding");
+		const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+		if (!apiKey) {
+			console.warn("Google Maps API key missing for geocoding");
 			return "Location selected";
 		}
 
 		try {
 			const response = await fetch(
-				`https://api.mapbox.com/geocoding/v5/mapbox.places/${latLng.lng},${latLng.lat}.json?access_token=${token}&types=address,poi`
+				`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.lat},${latLng.lng}&key=${apiKey}`
 			);
 
 			if (!response.ok) {
@@ -85,9 +85,8 @@ export function MapProvider({ children }: Readonly<{ children: React.ReactNode }
 			}
 
 			const data = await response.json();
-			if (data.features && data.features.length > 0) {
-				// Prefer the place_name which is the full address
-				return data.features[0].place_name;
+			if (data.results && data.results.length > 0) {
+				return data.results[0].formatted_address;
 			}
 		} catch (error) {
 			console.error("Error getting address:", error);

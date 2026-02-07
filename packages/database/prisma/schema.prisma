@@ -214,6 +214,7 @@ model Route {
   distance          Float // in km
   baseFare          Decimal           @db.Decimal(10, 2)
   estimatedDuration Int // in minutes
+  polyline          String? // Google Maps Encoded Polyline
   sourceRank        Rank              @relation("source_rank", fields: [sourceRankId], references: [id])
   sourceRankId      String
   destRank          Rank?             @relation("destination_rank", fields: [destRankId], references: [id])

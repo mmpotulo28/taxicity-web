@@ -63,6 +63,7 @@ const fetchRoutes = async (): Promise<iRoute[]> => {
 		estimatedFare: `R${r.baseFare}`,
 		distance: `${r.distance} km`,
 		status: r.status.toLowerCase(),
+		polyline: r.polyline,
 		popularLocations: r.popularLocations
 	}));
 };
@@ -688,8 +689,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			const updatedTrip = { ...activeTrip, status: "completed" as const };
 			setActiveTrip(updatedTrip);
 
-			// Trigger rating modal
-			setRatingTrip(updatedTrip);
+			// Trigger rating modal - REMOVED strictly to favour the Full Page Details view
+			// setRatingTrip(updatedTrip);
 
 			// Clear other state, but keep activeTrip for the receipt view until user dismisses or rates
 			setSelectedRoute(null);

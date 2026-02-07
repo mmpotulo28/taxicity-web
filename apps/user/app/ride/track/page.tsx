@@ -232,7 +232,7 @@ const TrackRide: React.FC = () => {
 	const TrackingView = () => (
 		<div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col max-h-[50vh]">
 			{/* Floating Trip Card */}
-			<div className="px-4 mb-2">
+			<div className="px-0 mb-2">
 				<TripCard trip={activeTrip} onSelect={onOpen} />
 			</div>
 
@@ -295,21 +295,18 @@ const TrackRide: React.FC = () => {
 	return (
 		<div className="h-full relative bg-default-100 overflow-hidden">
 			{/* Map Layer */}
-			<div className="absolute inset-0 z-0">
-				<MapView
-					fullscreen
-					showTaxis={activeTrip.status !== "in-progress"}
-					showRoute={activeTrip.status === "in-progress"}
-					zIndex={0}
-					taxiLocation={currentTaxiLocation}
-				/>
-			</div>
+			<MapView
+				showTaxis={activeTrip.status !== "in-progress"}
+				showRoute={activeTrip.status === "in-progress"}
+				taxiLocation={currentTaxiLocation}
+			/>
 
 			{/* Top Bar Overlay */}
-			<div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-start pointer-events-none">
+			<div className="absolute top-0 left-0 right-0 p-4 z-10 flex justify-between items-start pointer-events-none bg-[rgba(0,0,0,0.9)] rounded-b-xl">
 				<Button
 					isIconOnly
-					className="bg-background/80 backdrop-blur-md shadow-sm pointer-events-auto"
+					size="lg"
+					className="bg-default/80 backdrop-blur-md shadow-sm pointer-events-auto"
 					onPress={() => router.back()}
 				>
 					<Icon icon="lucide:arrow-left" />
@@ -317,8 +314,16 @@ const TrackRide: React.FC = () => {
 
 				{activeTrip.status === "in-progress" && (
 					<div className="flex gap-2 pointer-events-auto items-start">
-						<Card className="bg-background/90 backdrop-blur-md shadow-sm hidden sm:flex">
-							<CardBody className="py-2 px-4 flex flex-row items-center gap-3">
+						<Button
+							isIconOnly
+							size="lg"
+							className="bg-default/80 backdrop-blur-md shadow-sm"
+							onPress={shareRide}
+						>
+							<Icon icon="lucide:share-2" />
+						</Button>
+						<Card className="bg-default/90 backdrop-blur-md shadow-sm hidden sm:flex">
+							<CardBody className="py-1.5 px-4 flex flex-row items-center gap-3">
 								<div className="flex flex-col items-end">
 									<span className="text-[10px] text-default-500 uppercase font-bold">Arrival</span>
 									<span className="text-sm font-bold text-primary">14:35</span>
@@ -330,11 +335,12 @@ const TrackRide: React.FC = () => {
 								</div>
 							</CardBody>
 						</Card>
+
 						<Button
 							size="sm"
 							color="warning"
 							variant="flat"
-							className="bg-warning/10 backdrop-blur-md shadow-sm font-semibold"
+							className="bg-warning/10 backdrop-blur-md shadow-sm font-semibold hidden"
 							onPress={() => {
 								completeRide();
 								router.push("/ride/trip/details");
@@ -342,13 +348,7 @@ const TrackRide: React.FC = () => {
 						>
 							Simulate Arrival
 						</Button>
-						<Button
-							isIconOnly
-							className="bg-background/80 backdrop-blur-md shadow-sm"
-							onPress={shareRide}
-						>
-							<Icon icon="lucide:share-2" />
-						</Button>
+
 					</div>
 				)}
 			</div>

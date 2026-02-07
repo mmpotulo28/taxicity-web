@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button, Card, CardBody, CardHeader, Divider, Chip, useDisclosure } from "@heroui/react";
+import { Button, Card, CardBody, CardHeader, Divider, Chip } from "@heroui/react";
+import { addToast } from "@heroui/toast";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
@@ -11,7 +12,8 @@ import { useRide, TripModal, MapView } from "@taxiciti/ui";
 const TripDetails: React.FC = () => {
 	const router = useRouter();
 	const { activeTrip, selectedTaxi, shareRide, resetRide } = useRide();
-	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+	const [rating, setRating] = React.useState(5);
+	const [isSubmitting, setIsSubmitting] = React.useState(false);
 
 	// If no active trip, redirect to home
 	useEffect(() => {
@@ -20,7 +22,43 @@ const TripDetails: React.FC = () => {
 		}
 	}, [activeTrip, router]);
 
-	const handleFinish = () => {
+	const handleRatingSubmit = async () => {
+		if (!activeTrip) return;
+
+		setIsSubmitting(true);
+		try {
+			// Call the rating API
+			const res = await fetch(`/api/trips/${activeTrip.id}/rating`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ rating }),
+			});
+
+			if (!res.ok) {
+				const error = await res.json();
+				throw new Error(error.message || "Failed to submit rating");
+			}
+
+			addToast({
+				title: "Thank you!",
+				description: "Your rating has been submitted.",
+				color: "success",
+			});
+
+			resetRide();
+			router.push("/");
+		} catch (error) {
+			console.error("Rating failed:", error);
+			addToast({
+				title: "Error",
+				description: "Could not submit rating.",
+				color: "danger",
+			});
+			setIsSubmitting(false);
+		}
+	};
+
+	const handleHome = () => {
 		resetRide();
 		router.push("/");
 	};
@@ -143,9 +181,13 @@ const TripDetails: React.FC = () => {
 							<h3 className="text-sm font-semibold mb-3">Rate Your Experience</h3>
 							<div className="flex justify-center gap-2 mb-4">
 								{[1, 2, 3, 4, 5].map((star) => (
-									<button key={star} className="focus:outline-none transition-transform hover:scale-110">
+									<button
+										key={star}
+										className="focus:outline-none transition-transform hover:scale-110"
+										onClick={() => setRating(star)}
+									>
 										<Icon
-											className="text-3xl text-default-200 hover:text-warning cursor-pointer transition-colors"
+											className={`text-3xl cursor-pointer transition-colors ${rating >= star ? "text-warning fill-warning" : "text-default-200"}`}
 											icon="lucide:star"
 										/>
 									</button>
@@ -155,7 +197,8 @@ const TripDetails: React.FC = () => {
 								color="primary"
 								variant="flat"
 								className="w-full font-medium"
-								onPress={handleFinish}
+								isLoading={isSubmitting}
+								onPress={handleRatingSubmit}
 							>
 								Submit Rating
 							</Button>
@@ -176,15 +219,13 @@ const TripDetails: React.FC = () => {
 							className="flex-1 font-medium shadow-lg shadow-primary/20"
 							color="primary"
 							startContent={<Icon icon="lucide:home" />}
-							onPress={handleFinish}
+							onPress={handleHome}
 						>
 							Home
 						</Button>
 					</div>
 				</motion.div>
 			</div>
-
-			<TripModal isOpen={isOpen} trip={activeTrip} onOpenChange={onOpenChange} />
 		</div>
 	);
 };

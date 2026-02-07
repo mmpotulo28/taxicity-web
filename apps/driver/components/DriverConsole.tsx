@@ -363,7 +363,7 @@ export function DriverConsole() {
 			<div className="absolute inset-0 lg:relative lg:flex-grow lg:h-full z-0">
 				<MapView
 					showRoute={true}
-					customRoutePoints={routePoints}
+					routePolyline={activeVehicleTrip.route.polyline || undefined}
 					passengerStops={mapStops}
 					isDriver={true}
 					taxiLocation={currentLocation || undefined}
