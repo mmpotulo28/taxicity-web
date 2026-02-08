@@ -52,3 +52,4 @@ prisma/generated/
 
 # clerk configuration (can include secrets)
 .clerk/
+*.apk
