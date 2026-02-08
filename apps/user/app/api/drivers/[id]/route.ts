@@ -3,6 +3,7 @@ import { getAuth, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import { prisma } from "@taxiciti/database";
+import { isAdmin, unauthorizedResponse } from "@/lib/auth";
 
 // Validation schemas
 const UpdateDriverSchema = z.object({
@@ -169,7 +170,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// TODO: Add admin role check here
+		if (!(await isAdmin())) {
+			return unauthorizedResponse();
+		}
 
 		const body = await req.json();
 		const parsed = UpdateDriverSchema.safeParse(body);
@@ -261,7 +264,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// TODO: Add admin role check here
+		if (!(await isAdmin())) {
+			return unauthorizedResponse();
+		}
 
 		// Check if driver exists and has taxis or active trips
 		const existingDriver = await prisma.driver.findUnique({

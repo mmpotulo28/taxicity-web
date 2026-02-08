@@ -37,6 +37,7 @@ import {
 import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 // Import mock data (fallback)
 import { supportTickets as mockSupportTickets, adminUsers } from "@/lib/data";
@@ -44,6 +45,7 @@ import { iSupportTicket } from "@/types";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
 
 export default function SupportPage() {
+	const { user } = useUser();
 	const { tickets: realTickets, isLoading: isTicketsLoading } = useSupportTickets();
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(true);
@@ -146,7 +148,7 @@ export default function SupportPage() {
 
 		// Apply tab filter
 		if (activeTab === "my") {
-			filtered = filtered.filter((ticket) => ticket.assignedTo === "admin3"); // TODO: use real current user id
+			filtered = filtered.filter((ticket) => ticket.assignedTo === user?.id);
 		} else if (activeTab === "unassigned") {
 			filtered = filtered.filter((ticket) => ticket.assignedTo === null);
 		}

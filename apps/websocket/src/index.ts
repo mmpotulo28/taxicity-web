@@ -12,9 +12,6 @@ import { socketAuthMiddleware } from "./middleware/auth";
 import { setupSocket } from "./handlers/socketHandlers";
 import { createApiRouter } from "./routes/api";
 
-console.log("CLERK SECRET", process.env.CLERK_SECRET_KEY);
-console.log("CLERK PUBLISHABLE", process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-
 const startServer = () => {
 	const app = express();
 	const server = createServer(app);

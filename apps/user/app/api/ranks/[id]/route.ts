@@ -3,6 +3,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import { prisma } from "@taxiciti/database";
+import { isAdmin, unauthorizedResponse } from "@/lib/auth";
 
 // Validation schemas
 const UpdateRankSchema = z.object({
@@ -112,7 +113,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// TODO: Add admin role check here
+		if (!(await isAdmin())) {
+			return unauthorizedResponse();
+		}
 
 		const body = await req.json();
 		const parsed = UpdateRankSchema.safeParse(body);
@@ -163,7 +166,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// TODO: Add admin role check here
+		if (!(await isAdmin())) {
+			return unauthorizedResponse();
+		}
 
 		// Check if rank exists and has dependencies
 		const existingRank = await prisma.rank.findUnique({
