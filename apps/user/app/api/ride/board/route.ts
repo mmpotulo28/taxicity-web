@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { prisma } from "@taxiciti/database";
 import { z } from "zod";
+import { ratelimit } from "@/lib/ratelimit";
 
 const BoardingSchema = z.object({
 	vehicleTripId: z.string(),
@@ -15,6 +16,12 @@ export async function POST(req: NextRequest) {
 	try {
 		const { userId } = getAuth(req);
 		if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+		// Rate Limiting
+		const { success } = await ratelimit.limit(userId);
+		if (!success) {
+			return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+		}
 
 		const body = await req.json();
 		const parse = BoardingSchema.safeParse(body);

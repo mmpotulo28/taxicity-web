@@ -21,6 +21,8 @@
 		"@taxiciti/database": "workspace:*",
 		"@taxiciti/ui": "workspace:*",
 		"@taxiciti/utils": "workspace:*",
+		"@upstash/ratelimit": "^2.0.8",
+		"@upstash/redis": "^1.36.2",
 		"@vercel/blob": "^2.0.0",
 		"axios": "^1.13.2",
 		"framer-motion": "^11.18.2",

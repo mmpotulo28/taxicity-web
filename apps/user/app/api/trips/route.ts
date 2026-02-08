@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "@taxiciti/database";
+import { ratelimit } from "@/lib/ratelimit";
 import { pusherServer } from "@taxiciti/utils";
 
 const CreateTripSchema = z.object({
@@ -18,12 +19,12 @@ const CreateTripSchema = z.object({
 	paymentMethod: z.enum(["CASH", "QR_CODE", "MOBILE_MONEY"]).default("CASH"),
 });
 
+// GET /api/trips - List user's trips
 export async function GET(req: NextRequest) {
-	const { userId } = getAuth(req as any);
-	if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
 	try {
-		// Only return trips for the current user
+		const { userId } = getAuth(req);
+		if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
 		const trips = await prisma.trip.findMany({
 			where: { userId },
 			orderBy: { requestTime: "desc" },
@@ -44,9 +45,16 @@ export async function GET(req: NextRequest) {
 	}
 }
 
+// POST /api/trips - Request a ride
 export async function POST(req: NextRequest) {
 	const { userId } = getAuth(req as any);
 	if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+	// Rate Limiting
+	const { success } = await ratelimit.limit(userId);
+	if (!success) {
+		return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+	}
 
 	try {
 		const body = await req.json();
@@ -56,6 +64,8 @@ export async function POST(req: NextRequest) {
 			console.error("Validation error:", parse.error.issues);
 			return NextResponse.json({ error: "Invalid data", details: parse.error.issues }, { status: 400 });
 		}
+
+		console.log(`[Trip Request] User ${userId} creating trip`);
 
 		const tripData: any = {
 			routeId: parse.data.routeId,
