@@ -3,6 +3,8 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { Redis } from "ioredis";
 import cors from "cors";
 import helmet from "helmet";
 import { clerkMiddleware, createClerkClient } from "@clerk/express";
@@ -23,12 +25,20 @@ const startServer = () => {
 	app.use(express.json());
 	app.use(clerkMiddleware({ clerkClient }));
 
+	// Redis Adapter Setup
+	const pubClient = new Redis(config.redisUrl);
+	const subClient = pubClient.duplicate();
+
+	pubClient.on("error", (err) => logger.error(err, "Redis Pub Client Error"));
+	subClient.on("error", (err) => logger.error(err, "Redis Sub Client Error"));
+
 	// Socket.IO Setup
 	const io = new Server(server, {
 		cors: {
 			origin: config.corsOrigin,
 			methods: ["GET", "POST"],
 		},
+		adapter: createAdapter(pubClient, subClient),
 	});
 
 	// Socket Authentication Middleware

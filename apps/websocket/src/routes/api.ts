@@ -26,7 +26,7 @@ export const createApiRouter = (io: Server): Router => {
 			logger.info(`[API Trigger] Channel: ${channel}, Event: ${event}`);
 			return res.json({ status: "success" });
 		} catch (error) {
-			logger.error("Trigger Error:", error);
+			logger.error(error, "Trigger Error:");
 			return res.status(500).json({ error: "Internal Server Error" });
 		}
 	});

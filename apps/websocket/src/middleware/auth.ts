@@ -31,7 +31,7 @@ export const socketAuthMiddleware = async (socket: Socket, next: (err?: any) => 
 
 		next();
 	} catch (err) {
-		logger.error("Token verification failed:", err);
+		logger.error(err, "Token verification failed:");
 		next(new Error("Authentication error: Invalid Token"));
 	}
 };

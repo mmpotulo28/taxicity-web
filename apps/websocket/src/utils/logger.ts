@@ -1,11 +1,15 @@
-export const logger = {
-	info: (message: string, ...args: any[]) => {
-		console.log(`[INFO] ${new Date().toISOString()} - ${message}`, ...args);
-	},
-	warn: (message: string, ...args: any[]) => {
-		console.warn(`[WARN] ${new Date().toISOString()} - ${message}`, ...args);
-	},
-	error: (message: string, ...args: any[]) => {
-		console.error(`[ERROR] ${new Date().toISOString()} - ${message}`, ...args);
-	},
-};
+import pino from "pino";
+import { config } from "../config/env";
+
+export const logger = pino({
+	level: config.nodeEnv === "production" ? "info" : "debug",
+	transport:
+		config.nodeEnv !== "production"
+			? {
+					target: "pino-pretty",
+					options: {
+						colorize: true,
+					},
+				}
+			: undefined,
+});
