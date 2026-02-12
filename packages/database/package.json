@@ -14,20 +14,21 @@
 		"migrate:deploy": "prisma migrate deploy",
 		"db:push": "prisma db push",
 		"studio": "prisma studio",
-		"check": "tsc --noEmit"
+		"check": "tsc --noEmit",
+		"db:seed": "node prisma/seed.js"
 	},
 	"dependencies": {
-		"@clerk/nextjs": "^6.36.8",
-		"@prisma/adapter-pg": "^7.2.0",
-		"@prisma/client": "^7.2.0",
+		"@clerk/nextjs": "^6.37.3",
+		"@prisma/adapter-pg": "^7.4.0",
+		"@prisma/client": "^7.4.0",
 		"@prisma/extension-accelerate": "^2.0.2",
-		"@upstash/redis": "^1.36.1"
+		"@upstash/redis": "^1.36.2"
 	},
 	"devDependencies": {
 		"@taxiciti/configs": "workspace:*",
 		"@types/node": "20.5.7",
-		"dotenv": "^17.2.3",
-		"prisma": "^7.2.0",
+		"dotenv": "^17.2.4",
+		"prisma": "^7.4.0",
 		"ts-node": "^10.9.2",
 		"typescript": "5.6.3"
 	}
