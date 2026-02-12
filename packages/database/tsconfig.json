@@ -2,6 +2,7 @@
  "extends": "@taxiciti/configs/tsconfig",
  "compilerOptions": {
   "noEmit": false,
+  "rootDir": "./",
   "outDir": "./dist",
   "paths": {
    "@/*": [
