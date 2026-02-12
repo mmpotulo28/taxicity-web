@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { redis } from "../utils/redis";
+import { redis } from "../utils/redis.js";
 import { logger } from "@taxiciti/utils";
 
 const QUEUE_NAME = "location-history-queue";

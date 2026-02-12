@@ -158,6 +158,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
 		if (!(await isAdmin())) {
 			return unauthorizedResponse();
 		}

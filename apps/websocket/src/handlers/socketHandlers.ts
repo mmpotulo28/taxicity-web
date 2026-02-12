@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
-import { redis } from "../utils/redis";
+import { redis } from "../utils/redis.js";
 import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
-import { locationQueue } from "../queues/locationQueue";
+import { locationQueue } from "../queues/locationQueue.js";
 
 export const setupSocket = (io: Server, socket: Socket) => {
 	const userId = socket.data.userId;

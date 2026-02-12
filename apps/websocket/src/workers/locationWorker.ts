@@ -1,7 +1,8 @@
 import { Worker, Job } from "bullmq";
 import { prisma } from "@taxiciti/database";
 import { logger } from "@taxiciti/utils";
-import { redis } from "../utils/redis";
+import { redis } from "../utils/redis.js";
+
 const QUEUE_NAME = "location-history-queue";
 const BATCH_SIZE = 50;
 const BATCH_TIMEOUT_MS = 10000;

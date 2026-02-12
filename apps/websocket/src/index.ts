@@ -8,12 +8,12 @@ import cors from "cors";
 import helmet from "helmet";
 import { clerkMiddleware, createClerkClient } from "@clerk/express";
 import { logger } from "@taxiciti/utils";
-import { setupSocket } from "./handlers/socketHandlers";
-import { socketAuthMiddleware } from "./middleware/auth";
-import { createApiRouter } from "./routes/api";
-import { startLocationWorker } from "./workers/locationWorker";
-import { config } from "./configs/variables";
-import { redis } from "./utils/redis";
+import { setupSocket } from "./handlers/socketHandlers.js";
+import { socketAuthMiddleware } from "./middleware/auth.js";
+import { createApiRouter } from "./routes/api.js";
+import { startLocationWorker } from "./workers/locationWorker.js";
+import { config } from "./configs/variables.js";
+import { redis } from "./utils/redis.js";
 
 const startServer = () => {
 	const app = express();

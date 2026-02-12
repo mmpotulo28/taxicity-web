@@ -62,6 +62,7 @@ export interface VehicleTrip {
     id: string;
     name: string;
     baseFare: number;
+    polyline?: string;
     popularLocations?: {
       id: string;
       lat: number;
@@ -127,7 +128,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Emit directly to WebSocket instead of HTTP
     pusher.emit(EVENTS.DRIVER_LOCATION, {
-      taxiId: activeVehicleTrip.taxiId,
+      taxiId: activeVehicleTrip.taxi.id,
       lat: trackedLocation.latitude,
       lng: trackedLocation.longitude,
       heading: trackedLocation.heading,

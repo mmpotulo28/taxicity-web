@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from "express";
 import { Server } from "socket.io";
-import { apiAuthMiddleware } from "../middleware/auth";
+import { apiAuthMiddleware } from "../middleware/auth.js";
 import { logger } from "@taxiciti/utils";
 
 export const createApiRouter = (io: Server): Router => {
