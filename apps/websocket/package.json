@@ -12,6 +12,9 @@
 	"dependencies": {
 		"@clerk/express": "^1.7.63",
 		"@socket.io/redis-adapter": "^8.3.0",
+		"@taxiciti/database": "workspace:*",
+		"@taxiciti/utils": "workspace:*",
+		"bullmq": "^5.4.1",
 		"add": "^2.0.6",
 		"cors": "^2.8.5",
 		"dotenv": "^16.3.1",

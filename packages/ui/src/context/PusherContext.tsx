@@ -6,7 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 
 interface PusherContextType {
  pusher: Socket | null;
- subscribe: (channelName: string, eventName: string, callback: (data: any) => void) => void;
+ subscribe: (channelName: string, eventName: string, callback: (data: any) => void) => () => void;
  unsubscribe: (channelName: string) => void;
 }
 
@@ -66,11 +66,16 @@ export const PusherProvider = ({ children }: { children: React.ReactNode }) => {
  const subscribe = useCallback((channelName: string, eventName: string, callback: (data: any) => void) => {
   if (!socket) {
    console.warn("Socket not connected, cannot subscribe to:", channelName);
-   return;
+   return () => { };
   }
   console.log(`Subscribing to channel: ${channelName}, event: ${eventName}`);
   socket.emit("subscribe", channelName);
   socket.on(eventName, callback);
+
+  // Return cleanup function to remove this specific listener
+  return () => {
+   socket.off(eventName, callback);
+  };
  }, [socket]);
 
  const unsubscribe = useCallback((channelName: string) => {

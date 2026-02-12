@@ -4,6 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { addToast } from "@heroui/toast";
 import { usePusher } from "@taxiciti/ui";
 import { useDriverLocation } from "../hooks/useDriverLocation";
+import { EVENTS, logger } from "@taxiciti/utils";
 
 export interface Driver {
   id: string;
@@ -96,7 +97,7 @@ const DriverContext = createContext<DriverContextType | undefined>(undefined);
 
 export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoaded } = useUser();
-  const { subscribe, unsubscribe } = usePusher();
+  const { subscribe, unsubscribe, pusher } = usePusher();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [isOnline, setIsOnline] = useState(false);
   const [activeVehicleTrip, setActiveVehicleTrip] = useState<VehicleTrip | null>(null);
@@ -116,24 +117,28 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Sync location to API (Throttled to 5s)
   useEffect(() => {
-    if (!trackedLocation || !activeVehicleTrip || !driver) return;
-    console.log("DriverContext: Syncing location to server...", trackedLocation);
+    // Need trackedLocation, active trip, and Pusher socket connection
+    if (!trackedLocation || !activeVehicleTrip || !driver || !pusher) return;
 
     const now = Date.now();
     if (now - lastLocationSync.current < 5000) return;
 
-    fetch("/api/driver/location", {
-      method: "POST",
-      body: JSON.stringify({
-        lat: trackedLocation.latitude,
-        lng: trackedLocation.longitude,
-        heading: trackedLocation.heading,
-        speed: trackedLocation.speed,
-      }),
-    }).catch((e) => console.error("Location sync failed:", e));
+    logger.info(`Syncing location via WebSocket... ${JSON.stringify(trackedLocation)}`);
+
+    // Emit directly to WebSocket instead of HTTP
+    pusher.emit(EVENTS.DRIVER_LOCATION, {
+      taxiId: activeVehicleTrip.taxiId,
+      lat: trackedLocation.latitude,
+      lng: trackedLocation.longitude,
+      heading: trackedLocation.heading,
+      speed: trackedLocation.speed,
+    });
+
+    // Fallback? No, we trust the socket.
+    // If we wanted persistence, we could call HTTP API every 60s or on events.
 
     lastLocationSync.current = now;
-  }, [trackedLocation, activeVehicleTrip, driver]);
+  }, [trackedLocation, activeVehicleTrip, driver, pusher]);
 
   // Watch position when active
   useEffect(() => {

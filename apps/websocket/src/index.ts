@@ -4,15 +4,17 @@ import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
-import { Redis } from "ioredis";
+// import { Redis } from "ioredis"; // Removed duplicate import
 import cors from "cors";
 import helmet from "helmet";
 import { clerkMiddleware, createClerkClient } from "@clerk/express";
 import { config } from "./config/env";
 import { logger } from "./utils/logger";
+import { redis } from "./utils/redis"; // Import singleton
 import { socketAuthMiddleware } from "./middleware/auth";
 import { setupSocket } from "./handlers/socketHandlers";
 import { createApiRouter } from "./routes/api";
+import { startLocationWorker } from "./workers/locationWorker";
 
 const startServer = () => {
 	const app = express();
@@ -26,7 +28,7 @@ const startServer = () => {
 	app.use(clerkMiddleware({ clerkClient }));
 
 	// Redis Adapter Setup
-	const pubClient = new Redis(config.redisUrl);
+	const pubClient = redis; // Use singleton
 	const subClient = pubClient.duplicate();
 
 	pubClient.on("error", (err) => logger.error(err, "Redis Pub Client Error"));
@@ -53,6 +55,9 @@ const startServer = () => {
 	// Start Server
 	server.listen(config.port, () => {
 		logger.info(`WebSocket server running on port ${config.port} in ${config.nodeEnv} mode`);
+
+		// Start Background Workers
+		startLocationWorker();
 	});
 };
 

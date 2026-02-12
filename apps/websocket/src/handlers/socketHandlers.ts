@@ -1,5 +1,8 @@
 import { Server, Socket } from "socket.io";
 import { logger } from "../utils/logger";
+import { redis } from "../utils/redis";
+import { CHANNELS, EVENTS } from "@taxiciti/utils";
+import { locationQueue } from "../queues/locationQueue";
 
 export const setupSocket = (io: Server, socket: Socket) => {
 	const userId = socket.data.userId;
@@ -8,7 +11,7 @@ export const setupSocket = (io: Server, socket: Socket) => {
 	logger.info(`User ${userId} (${role}) connected`);
 
 	// Join user-specific room
-	socket.join(`user-${userId}`);
+	socket.join(CHANNELS.USER(userId));
 
 	// Join role-based room
 	if (role) {
@@ -27,9 +30,9 @@ export const setupSocket = (io: Server, socket: Socket) => {
 	});
 
 	// Handle ride request (from user to drivers)
-	socket.on("ride-request", (data: { pickup: string; destination: string; userId: string }) => {
+	socket.on(EVENTS.RIDE_REQUEST, (data: { pickup: string; destination: string; userId: string }) => {
 		// Broadcast to all drivers
-		io.to("driver").emit("new-ride-request", {
+		io.to(CHANNELS.DRIVER).emit(EVENTS.NEW_RIDE_REQUEST, {
 			...data,
 			requestId: `req-${Date.now()}`,
 			timestamp: new Date().toISOString(),
@@ -38,33 +41,61 @@ export const setupSocket = (io: Server, socket: Socket) => {
 	});
 
 	// Handle driver acceptance
-	socket.on("accept-ride", (data: { requestId: string; driverId: string; userId: string }) => {
+	socket.on(EVENTS.RIDE_ACCEPTED, (data: { requestId: string; driverId: string; userId: string }) => {
 		// Notify the user
-		io.to(`user-${data.userId}`).emit("ride-accepted", data);
+		io.to(CHANNELS.USER(data.userId)).emit(EVENTS.RIDE_ACCEPTED, data);
 		// Notify other drivers that ride is taken
-		socket.to("driver").emit("ride-taken", { requestId: data.requestId });
+		socket.to(CHANNELS.DRIVER).emit(EVENTS.RIDE_TAKEN, { requestId: data.requestId });
 		logger.info(`Ride ${data.requestId} accepted by ${data.driverId}`);
 	});
 
-	// Handle driver location updates
-	socket.on("driver-location", (data: { driverId: string; lat: number; lng: number }) => {
-		// Broadcast to users who have active rides with this driver
-		// For simplicity, broadcast to all users (in production, filter by active rides)
-		io.to("user").emit("driver-location-update", data);
-	});
-
 	// Handle ride status updates
-	socket.on("ride-status-update", (data: { rideId: string; status: string; userId: string; driverId?: string }) => {
-		io.to(`user-${data.userId}`).emit("ride-status-changed", data);
+	socket.on(EVENTS.RIDE_STATUS_UPDATE, (data: { rideId: string; status: string; userId: string; driverId?: string }) => {
+		io.to(CHANNELS.USER(data.userId)).emit(EVENTS.RIDE_STATUS_CHANGED, data);
 		if (data.driverId) {
-			io.to(`user-${data.driverId}`).emit("ride-status-changed", data);
+			io.to(CHANNELS.USER(data.driverId)).emit(EVENTS.RIDE_STATUS_CHANGED, data);
 		}
 		logger.info(`Ride ${data.rideId} status update: ${data.status}`);
 	});
 
 	// Handle chat messages
-	socket.on("send-message", (data: { rideId: string; message: string; senderId: string; receiverId: string }) => {
-		io.to(`user-${data.receiverId}`).emit("new-message", data);
+	socket.on(EVENTS.SEND_MESSAGE, (data: { rideId: string; message: string; senderId: string; receiverId: string }) => {
+		io.to(CHANNELS.USER(data.receiverId)).emit(EVENTS.NEW_MESSAGE, data);
+	});
+
+	// Handle driver location updates
+	// data payload must include taxiId, lat, lng, heading, speed
+	socket.on(EVENTS.DRIVER_LOCATION, async (data: { driverId?: string; taxiId: string; lat: number; lng: number; heading?: number; speed?: number }) => {
+		try {
+			// Validate payload
+			if (!data.taxiId || !data.lat || !data.lng) {
+				return; // Invalid payload
+			}
+
+			const locationData = {
+				driverId: userId, // Ensure we use authenticated userId
+				taxiId: data.taxiId,
+				lat: data.lat,
+				lng: data.lng,
+				heading: data.heading || 0,
+				speed: data.speed || 0,
+				timestamp: Date.now(),
+			};
+
+			// 1. Cache in Redis (Hot Storage) - 60s TTL
+			await redis.set(`vehicle:${data.taxiId}:location`, JSON.stringify(locationData), "EX", 60);
+
+			// 2. Broadcast to vehicle-specific channel
+			io.to(CHANNELS.VEHICLE(data.taxiId)).emit(EVENTS.LOCATION_UPDATE, locationData);
+
+			// 3. Queue for Bulk Persistence
+			locationQueue.add("persist-location", locationData, {
+				removeOnComplete: true,
+				removeOnFail: 100,
+			});
+		} catch (err) {
+			logger.error(err, `Error handling driver-location for user ${userId}`);
+		}
 	});
 
 	// Handle disconnection

@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 const WS_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:3006";
 
 class SocketPusherClient {
-	private socket: Socket;
+	private readonly socket: Socket;
 
 	constructor() {
 		this.socket = io(WS_URL, {
