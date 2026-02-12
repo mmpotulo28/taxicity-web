@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { prisma } from "@taxiciti/database";
 import type { TripStatus } from "@taxiciti/database/types";
-import { pusherServer } from "@taxiciti/utils";
+import { CHANNELS, EVENTS, pusherServer } from "@taxiciti/utils";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
 		// Trigger Pusher event for the specific trip
 		try {
-			await pusherServer.trigger(`trip-${tripId}`, "trip-updated", updatedTrip);
+			await pusherServer.trigger(CHANNELS.TRIP(tripId), EVENTS.TRIP_UPDATED, updatedTrip);
 		} catch (error) {
 			console.error("Pusher trigger failed:", error);
 		}

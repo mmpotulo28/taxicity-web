@@ -4,7 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { addToast } from "@heroui/toast";
 import { usePusher } from "@taxiciti/ui";
 import { useDriverLocation } from "../hooks/useDriverLocation";
-import { EVENTS, logger } from "@taxiciti/utils";
+import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
 
 export interface Driver {
   id: string;
@@ -205,11 +205,14 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!activeVehicleTrip || !driver) return;
 
-    const channelName = `route-${activeVehicleTrip.route.id}`;
+    const channelName = CHANNELS.ROUTE(activeVehicleTrip.route.id);
 
     console.log(`DriverContext: Subscribing to ${channelName}`);
 
-    subscribe(channelName, "new-trip", (newTrip: Trip) => {
+    // Join the route-specific channel
+    pusher?.emit("subscribe", channelName);
+
+    subscribe(channelName, EVENTS.NEW_RIDE_REQUEST, (newTrip: Trip) => {
       console.log("DriverContext: New trip EVENT received:", newTrip);
       setIncomingRequests((prev) => {
         const exists = prev.find((t) => t.id === newTrip.id);
@@ -218,38 +221,39 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
     });
 
-    subscribe(channelName, "trip-cancelled", (data: { id: string; reason?: string }) => {
-      console.log("Trip cancelled/removed:", data.id);
+    subscribe(channelName, EVENTS.RIDE_TAKEN, (data: { requestId: string; driverId: string }) => {
+      console.log("Trip cancelled/taken:", data.requestId);
 
       // Update Incoming Requests
-      setIncomingRequests((prev) => prev.filter((r) => r.id !== data.id));
+      setIncomingRequests((prev) => prev.filter((r) => r.id !== data.requestId));
 
       // Update Active Manifest (if the passenger was already accepted)
       setActiveVehicleTrip((prev) => {
         if (!prev) return null;
         // Check if the passenger is in the current manifest
-        const isPassenger = prev.passengers.some(p => p.id === data.id);
+        const isPassenger = prev.passengers.some(p => p.id === data.requestId);
 
         if (isPassenger) {
           return {
             ...prev,
-            passengers: prev.passengers.filter(p => p.id !== data.id)
+            passengers: prev.passengers.filter(p => p.id !== data.requestId)
           };
         }
         return prev;
       });
 
       addToast({
-        title: "Request Cancelled",
-        description: data.reason || "A passenger cancelled their request.",
+        title: "Request Taken",
+        description: "Another driver has accepted this request.",
         color: "default",
       });
     });
 
     return () => {
+      pusher?.emit("unsubscribe", channelName);
       unsubscribe(channelName);
     };
-  }, [activeVehicleTrip, driver, subscribe, unsubscribe]);
+  }, [activeVehicleTrip, driver, subscribe, unsubscribe, pusher]);
 
   // Poll for requests when online (active vehicle trip)
   // Initial fetch for requests when active (no polling, relies on Pusher)

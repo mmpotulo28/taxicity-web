@@ -3,7 +3,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { z } from "zod";
 import { prisma } from "@taxiciti/database";
 import { ratelimit } from "@/lib/ratelimit";
-import { pusherServer } from "@taxiciti/utils";
+import { CHANNELS, EVENTS, pusherServer } from "@taxiciti/utils";
 
 const CreateTripSchema = z.object({
 	routeId: z.string(),
@@ -93,7 +93,11 @@ export async function POST(req: NextRequest) {
 
 		// Trigger Pusher event for drivers on this route
 		try {
-			await pusherServer.trigger(`route-${trip.routeId}`, "new-trip", trip);
+			// Broadcast to drivers on the specific route
+			await pusherServer.trigger(CHANNELS.ROUTE(trip.routeId), EVENTS.NEW_RIDE_REQUEST, trip);
+
+			// Also broadcast to global driver channel as fallback (optional, but good for MVP)
+			// await pusherServer.trigger(CHANNELS.DRIVER, EVENTS.NEW_RIDE_REQUEST, trip);
 		} catch (error) {
 			console.error("Pusher trigger failed:", error);
 		}

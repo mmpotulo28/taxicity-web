@@ -30,14 +30,24 @@ export const setupSocket = (io: Server, socket: Socket) => {
 	});
 
 	// Handle ride request (from user to drivers)
-	socket.on(EVENTS.RIDE_REQUEST, (data: { pickup: string; destination: string; userId: string }) => {
-		// Broadcast to all drivers
-		io.to(CHANNELS.DRIVER).emit(EVENTS.NEW_RIDE_REQUEST, {
-			...data,
-			requestId: `req-${Date.now()}`,
-			timestamp: new Date().toISOString(),
-		});
-		logger.info(`Ride request from ${data.userId} broadcasted to drivers`);
+	socket.on(EVENTS.RIDE_REQUEST, (data: { pickup: string; destination: string; userId: string; routeId?: string }) => {
+		if (data.routeId) {
+			// Broadcast to drivers on specific route
+			io.to(CHANNELS.ROUTE(data.routeId)).emit(EVENTS.NEW_RIDE_REQUEST, {
+				...data,
+				requestId: `req-${Date.now()}`,
+				timestamp: new Date().toISOString(),
+			});
+			logger.info(`Ride request from ${data.userId} broadcasted to route ${data.routeId}`);
+		} else {
+			// Fallback: Broadcast to all drivers if no route specified
+			io.to(CHANNELS.DRIVER).emit(EVENTS.NEW_RIDE_REQUEST, {
+				...data,
+				requestId: `req-${Date.now()}`,
+				timestamp: new Date().toISOString(),
+			});
+			logger.info(`Ride request from ${data.userId} broadcasted to all drivers`);
+		}
 	});
 
 	// Handle driver acceptance
@@ -70,6 +80,14 @@ export const setupSocket = (io: Server, socket: Socket) => {
 			// Validate payload
 			if (!data.taxiId || !data.lat || !data.lng) {
 				return; // Invalid payload
+			}
+
+			// Security Check: Verify driver is authorized for this taxi
+			const activeTaxiId = await redis.get(`driver:${userId}:active_taxi`);
+
+			if (activeTaxiId !== data.taxiId) {
+				logger.warn(`Unauthorized location update: User ${userId} tried to update taxi ${data.taxiId} but active session is ${activeTaxiId}`);
+				return;
 			}
 
 			const locationData = {

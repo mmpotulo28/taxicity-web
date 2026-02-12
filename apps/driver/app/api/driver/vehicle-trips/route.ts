@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth, clerkClient } from "@clerk/nextjs/server";
-import { prisma } from "@taxiciti/database";
+import { prisma, redis } from "@taxiciti/database";
 import { z } from "zod";
 
 const CreateVehicleTripSchema = z.object({
@@ -143,6 +143,9 @@ export async function POST(req: NextRequest) {
 				passengers: true,
 			},
 		});
+
+		// Cache the active taxi for the driver in Redis for security validation (TTL 12 hours)
+		await redis.set(`driver:${userId}:active_taxi`, parse.data.taxiId, { ex: 43200 });
 
 		return NextResponse.json(vehicleTrip, { status: 201 });
 	} catch (error) {

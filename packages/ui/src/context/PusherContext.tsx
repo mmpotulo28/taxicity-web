@@ -43,7 +43,24 @@ export const PusherProvider = ({ children }: { children: React.ReactNode }) => {
     socketInstance.connect(); // Explicitly connect since autoConnect is false
 
     socketInstance.on("connect", () => console.log("Socket connected:", socketInstance.id));
-    socketInstance.on("connect_error", (err) => console.error("Socket connection error:", err));
+    // socketInstance.on("connect_error", (err) => console.error("Socket connection error:", err));
+    socketInstance.on("connect_error", async (err) => {
+     console.error("Socket connection error:", err);
+     if (err.message === "Authentication error" || err.message.includes("jwt")) {
+      console.log("Attempting to refresh token...");
+      try {
+       // Force refresh token
+       const newToken = await getToken({ skipCache: true });
+       if (newToken) {
+        socketInstance.auth = { token: newToken };
+        socketInstance.connect();
+       }
+      } catch (refreshErr) {
+       console.error("Failed to refresh token:", refreshErr);
+      }
+     }
+    });
+
     socketInstance.on("disconnect", (reason) => console.log("Socket disconnected:", reason));
 
     setSocket(socketInstance);

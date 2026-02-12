@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { prisma } from "@taxiciti/database";
+import { CHANNELS, EVENTS, pusherServer } from "@taxiciti/utils";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
@@ -73,6 +74,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 				acceptTime: new Date(),
 				taxiId: acceptingTaxiId,
 			},
+			include: {
+				// Include taxi driver details for the user notification
+				taxi: {
+					include: {
+						driver: true,
+					},
+				},
+				route: true,
+			},
+		});
+
+		// Notify User that trip is accepted
+		await pusherServer.trigger(CHANNELS.TRIP(tripId), EVENTS.TRIP_UPDATED, updatedTrip);
+
+		// Notify Other Drivers on the route that trip is taken
+		await pusherServer.trigger(CHANNELS.ROUTE(trip.routeId), EVENTS.RIDE_TAKEN, {
+			requestId: tripId,
+			driverId: driver.id,
 		});
 
 		return NextResponse.json(updatedTrip);

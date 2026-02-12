@@ -8,6 +8,7 @@ import axios from "axios";
 import { iTrip, iRoute, iRank, iTaxi, iSavedLocation } from "../types";
 import { useMap } from "./MapContext";
 import { usePusher } from "./PusherContext";
+import { CHANNELS, EVENTS } from "@taxiciti/utils";
 
 interface RideContextType {
 	tripHistory: iTrip[];
@@ -334,7 +335,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	React.useEffect(() => {
 		if (!activeTrip?.id) return;
 
-		const channelName = `trip-${activeTrip.id}`;
+		const channelName = CHANNELS.TRIP(activeTrip.id);
 
 		const handleTripUpdate = (updatedTrip: any) => {
 			// Logic duplicated from polling effect - strictly this should be a shared function
@@ -404,7 +405,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			}
 		};
 
-		subscribe(channelName, "trip-updated", handleTripUpdate);
+		subscribe(channelName, EVENTS.TRIP_UPDATED, handleTripUpdate);
 
 		return () => unsubscribe(channelName);
 	}, [activeTrip?.id, activeTrip?.status, subscribe, unsubscribe, queryClient]);

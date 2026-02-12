@@ -1,6 +1,8 @@
 export const CHANNELS = {
 	VEHICLE: (id: string) => `vehicle-${id}`,
 	USER: (id: string) => `user-${id}`,
+	TRIP: (id: string) => `trip-${id}`,
+	ROUTE: (id: string) => `route-${id}`,
 	DRIVER: "driver",
 	USER_GLOBAL: "user",
 } as const;
@@ -16,4 +18,5 @@ export const EVENTS = {
 	NEW_MESSAGE: "new-message",
 	SEND_MESSAGE: "send-message",
 	DRIVER_LOCATION: "driver-location",
+	TRIP_UPDATED: "trip-updated",
 } as const;
