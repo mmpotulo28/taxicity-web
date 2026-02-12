@@ -1,5 +1,10 @@
-const path = require("node:path");
-const { getSentryExpoConfig } = require("@sentry/react-native/metro");
+import path from "node:path";
+import { getSentryExpoConfig } from "@sentry/react-native/metro.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Find the project and workspace directories
 const projectRoot = __dirname;
@@ -16,4 +21,4 @@ config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules"), p
 // 3. Force Metro to resolve (sub)dependencies from the `node_modules`
 // config.resolver.disableHierarchicalLookup = true;
 
-module.exports = config;
+export default config;

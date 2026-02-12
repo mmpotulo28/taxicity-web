@@ -1,6 +1,6 @@
 import Redis from "ioredis";
-import { config } from "../config/env";
-import { logger } from "./logger";
+import { config } from "../configs/variables";
+import { logger } from "@taxiciti/utils";
 
 export const redis = new Redis(config.redisUrl);
 

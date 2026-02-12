@@ -53,3 +53,6 @@ prisma/generated/
 # clerk configuration (can include secrets)
 .clerk/
 *.apk
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md

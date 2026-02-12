@@ -1,8 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { prisma } from "@taxiciti/database";
-import { logger } from "../utils/logger";
+import { logger } from "@taxiciti/utils";
 import { redis } from "../utils/redis";
-
 const QUEUE_NAME = "location-history-queue";
 const BATCH_SIZE = 50;
 const BATCH_TIMEOUT_MS = 10000;
@@ -67,7 +66,7 @@ const processJob = async (job: Job<LocationJobData>) => {
 
 export const startLocationWorker = () => {
 	// create a new connection for the worker as blocking commands are used
-	const workerConnection = redis.duplicate();
+	const workerConnection = redis.duplicate({ maxRetriesPerRequest: null });
 
 	const worker = new Worker(QUEUE_NAME, processJob, {
 		connection: workerConnection,

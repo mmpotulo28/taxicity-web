@@ -1,4 +1,4 @@
-const { withProjectBuildGradle, withAppBuildGradle, createRunOncePlugin } = require("expo/config-plugins");
+const { withProjectBuildGradle, withAppBuildGradle, createRunOncePlugin } = require("@expo/config-plugins");
 
 const withNewRelicAndroid = (config) => {
 	// Update android/build.gradle

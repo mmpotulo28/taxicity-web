@@ -1,7 +1,6 @@
 import { Queue } from "bullmq";
-import { config } from "../config/env";
-import { logger } from "../utils/logger";
 import { redis } from "../utils/redis";
+import { logger } from "@taxiciti/utils";
 
 const QUEUE_NAME = "location-history-queue";
 

@@ -6,5 +6,7 @@
   "WillLuke.nextjs.addTypesOnSave": true,
   "WillLuke.nextjs.hasPrompted": true,
   "java.configuration.updateBuildConfiguration": "automatic",
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "snyk.advanced.organization": "61c51ddc-2a7e-46a7-bb3b-67a6a2629c22",
+  "snyk.advanced.autoSelectOrganization": true
 }

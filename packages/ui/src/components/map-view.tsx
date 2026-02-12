@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback, useState, useMemo, useRef } from "react";
+import React, { useEffect, useCallback, useState, useMemo } from "react";
 import { APIProvider, Map, AdvancedMarker, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 
 import { useRide } from "../context/RideContext";
@@ -315,7 +315,7 @@ const MapContent: React.FC<MapViewProps> = ({
 						</div>
 					</AdvancedMarker>
 				))}
-/* If Driver, we show the smooth Taxi location instead of raw GPS if available */}
+			{/* If Driver, we show the smooth Taxi location instead of raw GPS if available */}
 			{isDriver ? (
 				<SmoothMarker targetPosition={taxiLocation || userLocation}>
 					<img
@@ -342,123 +342,121 @@ const MapContent: React.FC<MapViewProps> = ({
 						height={40}
 						alt="Taxi"
 					/>
-				</Smoothi"
-					/>
-		</AdvancedMarker >
+				</SmoothMarker>
 			)}
 
-{/* Pickup marker */ }
-{
-	pickupMarker && (
-		<AdvancedMarker position={pickupMarker}>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				viewBox="0 0 24 24"
-				fill="#22c55e"
-				width="32"
-				height="32"
-				className="drop-shadow-md"
-			>
-				<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-			</svg>
-		</AdvancedMarker>
-	)
-}
+			{/* Pickup marker */}
+			{
+				pickupMarker && (
+					<AdvancedMarker position={pickupMarker}>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="#22c55e"
+							width="32"
+							height="32"
+							className="drop-shadow-md"
+						>
+							<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
+						</svg>
+					</AdvancedMarker>
+				)
+			}
 
-{/* Dropoff marker */ }
-{
-	dropoffMarker && (
-		<AdvancedMarker position={dropoffMarker}>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				viewBox="0 0 24 24"
-				fill="#ef4444"
-				width="32"
-				height="32"
-				className="drop-shadow-md"
-			>
-				<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-			</svg>
-		</AdvancedMarker>
-	)
-}
+			{/* Dropoff marker */}
+			{
+				dropoffMarker && (
+					<AdvancedMarker position={dropoffMarker}>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="#ef4444"
+							width="32"
+							height="32"
+							className="drop-shadow-md"
+						>
+							<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
+						</svg>
+					</AdvancedMarker>
+				)
+			}
 
-{/* Passenger Stops (Driver View) */ }
-{
-	passengerStops?.map((stop, index) => (
-		<AdvancedMarker
-			key={`stop-${index}`}
-			position={{ lat: stop.lat, lng: stop.lng }}
-			title={stop.label}
-		>
-			<div className={`p-1.5 rounded-full border-2 border-white shadow-md ${stop.type === 'pickup' ? 'bg-green-500' : 'bg-blue-500'}`}>
-				{stop.type === 'pickup' ? (
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-						<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-						<circle cx="12" cy="10" r="3" />
-					</svg>
-				) : (
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-						<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-						<circle cx="12" cy="10" r="3" />
-					</svg>
-				)}
-			</div>
-		</AdvancedMarker>
-	))
-}
+			{/* Passenger Stops (Driver View) */}
+			{
+				passengerStops?.map((stop, index) => (
+					<AdvancedMarker
+						key={`stop-${index}`}
+						position={{ lat: stop.lat, lng: stop.lng }}
+						title={stop.label}
+					>
+						<div className={`p-1.5 rounded-full border-2 border-white shadow-md ${stop.type === 'pickup' ? 'bg-green-500' : 'bg-blue-500'}`}>
+							{stop.type === 'pickup' ? (
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+									<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+									<circle cx="12" cy="10" r="3" />
+								</svg>
+							) : (
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+									<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+									<circle cx="12" cy="10" r="3" />
+								</svg>
+							)}
+						</div>
+					</AdvancedMarker>
+				))
+			}
 
-{/* Taxi markers (other taxis) */ }
-{
-	showTaxis &&
-	taxis
-		.filter((taxi) => taxi.location)
-		.filter(
-			(taxi) =>
-				!taxiLocation ||
-				Math.abs(taxi.location!.lat - taxiLocation.lat) > 0.0001 ||
-				Math.abs(taxi.location!.lng - taxiLocation.lng) > 0.0001
-		)
-		.map((taxi) => (
-			<SmoothMarker
-				key={taxi.id}
-				targetPosition={{ lat: taxi.location!.lat, lng: taxi.location!.lng }}
-				title={`${taxi.driver} - ${taxi.model}`}
-			>
-				<img
-					src="/images/taxi-3d-transparent.png"
-					width={40}
-					height={40}
-					alt="Taxi"
-				/>
-			</SmoothMarker>
-		))
-}
+			{/* Taxi markers (other taxis) */}
+			{
+				showTaxis &&
+				taxis
+					.filter((taxi) => taxi.location)
+					.filter(
+						(taxi) =>
+							!taxiLocation ||
+							Math.abs(taxi.location!.lat - taxiLocation.lat) > 0.0001 ||
+							Math.abs(taxi.location!.lng - taxiLocation.lng) > 0.0001
+					)
+					.map((taxi) => (
+						<SmoothMarker
+							key={taxi.id}
+							targetPosition={{ lat: taxi.location!.lat, lng: taxi.location!.lng }}
+							title={`${taxi.driver} - ${taxi.model}`}
+						>
+							<img
+								src="/images/taxi-3d-transparent.png"
+								width={40}
+								height={40}
+								alt="Taxi"
+							/>
+						</SmoothMarker>
+					))
+			}
 
-{/* Rank markers */ }
-{
-	ranks.map((rank) => (
-		<AdvancedMarker
-			key={rank.id}
-			position={{ lat: rank.coordinates.lat, lng: rank.coordinates.lng }}
-			title={rank.name}
-			onClick={() => console.log("Rank clicked:", rank.name)}
-		>
-			<div className="cursor-pointer">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 24 24"
-					fill="#ef4444"
-					width="24"
-					height="24"
-					className="drop-shadow-md"
-				>
-					<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-				</svg>
-			</div>
-		</AdvancedMarker>
-	))
-}
+			{/* Rank markers */}
+			{
+				ranks.map((rank) => (
+					<AdvancedMarker
+						key={rank.id}
+						position={{ lat: rank.coordinates.lat, lng: rank.coordinates.lng }}
+						title={rank.name}
+						onClick={() => console.log("Rank clicked:", rank.name)}
+					>
+						<div className="cursor-pointer">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								fill="#ef4444"
+								width="24"
+								height="24"
+								className="drop-shadow-md"
+							>
+								<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
+							</svg>
+						</div>
+					</AdvancedMarker>
+				))
+			}
 		</>
 	);
 };

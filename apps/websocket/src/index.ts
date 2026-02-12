@@ -4,17 +4,16 @@ import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
-// import { Redis } from "ioredis"; // Removed duplicate import
 import cors from "cors";
 import helmet from "helmet";
 import { clerkMiddleware, createClerkClient } from "@clerk/express";
-import { config } from "./config/env";
-import { logger } from "./utils/logger";
-import { redis } from "./utils/redis"; // Import singleton
-import { socketAuthMiddleware } from "./middleware/auth";
+import { logger } from "@taxiciti/utils";
 import { setupSocket } from "./handlers/socketHandlers";
+import { socketAuthMiddleware } from "./middleware/auth";
 import { createApiRouter } from "./routes/api";
 import { startLocationWorker } from "./workers/locationWorker";
+import { config } from "./configs/variables";
+import { redis } from "./utils/redis";
 
 const startServer = () => {
 	const app = express();

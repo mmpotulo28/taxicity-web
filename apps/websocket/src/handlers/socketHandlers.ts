@@ -1,7 +1,6 @@
 import { Server, Socket } from "socket.io";
-import { logger } from "../utils/logger";
 import { redis } from "../utils/redis";
-import { CHANNELS, EVENTS } from "@taxiciti/utils";
+import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
 import { locationQueue } from "../queues/locationQueue";
 
 export const setupSocket = (io: Server, socket: Socket) => {

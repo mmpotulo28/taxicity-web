@@ -1,9 +1,9 @@
 import { Socket } from "socket.io";
 import jwt from "jsonwebtoken";
-import { logger } from "../utils/logger";
 import { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
-import { config } from "../config/env";
+import { config } from "../configs/variables";
+import { logger } from "@taxiciti/utils";
 
 export const socketAuthMiddleware = async (socket: Socket, next: (err?: any) => void) => {
 	const token = socket.handshake.auth.token;
