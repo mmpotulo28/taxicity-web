@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
+// use same env variable as frontend for consistency
 const WS_URL = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:3006";
 
 class SocketPusherClient {
