@@ -132,6 +132,7 @@ const MapContent: React.FC<MapViewProps> = ({
 	selectionModeOverride,
 	showRoute,
 	customRoutePoints,
+	routePolyline,
 	// Removed: usage of useSmoothPosition directly here to prevent re-renders on every frame
 	// const smoothTaxiLocation = useSmoothPosition(taxiLocation);
 

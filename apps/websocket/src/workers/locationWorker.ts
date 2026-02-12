@@ -36,7 +36,7 @@ const flushBuffer = async () => {
 		// Use createMany for bulk insert (Postgres)
 		await prisma.taxiLocation.createMany({
 			data: batch.map((loc) => ({
-				taxiId: loc.taxiId,
+				taxiHistoryId: loc.taxiId,
 				lat: loc.lat,
 				lng: loc.lng,
 				heading: loc.heading,

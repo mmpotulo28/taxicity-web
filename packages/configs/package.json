@@ -15,7 +15,6 @@
 		"eslint.config.mts"
 	],
 	"scripts": {
-		"build": "tsc",
 		"dev": "tsc -w",
 		"check": "tsc --noEmit",
 		"lint": "eslint ."

@@ -75,6 +75,12 @@ export async function GET(req: NextRequest) {
 			})),
 		}));
 
+		// Self-healing: Ensure Redis has the active session for the active trip
+		const activeTrip = trips.find((t) => ["BOARDING", "IN_PROGRESS"].includes(t.status));
+		if (activeTrip) {
+			await redis.set(`driver:${userId}:active_taxi`, activeTrip.taxiId, { ex: 43200 });
+		}
+
 		return NextResponse.json(tripsWithUsers);
 	} catch (error) {
 		console.error("Error fetching vehicle trips:", error);
