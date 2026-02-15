@@ -9,14 +9,10 @@ import {
 	DropdownTrigger,
 	DropdownMenu,
 	DropdownItem,
-	Modal,
-	ModalContent,
-	ModalHeader,
-	ModalBody,
-	ModalFooter,
-	useDisclosure,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Pagination } from "@heroui/pagination";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
@@ -24,43 +20,21 @@ import { addToast } from "@heroui/toast";
 // Import mock data (fallback)
 import { routes as mockRoutes, ranks } from "@/lib/data";
 import { useRoutes, RouteWithRanks } from "@/hooks/useRoutes";
-import RouteBuilderMap from "@/components/routes/RouteBuilderMap";
 
 export default function RoutesPage() {
-	const { routes: realRoutes, updateRoute } = useRoutes();
+	const { routes: realRoutes } = useRoutes();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-	// Modal state
-	const { isOpen, onOpen, onOpenChange } = useDisclosure();
-	const [selectedRoute, setSelectedRoute] = useState<RouteWithRanks | null>(null);
-	const [routeUpdates, setRouteUpdates] = useState<{
-		polyline?: string;
-		distance?: number;
-		duration?: number;
-		summary?: string;
-	} | null>(null);
-	const [isSaving, setIsSaving] = useState(false);
+	const router = useRouter();
 
-	const handleRouteChanged = useCallback((data: {
-		polyline: string;
-		distance: number;
-		duration: number;
-		summary: string;
-	}) => {
-		setRouteUpdates({
-			polyline: data.polyline,
-			distance: parseFloat((data.distance / 1000).toFixed(2)), // meters -> km
-			duration: Math.ceil(data.duration / 60), // seconds -> minutes
-			summary: data.summary
-		});
-	}, []);
+
 
 	// Combine routes data with rank information
 	const dataToUse = realRoutes && realRoutes.length > 0 ? realRoutes : null;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let routesWithRanks: any[] = [];
+	let routesWithRanks: RouteWithRanks[] = [];
 
 	if (dataToUse) {
 		routesWithRanks = dataToUse.map(r => ({
@@ -69,33 +43,18 @@ export default function RoutesPage() {
 			name: r.name,
 			originRank: r.sourceRank,
 			destRank: r.destRank,
-			estimatedDuration: r.estimatedDuration ? `${r.estimatedDuration} min` : "N/A",
-			estimatedFare: r.baseFare ? `R${Number(r.baseFare).toFixed(2)}` : "N/A",
-			distance: r.distance ? `${r.distance} km` : "N/A",
-			status: "active" // Default for now if status isn't on Route model, or check schema
+			estimatedDuration: r.estimatedDuration ? r.estimatedDuration : 0,
+			estimatedFare: r.baseFare ? Number(r.baseFare).toFixed(2) : 0,
+			distance: r.distance ? r.distance : 0,
+			status: "ACTIVE" // Default for now if status isn't on Route model, or check schema
 		}));
-	} else {
-		// Fallback to mock
-		routesWithRanks = mockRoutes.map((route) => {
-			const originRank = ranks.find((r) => r.id === route.rankId);
-			const destRank = route.destinationRankId
-				? ranks.find((r) => r.id === route.destinationRankId)
-				: null;
-
-			return {
-				...route,
-				sourceRank: originRank, // Make sure structure matches real data for consistent access
-				destRank: destRank,
-				originRank,
-			};
-		});
 	}
 
 	// Filter routes based on search query and status
 	const filteredRoutes = routesWithRanks.filter((route) => {
 		const matchesSearch =
 			route.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			(route.originRank?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+			(route.sourceRank?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
 			(route.destRank?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
 		const matchesStatus = statusFilter ? route.status === statusFilter : true;
@@ -123,58 +82,10 @@ export default function RoutesPage() {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleEdit = (route: any) => {
-		// Need to find the typed route object
-		// Logic: passed route is formatted for table, we need original shape mostly for lat/lng
-		// However, we mapped originRank/destRank which have the coords.
-		const original = dataToUse?.find(r => r.id === route.id);
-
-		if (original) {
-			setSelectedRoute(original);
-			onOpen();
-		} else if (!dataToUse && route.originRank && route.destRank) {
-			// Handle mock data case if needed, or just warn
-			// Convert route to RouteWithRanks shape loosely for the modal
-			setSelectedRoute({
-				...route,
-				sourceRank: route.originRank,
-				destRank: route.destRank
-			} as RouteWithRanks);
-			onOpen();
-		}
+		router.push(`/dashboard/routes/${route.id}`);
 	};
 
-	const handleSaveRoute = async () => {
-		if (!selectedRoute || !routeUpdates) return;
-
-		setIsSaving(true);
-		try {
-			await updateRoute({
-				id: selectedRoute.id,
-				data: {
-					polyline: routeUpdates.polyline,
-					distance: routeUpdates.distance, // Ensure backend handles number vs string if needed
-					estimatedDuration: routeUpdates.duration // Ensure backend handles math
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				} as any // relaxing type for partial update structure
-			});
-
-			addToast({
-				title: "Route Updated",
-				description: "Route path has been successfully updated.",
-				color: "success",
-			});
-			onOpenChange(); // Close modal
-		} catch (error) {
-			console.error("Failed to update route", error);
-			addToast({
-				title: "Error",
-				description: "Failed to update route.",
-				color: "danger",
-			});
-		} finally {
-			setIsSaving(false);
-		}
-	};
+	const handleSaveRoute = async () => { };
 
 	const handleToggleStatus = (id: string, currentStatus: string) => {
 		// In a real app, this would be an API call
@@ -189,77 +100,7 @@ export default function RoutesPage() {
 
 	return (
 		<div className="space-y-6">
-			<Modal
-				isOpen={isOpen}
-				onOpenChange={onOpenChange}
-				size="4xl"
-				scrollBehavior="inside"
-			>
-				<ModalContent>
-					{(onClose) => (
-						<>
-							<ModalHeader className="flex flex-col gap-1">
-								Edit Route: {selectedRoute?.name}
-							</ModalHeader>
-							<ModalBody>
-								<p className="text-sm text-default-500 mb-4">
-									Drag the route line on the map to modify the path. The new distance and duration will be calculated automatically.
-								</p>
-
-								{selectedRoute && selectedRoute.sourceRank && selectedRoute.destRank ? (
-									<RouteBuilderMap
-										apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
-										origin={{
-											lat: selectedRoute.sourceRank.lat,
-											lng: selectedRoute.sourceRank.lng
-										}}
-										destination={{
-											lat: selectedRoute.destRank.lat,
-											lng: selectedRoute.destRank.lng
-										}}
-										onRouteChanged={handleRouteChanged}
-										className="w-full h-[500px] border border-default-200 rounded-xl"
-									/>
-								) : (
-									<div className="h-[300px] flex items-center justify-center bg-content2 rounded-lg">
-										Loading Map Data...
-									</div>
-								)}
-
-								{routeUpdates && (
-									<div className="mt-4 grid grid-cols-3 gap-4">
-										<div className="p-3 bg-content2 rounded-lg">
-											<p className="text-xs text-default-500">New Distance</p>
-											<p className="text-lg font-semibold">{routeUpdates.distance} km</p>
-										</div>
-										<div className="p-3 bg-content2 rounded-lg">
-											<p className="text-xs text-default-500">New Duration</p>
-											<p className="text-lg font-semibold">{routeUpdates.duration} min</p>
-										</div>
-										<div className="p-3 bg-content2 rounded-lg">
-											<p className="text-xs text-default-500">Route Summary</p>
-											<p className="text-lg font-semibold truncate">{routeUpdates.summary}</p>
-										</div>
-									</div>
-								)}
-							</ModalBody>
-							<ModalFooter>
-								<Button color="danger" variant="light" onPress={onClose}>
-									Cancel
-								</Button>
-								<Button
-									color="primary"
-									onPress={handleSaveRoute}
-									isLoading={isSaving}
-									isDisabled={!routeUpdates}
-								>
-									Save Changes
-								</Button>
-							</ModalFooter>
-						</>
-					)}
-				</ModalContent>
-			</Modal>
+			{/* Modal-based editing removed: use subpages for editing */}
 
 			<div className="flex justify-between items-center">
 				<div>
@@ -270,9 +111,11 @@ export default function RoutesPage() {
 					</Breadcrumbs>
 				</div>
 
-				<Button color="primary" startContent={<Icon icon="lucide:plus" />}>
-					Add New Route
-				</Button>
+				<Link href="/dashboard/routes/new">
+					<Button color="primary" startContent={<Icon icon="lucide:plus" />}>
+						Add New Route
+					</Button>
+				</Link>
 			</div>
 
 			<Card className="shadow-sm">
@@ -359,13 +202,13 @@ export default function RoutesPage() {
 											</div>
 										</td>
 										<td className="py-4 px-4">
-											{route.originRank?.name || "Unknown"}
+											{route.sourceRank?.name || "Unknown"}
 										</td>
 										<td className="py-4 px-4">
 											{route.destRank?.name || "Unknown"}
 										</td>
 										<td className="py-4 px-4">{route.distance}</td>
-										<td className="py-4 px-4">{route.estimatedFare}</td>
+										<td className="py-4 px-4">R{route.baseFare.toString()}</td>
 										<td className="py-4 px-4">{route.estimatedDuration}</td>
 										<td className="py-4 px-4">
 											<Chip color={getStatusColor(route.status)} size="sm">
@@ -374,6 +217,16 @@ export default function RoutesPage() {
 										</td>
 										<td className="py-4 px-4">
 											<div className="flex gap-2">
+												<Link href={`/dashboard/routes/${route.id}`}>
+													<Button
+														isIconOnly
+														size="sm"
+														variant="light"
+														color="primary">
+														<Icon icon="lucide:eye" />
+													</Button>
+												</Link>
+
 												<Button
 													isIconOnly
 													size="sm"
@@ -385,7 +238,7 @@ export default function RoutesPage() {
 												<Button
 													isIconOnly
 													color={
-														route.status === "active"
+														route.status === "ACTIVE"
 															? "danger"
 															: "success"
 													}
@@ -396,7 +249,7 @@ export default function RoutesPage() {
 													}>
 													<Icon
 														icon={
-															route.status === "active"
+															route.status === "ACTIVE"
 																? "lucide:x"
 																: "lucide:check"
 														}

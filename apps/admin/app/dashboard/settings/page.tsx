@@ -78,7 +78,7 @@ export default function SettingsPage() {
 	});
 
 	const [apiSettings, setApiSettings] = useState({
-		apiKey: "sk_test_TaxiCity2023SecureAPIKeyExample",
+		apiKey: "test_api_key",
 		webhookUrl: "https://api.taxiciti.co.za/webhooks/events",
 		rateLimit: "100",
 		enableTracking: true,

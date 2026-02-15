@@ -43,8 +43,10 @@ import {
 import { iTrip } from "@/types";
 import { useTrips } from "@/hooks/useTrips";
 import { useDrivers } from "@/hooks/useDrivers";
+import { useRouter } from "next/navigation";
 
 export default function TripsPage() {
+	const router = useRouter();
 	const { trips: realTrips, isLoading: isTripsLoading } = useTrips();
 	const { drivers } = useDrivers();
 	const [isLoading, setIsLoading] = useState(true);
@@ -211,7 +213,7 @@ export default function TripsPage() {
 						color="primary"
 						startContent={<Icon icon="lucide:map" />}
 						variant="flat"
-						onPress={() => window.open("/dashboard/trips/live-tracking", "_blank")}>
+						onPress={() => router.push("/dashboard/trips/live-tracking")}>
 						Live Tracking
 					</Button>
 
@@ -373,7 +375,13 @@ export default function TripsPage() {
 														<Icon icon="lucide:more-vertical" />
 													</Button>
 												</DropdownTrigger>
-												<DropdownMenu aria-label="Trip actions">
+												<DropdownMenu
+													aria-label="Trip actions"
+													onAction={(key) => {
+														if (key === "track") {
+															router.push(`/dashboard/trips/live-tracking?tripId=${trip.id}`);
+														}
+													}}>
 													<DropdownItem
 														key="print"
 														startContent={
@@ -784,6 +792,17 @@ export default function TripsPage() {
 								</ModalBody>
 
 								<ModalFooter>
+									{selectedTrip.status === "in-progress" && (
+										<Button
+											color="primary"
+											startContent={<Icon icon="lucide:map-pin" />}
+											onPress={() => {
+												router.push(`/dashboard/trips/live-tracking?tripId=${selectedTrip.id}`);
+												onClose();
+											}}>
+											Track Trip
+										</Button>
+									)}
 									<Button
 										color="danger"
 										startContent={<Icon icon="lucide:flag" />}
