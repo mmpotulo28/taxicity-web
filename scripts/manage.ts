@@ -139,7 +139,7 @@ const runLocalDev = async (apps: string[]) => {
 
 	if (filterArgs.length === 0) return;
 
-	await runCommand("pnpm", ["turbo", "dev", ...filterArgs]);
+	await runCommand("pnpm", ["dev", ...filterArgs]);
 };
 
 const mainMenu = async () => {
