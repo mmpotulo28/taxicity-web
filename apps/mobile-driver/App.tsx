@@ -76,6 +76,8 @@ const App = (): JSX.Element => {
           style={styles.webview}
           onLoad={() => SplashScreen.hideAsync()}
           onError={() => SplashScreen.hideAsync()}
+          allowsBackForwardNavigationGestures
+          allowFileAccess
           geolocationEnabled={true}
           webviewDebuggingEnabled={true}
           javaScriptEnabled={true}

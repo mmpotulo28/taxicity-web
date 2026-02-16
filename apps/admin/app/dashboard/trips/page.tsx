@@ -30,6 +30,9 @@ import {
 	ModalFooter,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { TripReceipt } from "@/components/dashboard/TripReceipt";
 import {
 	ResponsiveContainer,
 	Line,
@@ -56,11 +59,78 @@ export default function TripsPage() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [selectedTrip, setSelectedTrip] = useState<iTrip | null>(null);
 	const [dateRange, setDateRange] = useState("all");
+	const [printingTrip, setPrintingTrip] = useState<any>(null);
+	const [isPrinting, setIsPrinting] = useState(false);
 
 	const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
 	// Items per page
 	const rowsPerPage = 10;
+
+	// Handle Download Receipt
+	const handleDownloadReceipt = async (tripId: string) => {
+		const trip = realTrips?.find((t) => t.id === tripId);
+		if (!trip) return;
+
+		// Map to the format needed by TripReceipt
+		const tripDataForReceipt = {
+			id: trip.id,
+			requestTime: new Date(trip.createdAt).toISOString(),
+			pickupAddress: (trip as any).pickupAddress || trip.route?.from_name || "Unknown Pickup",
+			dropoffAddress: (trip as any).dropoffAddress || trip.route?.to_name || "Unknown Destination",
+			fare: Number(trip.fare) || 0,
+			platformFee: (trip as any).platformFee ? Number((trip as any).platformFee) : null,
+			paymentMethod: (trip as any).paymentMethod || "CASH",
+			paymentStatus: (trip as any).paymentStatus || "COMPLETED",
+			route: {
+				name: trip.route?.from_name && trip.route?.to_name
+					? `${trip.route.from_name} - ${trip.route.to_name}`
+					: "Standard Route",
+			},
+			vehicleTrip: trip.vehicleTrip
+				? {
+						driver: {
+							fullName: `${trip.vehicleTrip.driver.first_name} ${trip.vehicleTrip.driver.last_name}`,
+							firstName: trip.vehicleTrip.driver.first_name,
+							lastName: trip.vehicleTrip.driver.last_name,
+						},
+						taxi: {
+							model: `${trip.vehicleTrip.taxi.make} ${trip.vehicleTrip.taxi.model}`,
+							licensePlate: trip.vehicleTrip.taxi.plate_number,
+						},
+				  }
+				: null,
+		};
+
+		setPrintingTrip(tripDataForReceipt);
+		setIsPrinting(true);
+
+		// Small delay to ensure the receipt component is rendered
+		setTimeout(async () => {
+			const input = document.getElementById("trip-receipt-printable");
+			if (input) {
+				try {
+					const canvas = await html2canvas(input, {
+						scale: 2,
+						useCORS: true,
+						logging: false,
+					});
+					const imgData = canvas.toDataURL("image/png");
+					const pdf = new jsPDF("p", "mm", "a4");
+					const pdfWidth = pdf.internal.pageSize.getWidth();
+					const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+					pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+					pdf.save(`receipt-${trip.id.substring(0, 8)}.pdf`);
+				} catch (error) {
+					console.error("Error generating PDF:", error);
+				} finally {
+					setIsPrinting(false);
+					setPrintingTrip(null);
+				}
+			}
+		}, 600);
+	};
 
 	// Filter trips
 	useEffect(() => {
@@ -378,8 +448,13 @@ export default function TripsPage() {
 												<DropdownMenu
 													aria-label="Trip actions"
 													onAction={(key) => {
+														console.log("Action key:", key);
 														if (key === "track") {
-															router.push(`/dashboard/trips/live-tracking?tripId=${trip.id}`);
+															router.push(
+																`/dashboard/trips/live-tracking?tripId=${trip.id}`
+															);
+														} else if (key === "print") {
+															handleDownloadReceipt(trip.id);
 														}
 													}}>
 													<DropdownItem
@@ -886,6 +961,23 @@ export default function TripsPage() {
 					</CardBody>
 				</Card>
 			</div>
+
+			{/* Hidden Receipt Component for PDF generation */}
+			{isPrinting && printingTrip && (
+				<div
+					style={{
+						position: "fixed",
+						left: "-9999px",
+						top: "100px",
+						zIndex: -1,
+						background: "white",
+						color: "black",
+					}}>
+					<div id="trip-receipt-printable" style={{ background: "white" }}>
+						<TripReceipt trip={printingTrip} />
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

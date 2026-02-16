@@ -71,6 +71,8 @@ const App = (): JSX.Element => {
       <SafeAreaView style={styles.container} edges={["bottom"]} >
         <StatusBar style="auto" animated={true} backgroundColor="#000000" hidden={true} />
         <WebView
+          allowsBackForwardNavigationGestures
+          allowFileAccess
           ref={webViewRef}
           source={{ uri: USER_APP_URL }}
           style={styles.webview}

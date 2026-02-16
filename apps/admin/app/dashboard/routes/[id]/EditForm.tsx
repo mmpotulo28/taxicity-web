@@ -36,12 +36,12 @@ export default function EditForm({ route }: any) {
    <Input value={form.origin} onChange={(e: any) => setForm({ ...form, origin: e.target.value })} />
    <Input value={form.destination} onChange={(e: any) => setForm({ ...form, destination: e.target.value })} />
    <label className="flex items-center gap-2">
-    <Checkbox checked={form.active} onCheckedChange={(val: any) => setForm({ ...form, active: !!val })} />
+    <Checkbox isSelected={form.active} onValueChange={(val: boolean) => setForm({ ...form, active: val })} />
     Active
    </label>
    <div className="flex gap-2">
-    <Button type="submit" disabled={loading} variant="primary">{loading ? "Saving..." : "Save"}</Button>
-    <Button type="button" onClick={remove} variant="danger">Delete</Button>
+    <Button type="submit" disabled={loading} color="primary">{loading ? "Saving..." : "Save"}</Button>
+    <Button type="button" onClick={remove} color="danger">Delete</Button>
    </div>
   </form>
  );

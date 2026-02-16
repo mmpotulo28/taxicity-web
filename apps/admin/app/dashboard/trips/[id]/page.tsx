@@ -9,6 +9,9 @@ import { Spinner } from "@heroui/spinner";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { TripReceipt } from "@/components/dashboard/TripReceipt";
 
 interface TripData {
  id: string;
@@ -124,6 +127,53 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   }
  };
 
+ const handleDownloadReceipt = async () => {
+  if (!trip) return;
+  setActionLoading(true);
+  try {
+   const element = document.getElementById(`receipt-${trip.id}`);
+   if (!element) {
+    console.error("Receipt element not found");
+    return;
+   }
+
+   // Temporary show the element for capturing
+   element.style.display = "block";
+   element.style.position = "fixed";
+   element.style.top = "0";
+   element.style.left = "-9999px";
+
+   const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    backgroundColor: "#ffffff",
+    width: 800, // Fixed width for consistent output
+   });
+
+   // Hide it back
+   element.style.display = "none";
+
+   const imgData = canvas.toDataURL("image/png");
+   const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+   });
+
+   const imgWidth = 210; // A4 width in mm
+   const pageHeight = 297; // A4 height in mm
+   const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+   pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+   pdf.save(`Receipt-Trip-${trip.id.slice(0, 8)}.pdf`);
+  } catch (error) {
+   console.error("Error generating PDF:", error);
+  } finally {
+   setActionLoading(false);
+  }
+ };
+
  if (loading) {
   return (
    <div className="flex items-center justify-center min-h-[400px]">
@@ -162,6 +212,16 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
      <p className="text-default-500 mt-1">Trip ID: {trip.id}</p>
     </div>
     <div className="flex gap-2">
+     {trip.status === "COMPLETED" && (
+      <Button
+       color="success"
+       variant="flat"
+       isLoading={actionLoading}
+       startContent={<Icon icon="lucide:download" />}
+       onPress={handleDownloadReceipt}>
+       Download Receipt
+      </Button>
+     )}
      {trip.status !== "COMPLETED" && trip.status !== "CANCELLED" && (
       <Button
        color="primary"
@@ -490,15 +550,12 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
       <CardBody className="space-y-2">
        <Button
         fullWidth
+        color="primary"
         variant="flat"
-        startContent={<Icon icon="lucide:printer" />}>
-        Print Receipt
-       </Button>
-       <Button
-        fullWidth
-        variant="flat"
-        startContent={<Icon icon="lucide:download" />}>
-        Download Invoice
+        isLoading={actionLoading}
+        startContent={<Icon icon="lucide:printer" />}
+        onPress={handleDownloadReceipt}>
+        Download Receipt
        </Button>
        {trip.status !== "COMPLETED" && trip.status !== "CANCELLED" && (
         <Button
@@ -514,6 +571,11 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
       </CardBody>
      </Card>
     </div>
+   </div>
+
+   {/* Hidden Receipt Component for PDF Generation */}
+   <div style={{ position: "absolute", top: "-9999px", left: "-9999px" }}>
+    <TripReceipt trip={trip} />
    </div>
   </div>
  );
