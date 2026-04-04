@@ -7,8 +7,8 @@
 		"dev": "dotenv -e ../../.env -- next dev --turbopack -p 3001",
 		"build": "next build",
 		"start": "next start -p 3001",
-		"lint": "eslint .",
-		"check": "eslint . && tsc --noEmit",
+		"lint": "eslint . --fix",
+		"check": "eslint . --fix && tsc --noEmit",
 		"docker:build": "docker build --platform linux/amd64 -f ./Dockerfile -t mmpotulo28/taxiciti-driver:latest .",
 		"docker:push": "docker push mmpotulo28/taxiciti-driver:latest"
 	},

@@ -1,8 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { realtimeConfig } from './realtime/config/realtime.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  app.enableCors({
+    origin: realtimeConfig.corsOrigin,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  });
+
+  await app.listen(process.env.PORT ?? 3006);
 }
-bootstrap();
+void bootstrap();

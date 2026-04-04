@@ -15,6 +15,8 @@ export const EVENTS = {
 	RIDE_TAKEN: "ride-taken",
 	RIDE_STATUS_UPDATE: "ride-status-update",
 	RIDE_STATUS_CHANGED: "ride-status-changed",
+	DRIVER_REQUESTS_SYNC: "driver-requests-sync",
+	USER_TRIPS_SYNC: "user-trips-sync",
 	NEW_MESSAGE: "new-message",
 	SEND_MESSAGE: "send-message",
 	DRIVER_LOCATION: "driver-location",

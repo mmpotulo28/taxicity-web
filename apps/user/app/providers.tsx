@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { clerkConfig } from "@taxiciti/configs/clerk";
 import { TelemetryProvider, PusherProvider, MapProvider, RideProvider } from "@taxiciti/ui";
 
@@ -30,14 +30,14 @@ function Providers({ children, themeProps }: ProvidersProps) {
 
 	return (
 		<ClerkProvider appearance={clerkConfig.appearance}>
-			<TelemetryProvider appName="TaxiCiTi User" version="1.0.0">
+			<TelemetryProvider appName='TaxiCiTi User' version='1.0.0'>
 				<QueryClientProvider client={queryClient}>
 					<HeroUIProvider navigate={router.push}>
 						<NextThemesProvider {...themeProps}>
-							<PusherProvider>
+							<PusherProvider role='user'>
 								<MapProvider>
 									<RideProvider>
-										<ToastProvider placement="top-center" />
+										<ToastProvider placement='top-center' />
 										{children}
 									</RideProvider>
 								</MapProvider>

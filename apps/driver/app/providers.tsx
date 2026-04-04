@@ -15,39 +15,39 @@ import { type ThemeProviderProps } from "next-themes"; // Correct import for typ
 const queryClient = new QueryClient();
 
 export interface ProvidersProps {
- children: React.ReactNode;
- themeProps?: ThemeProviderProps;
+	children: React.ReactNode;
+	themeProps?: ThemeProviderProps;
 }
 
 declare module "@react-types/shared" {
- interface RouterConfig {
-  routerOptions: NonNullable<Parameters<ReturnType<typeof useRouter>["push"]>[1]>;
- }
+	interface RouterConfig {
+		routerOptions: NonNullable<Parameters<ReturnType<typeof useRouter>["push"]>[1]>;
+	}
 }
 
 export function Providers({ children, themeProps }: ProvidersProps) {
- const router = useRouter();
+	const router = useRouter();
 
- return (
-  <ClerkProvider {...clerkConfig}>
-   <TelemetryProvider appName="TaxiCiTi Driver" version="1.0.0">
-    <QueryClientProvider client={queryClient}>
-     <HeroUIProvider navigate={router.push}>
-      <NextThemesProvider {...themeProps}>
-       <PusherProvider>
-        <MapProvider>
-         <RideProvider>
-          <DriverProvider>
-           <ToastProvider placement="top-center" />
-           {children}
-          </DriverProvider>
-         </RideProvider>
-        </MapProvider>
-       </PusherProvider>
-      </NextThemesProvider>
-     </HeroUIProvider>
-    </QueryClientProvider>
-   </TelemetryProvider>
-  </ClerkProvider>
- );
+	return (
+		<ClerkProvider {...clerkConfig}>
+			<TelemetryProvider appName='TaxiCiTi Driver' version='1.0.0'>
+				<QueryClientProvider client={queryClient}>
+					<HeroUIProvider navigate={router.push}>
+						<NextThemesProvider {...themeProps}>
+							<PusherProvider role='driver'>
+								<MapProvider>
+									<RideProvider>
+										<DriverProvider>
+											<ToastProvider placement='top-center' />
+											{children}
+										</DriverProvider>
+									</RideProvider>
+								</MapProvider>
+							</PusherProvider>
+						</NextThemesProvider>
+					</HeroUIProvider>
+				</QueryClientProvider>
+			</TelemetryProvider>
+		</ClerkProvider>
+	);
 }
