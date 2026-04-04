@@ -6,160 +6,146 @@ import { Icon } from "@iconify/react";
 
 // Extend the global namespace to include Google Maps types
 declare global {
- interface Window {
-  google: typeof google;
- }
+	interface Window {
+		google: typeof google;
+	}
 }
 
 interface PlaceResult {
- address: string;
- city: string;
- province: string;
- region: string;
- lat: number;
- lng: number;
+	address: string;
+	city: string;
+	province: string;
+	region: string;
+	lat: number;
+	lng: number;
 }
 
 interface GooglePlacesAutocompleteProps {
- readonly onPlaceSelected: (place: PlaceResult) => void;
- readonly defaultValue?: string;
- readonly label?: string;
- readonly placeholder?: string;
+	readonly onPlaceSelected: (place: PlaceResult) => void;
+	readonly defaultValue?: string;
+	readonly label?: string;
+	readonly placeholder?: string;
 }
 
-export default function GooglePlacesAutocomplete({
- onPlaceSelected,
- defaultValue = "",
- label = "Search Location",
- placeholder = "Start typing an address...",
-}: GooglePlacesAutocompleteProps) {
- const inputRef = useRef<HTMLInputElement>(null);
- // @ts-expect-error - Google Maps Autocomplete types are loaded dynamically
- const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
- const [isLoaded, setIsLoaded] = useState(false);
- const [value, setValue] = useState(defaultValue);
+export default function GooglePlacesAutocomplete({ onPlaceSelected, defaultValue = "", label = "Search Location", placeholder = "Start typing an address..." }: GooglePlacesAutocompleteProps) {
+	const inputRef = useRef<HTMLInputElement>(null);
+	const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+	const [isLoaded, setIsLoaded] = useState(false);
+	const [value, setValue] = useState(defaultValue);
 
- useEffect(() => {
-  // Load Google Maps script
-  const loadGoogleMapsScript = () => {
-   if (globalThis.google?.maps) {
-    setIsLoaded(true);
-    return;
-   }
+	useEffect(() => {
+		// Load Google Maps script
+		const loadGoogleMapsScript = () => {
+			if (globalThis.google?.maps) {
+				setIsLoaded(true);
+				return;
+			}
 
-   const script = document.createElement("script");
-   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+			const script = document.createElement("script");
+			const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-   if (!apiKey) {
-    console.error("Google Maps API key is missing");
-    return;
-   }
+			if (!apiKey) {
+				console.error("Google Maps API key is missing");
+				return;
+			}
 
-   script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-   script.async = true;
-   script.defer = true;
-   script.onload = () => setIsLoaded(true);
-   document.head.appendChild(script);
-  };
+			script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+			script.async = true;
+			script.defer = true;
+			script.onload = () => setIsLoaded(true);
+			document.head.appendChild(script);
+		};
 
-  loadGoogleMapsScript();
- }, []);
+		loadGoogleMapsScript();
+	}, []);
 
- useEffect(() => {
-  if (!isLoaded || !inputRef.current) return;
+	useEffect(() => {
+		if (!isLoaded || !inputRef.current) return;
 
-  // Initialize Google Places Autocomplete
-  const google = (globalThis as any).google; // eslint-disable-line @typescript-eslint/no-explicit-any
-  if (!google?.maps?.places?.Autocomplete) return;
+		// Initialize Google Places Autocomplete
+		const google = (globalThis as any).google; // eslint-disable-line @typescript-eslint/no-explicit-any
+		if (!google?.maps?.places?.Autocomplete) return;
 
-  autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-   componentRestrictions: { country: "za" }, // Restrict to South Africa
-   fields: ["address_components", "geometry", "formatted_address", "name"],
-   types: ["establishment", "geocode"], // Allow both places and addresses
-  });
+		autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+			componentRestrictions: { country: "za" }, // Restrict to South Africa
+			fields: ["address_components", "geometry", "formatted_address", "name"],
+			types: ["establishment", "geocode"], // Allow both places and addresses
+		});
 
-  // Listen for place selection
-  autocompleteRef.current.addListener("place_changed", () => {
-   const place = autocompleteRef.current?.getPlace();
+		const autocomplete = autocompleteRef.current;
+		if (!autocomplete) return;
 
-   if (!place?.geometry?.location) {
-    console.error("No geometry found for the selected place");
-    return;
-   }
+		// Listen for place selection
+		autocomplete.addListener("place_changed", () => {
+			const place = autocomplete.getPlace();
 
-   // Extract address components
-   const addressComponents = place.address_components || [];
-   let streetAddress = "";
-   let city = "";
-   let province = "";
-   let region = "";
+			if (!place?.geometry?.location) {
+				console.error("No geometry found for the selected place");
+				return;
+			}
 
-   addressComponents.forEach((component) => {
-    const types = component.types;
+			// Extract address components
+			const addressComponents = place.address_components || [];
+			let streetAddress = "";
+			let city = "";
+			let province = "";
+			let region = "";
 
-    if (types.includes("street_number")) {
-     streetAddress = component.long_name + " " + streetAddress;
-    }
-    if (types.includes("route")) {
-     streetAddress += component.long_name;
-    }
-    if (types.includes("sublocality") || types.includes("locality")) {
-     city = component.long_name;
-    }
-    if (types.includes("administrative_area_level_1")) {
-     province = component.long_name;
-    }
-    if (types.includes("administrative_area_level_2")) {
-     region = component.long_name;
-    }
-   });
+			addressComponents.forEach((component) => {
+				const types = component.types;
 
-   // Fallback: use formatted_address if no street address found
-   if (!streetAddress && place.formatted_address) {
-    streetAddress = place.formatted_address;
-   }
+				if (types.includes("street_number")) {
+					streetAddress = component.long_name + " " + streetAddress;
+				}
+				if (types.includes("route")) {
+					streetAddress += component.long_name;
+				}
+				if (types.includes("sublocality") || types.includes("locality")) {
+					city = component.long_name;
+				}
+				if (types.includes("administrative_area_level_1")) {
+					province = component.long_name;
+				}
+				if (types.includes("administrative_area_level_2")) {
+					region = component.long_name;
+				}
+			});
 
-   // Fallback: use name if it's a place
-   if (!streetAddress && place.name) {
-    streetAddress = place.name;
-   }
+			// Fallback: use formatted_address if no street address found
+			if (!streetAddress && place.formatted_address) {
+				streetAddress = place.formatted_address;
+			}
 
-   const result: PlaceResult = {
-    address: streetAddress.trim(),
-    city: city || "",
-    province: province || "",
-    region: region || "",
-    lat: place.geometry.location.lat(),
-    lng: place.geometry.location.lng(),
-   };
+			// Fallback: use name if it's a place
+			if (!streetAddress && place.name) {
+				streetAddress = place.name;
+			}
 
-   setValue(place.formatted_address || place.name || "");
-   onPlaceSelected(result);
-  });
+			const result: PlaceResult = {
+				address: streetAddress.trim(),
+				city: city || "",
+				province: province || "",
+				region: region || "",
+				lat: place.geometry.location.lat(),
+				lng: place.geometry.location.lng(),
+			};
 
-  // Cleanup
-  return () => {
-   const google = (globalThis as any).google; // eslint-disable-line @typescript-eslint/no-explicit-any
-   if (autocompleteRef.current && google?.maps?.event) {
-    google.maps.event.clearInstanceListeners(autocompleteRef.current);
-   }
-  };
- }, [isLoaded, onPlaceSelected]);
+			setValue(place.formatted_address || place.name || "");
+			onPlaceSelected(result);
+		});
 
- return (
-  <div className="relative">
-   <Input
-    ref={inputRef}
-    label={label}
-    placeholder={placeholder}
-    value={value}
-    onChange={(e) => setValue(e.target.value)}
-    variant="bordered"
-    labelPlacement="outside"
-    startContent={<Icon icon="lucide:search" className="text-default-400" />}
-    description={isLoaded ? "Search and select a location" : "Loading Google Maps..."}
-    isDisabled={!isLoaded}
-   />
-  </div>
- );
+		// Cleanup
+		return () => {
+			const google = (globalThis as any).google; // eslint-disable-line @typescript-eslint/no-explicit-any
+			if (autocompleteRef.current && google?.maps?.event) {
+				google.maps.event.clearInstanceListeners(autocompleteRef.current);
+			}
+		};
+	}, [isLoaded, onPlaceSelected]);
+
+	return (
+		<div className='relative'>
+			<Input ref={inputRef} label={label} placeholder={placeholder} value={value} onChange={(e) => setValue(e.target.value)} variant='bordered' labelPlacement='outside' startContent={<Icon icon='lucide:search' className='text-default-400' />} description={isLoaded ? "Search and select a location" : "Loading Google Maps..."} isDisabled={!isLoaded} />
+		</div>
+	);
 }

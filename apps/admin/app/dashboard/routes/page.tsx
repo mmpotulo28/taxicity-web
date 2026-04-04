@@ -33,7 +33,7 @@ export default function RoutesPage() {
 
 	// Combine routes data with rank information
 	const dataToUse = realRoutes && realRoutes.length > 0 ? realRoutes : null;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	let routesWithRanks: RouteWithRanks[] = [];
 
 	if (dataToUse) {
