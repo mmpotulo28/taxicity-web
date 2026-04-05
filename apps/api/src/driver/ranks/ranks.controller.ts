@@ -2,7 +2,7 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiAuthGuard } from '../common/api-auth.guard';
 import { DriverRanksService } from './ranks.service';
 
-@Controller('api/ranks')
+@Controller('api/driver/ranks')
 @UseGuards(ApiAuthGuard)
 export class DriverRanksController {
   constructor(private readonly ranksService: DriverRanksService) {}

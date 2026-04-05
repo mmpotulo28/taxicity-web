@@ -25,7 +25,7 @@ import {
 import jwt from 'jsonwebtoken';
 import type Redis from 'ioredis';
 import { Server, Socket } from 'socket.io';
-import { realtimeConfig } from '../config/realtime.config';
+import { isAllowedCorsOrigin } from '../config/realtime.config';
 import { RealtimeRedisService } from '../infra/realtime.redis.service';
 import { LocationQueueService } from '../location/location-queue.service';
 import { RealtimeQueueService } from '../queue/realtime.queue.service';
@@ -58,8 +58,16 @@ const TRIP_STATUSES = new Set<TripStatus>([
 
 @WebSocketGateway({
   cors: {
-    origin: realtimeConfig.corsOrigin,
+    origin: (origin, callback) => {
+      if (isAllowedCorsOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin ?? 'unknown'}`));
+    },
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 })
 export class RealtimeGateway

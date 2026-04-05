@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
+import { AxiosError } from "axios";
 import { addToast } from "@heroui/toast";
+import { apiClient } from "../lib/api-client";
 
 interface UseRatingReturn {
 	submitRating: (tripId: string, rating: number, comment?: string) => Promise<boolean>;
@@ -19,7 +20,7 @@ export const useRating = (): UseRatingReturn => {
 		setError(null);
 
 		try {
-			await axios.post(`/api/trips/${tripId}/rating`, {
+			await apiClient.post(`/api/user/trips/${tripId}/rating`, {
 				rating,
 				comment,
 			});
@@ -31,9 +32,10 @@ export const useRating = (): UseRatingReturn => {
 			});
 
 			return true;
-		} catch (err: any) {
+		} catch (err) {
 			console.error("Error submitting rating:", err);
-			const errorMessage = err.response?.data?.error || "Failed to submit rating. Please try again.";
+			const axiosError = err as AxiosError<{ error?: string }>;
+			const errorMessage = axiosError.response?.data?.error || "Failed to submit rating. Please try again.";
 			setError(errorMessage);
 
 			addToast({

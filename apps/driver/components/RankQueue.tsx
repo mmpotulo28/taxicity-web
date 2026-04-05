@@ -73,7 +73,7 @@ export function RankQueue({ taxiId, currentLocation, onJoin, onLeave, onStatusCh
 	const fetchRanks = React.useCallback(async () => {
 		// In real app, pass lat/lng to filter nearby
 		try {
-			const data = await apiGet<{ ranks?: Rank[] }>("/api/ranks?limit=50");
+			const data = await apiGet<{ ranks?: Rank[] }>("/api/driver/ranks?limit=50");
 
 			// The API returns { ranks: [], pagination: {} }
 			const ranksArray = data.ranks || [];

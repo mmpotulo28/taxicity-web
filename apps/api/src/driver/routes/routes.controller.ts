@@ -16,12 +16,12 @@ import type {
 } from './dto/routes.dto';
 import { DriverRoutesService } from './routes.service';
 
-@Controller('api')
+@Controller('api/driver/routes')
 @UseGuards(ApiAuthGuard)
 export class DriverRoutesController {
   constructor(private readonly routesService: DriverRoutesService) {}
 
-  @Get('routes')
+  @Get()
   async getRoutes(
     @Query('status') status?: string,
     @Query('sourceRankId') sourceRankId?: string,
@@ -38,7 +38,7 @@ export class DriverRoutesController {
     });
   }
 
-  @Post('driver/routes/assign')
+  @Post('assign')
   async assignDriverRoute(
     @Req() req: AuthenticatedRequest,
     @Body() body: { taxiId?: string; routeId?: string },

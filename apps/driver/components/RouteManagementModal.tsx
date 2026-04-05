@@ -31,7 +31,7 @@ export const RouteManagementModal: React.FC<RouteManagementModalProps> = ({ isOp
 	useEffect(() => {
 		const fetchRoutes = async () => {
 			try {
-				const data = await apiGet<{ routes?: Route[] }>("/api/routes");
+				const data = await apiGet<{ routes?: Route[] }>("/api/driver/routes");
 				setRoutes(data.routes || []);
 			} catch (err) {
 				console.error("Failed to fetch routes", err);

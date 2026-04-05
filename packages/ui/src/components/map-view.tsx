@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { APIProvider, Map, AdvancedMarker, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 
 import { useRide } from "../context/RideContext";
@@ -8,13 +8,13 @@ import { useMap as useMapContext } from "../context/MapContext";
 
 // Polyline component for Google Maps
 const Polyline = (props: google.maps.PolylineOptions) => {
-	const map = useMap();
+	const map = useMap() as google.maps.Map | null;
 	const [polyline, setPolyline] = useState<google.maps.Polyline | null>(null);
 
 	useEffect(() => {
 		if (!map) return;
 
-		const p = new google.maps.Polyline(props);
+		const p = new google.maps.Polyline();
 		p.setMap(map);
 		setPolyline(p);
 
@@ -114,7 +114,7 @@ interface MapViewProps {
 	showRoute?: boolean;
 	customRoutePoints?: { lat: number; lng: number }[];
 	routePolyline?: string; // New: encoded polyline string
-	passengerStops?: { lat: number; lng: number; type: 'pickup' | 'dropoff'; label?: string }[];
+	passengerStops?: { lat: number; lng: number; type: "pickup" | "dropoff"; label?: string }[];
 	taxiLocation?: { lat: number; lng: number };
 	isDriver?: boolean;
 }
@@ -140,22 +140,11 @@ const MapContent: React.FC<MapViewProps> = ({
 	taxiLocation,
 	isDriver,
 }) => {
-	const map = useMap();
+	const map = useMap() as google.maps.Map | null;
 	const geometryLib = useMapsLibrary("geometry");
 	const { taxis, selectedRoute, ranks } = useRide();
-	const {
-		mapRef,
-		userLocation,
-		setUserLocation,
-		pickupMarker,
-		dropoffMarker,
-		handleMapClick: contextHandleMapClick,
-		setIsMapLoaded,
-		selectionMode,
-		isMapLoaded,
-	} = useMapContext();
+	const { mapRef, userLocation, setUserLocation, pickupMarker, dropoffMarker, handleMapClick: contextHandleMapClick, setIsMapLoaded, selectionMode, isMapLoaded } = useMapContext();
 
-	const smoothTaxiLocation = useSmoothPosition(taxiLocation);
 	const effectiveSelectionMode = selectionModeOverride || selectionMode;
 
 	// Calculate route points
@@ -228,7 +217,7 @@ const MapContent: React.FC<MapViewProps> = ({
 					enableHighAccuracy: true,
 					timeout: 5000,
 					maximumAge: 0,
-				}
+				},
 			);
 		}
 	}, [setUserLocation, userLocation]);
@@ -255,81 +244,44 @@ const MapContent: React.FC<MapViewProps> = ({
 		}
 
 		if (targetLoc) {
-			(map as any).moveCamera({
-				center: targetLoc,
-				zoom: targetZoom,
-			});
+			map.panTo(targetLoc);
+			map.setZoom(targetZoom);
 		}
-	}, [
-		centerOnRank,
-		selectedRoute,
-		ranks,
-		pickupMarker,
-		dropoffMarker,
-		effectiveSelectionMode,
-		isMapLoaded,
-		map,
-	]);
+	}, [centerOnRank, selectedRoute, ranks, pickupMarker, dropoffMarker, effectiveSelectionMode, isMapLoaded, map]);
 
-	const onMapClick = useCallback(
-		(e: any) => {
-			if (!modalMap || !contextHandleMapClick) return;
-			// Google Maps event has detail with latLng
-			const latLng = e.detail.latLng;
-			if (latLng) {
-				const mockEvent = {
-					latLng: {
-						lat: () => latLng.lat,
-						lng: () => latLng.lng,
-					},
-				};
-				contextHandleMapClick(mockEvent);
-			}
-		},
-		[modalMap, contextHandleMapClick]
-	);
+	useEffect(() => {
+		if (!map || !modalMap || !contextHandleMapClick) return;
+
+		const listener = google.maps.event.addListener(map, "click", (event: google.maps.MapMouseEvent) => {
+			if (!event.latLng) return;
+			contextHandleMapClick({ latLng: event.latLng });
+		});
+
+		return () => listener.remove();
+	}, [map, modalMap, contextHandleMapClick]);
 
 	return (
 		<>
 			{/* Route Line */}
-			{showRoute && routePoints && routePoints.length >= 2 && (
-				<Polyline
-					path={routePoints}
-					strokeColor="#4f46e5"
-					strokeWeight={5}
-					strokeOpacity={0.75}
-					clickable={false}
-					geodesic={true}
-				/>
-			)}
+			{showRoute && routePoints && routePoints.length >= 2 && <Polyline path={routePoints} strokeColor='#4f46e5' strokeWeight={5} strokeOpacity={0.75} clickable={false} geodesic={true} />}
 
 			{/* Route Markers (Popular Locations) */}
 			{showRoute &&
 				!passengerStops &&
 				selectedRoute?.popularLocations?.map((loc, index) => (
-					<AdvancedMarker
-						key={loc.id}
-						position={{ lat: loc.lat, lng: loc.lng }}
-					>
-						<div className="flex items-center justify-center w-5 h-5 bg-amber-500 rounded-full border-2 border-white text-white text-[10px] font-bold">
-							{index + 1}
-						</div>
+					<AdvancedMarker key={loc.id} position={{ lat: loc.lat, lng: loc.lng }}>
+						<div className='flex items-center justify-center w-5 h-5 bg-amber-500 rounded-full border-2 border-white text-white text-[10px] font-bold'>{index + 1}</div>
 					</AdvancedMarker>
 				))}
 			{/* If Driver, we show the smooth Taxi location instead of raw GPS if available */}
 			{isDriver ? (
 				<SmoothMarker targetPosition={taxiLocation || userLocation}>
-					<img
-						src="/images/taxi-3d-transparent.png"
-						width={40}
-						height={40}
-						alt="My Taxi"
-					/>
+					<img src='/images/taxi-3d-transparent.png' width={40} height={40} alt='My Taxi' />
 				</SmoothMarker>
 			) : (
 				userLocation && (
 					<AdvancedMarker position={userLocation}>
-						<div className="w-6 h-6 bg-indigo-600 rounded-full border-2 border-white shadow-lg" />
+						<div className='w-6 h-6 bg-indigo-600 rounded-full border-2 border-white shadow-lg' />
 					</AdvancedMarker>
 				)
 			)}
@@ -337,127 +289,68 @@ const MapContent: React.FC<MapViewProps> = ({
 			{/* Specific Taxi Location (for Passenger view - tracking assigned driver) */}
 			{taxiLocation && !isDriver && (
 				<SmoothMarker targetPosition={taxiLocation}>
-					<img
-						src="/images/taxi-3d-transparent.png"
-						width={40}
-						height={40}
-						alt="Taxi"
-					/>
+					<img src='/images/taxi-3d-transparent.png' width={40} height={40} alt='Taxi' />
 				</SmoothMarker>
 			)}
 
 			{/* Pickup marker */}
-			{
-				pickupMarker && (
-					<AdvancedMarker position={pickupMarker}>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="#22c55e"
-							width="32"
-							height="32"
-							className="drop-shadow-md"
-						>
-							<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-						</svg>
-					</AdvancedMarker>
-				)
-			}
+			{pickupMarker && (
+				<AdvancedMarker position={pickupMarker}>
+					<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='#22c55e' width='32' height='32' className='drop-shadow-md'>
+						<path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z' />
+					</svg>
+				</AdvancedMarker>
+			)}
 
 			{/* Dropoff marker */}
-			{
-				dropoffMarker && (
-					<AdvancedMarker position={dropoffMarker}>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="#ef4444"
-							width="32"
-							height="32"
-							className="drop-shadow-md"
-						>
-							<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-						</svg>
-					</AdvancedMarker>
-				)
-			}
+			{dropoffMarker && (
+				<AdvancedMarker position={dropoffMarker}>
+					<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='#ef4444' width='32' height='32' className='drop-shadow-md'>
+						<path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z' />
+					</svg>
+				</AdvancedMarker>
+			)}
 
 			{/* Passenger Stops (Driver View) */}
-			{
-				passengerStops?.map((stop, index) => (
-					<AdvancedMarker
-						key={`stop-${index}`}
-						position={{ lat: stop.lat, lng: stop.lng }}
-						title={stop.label}
-					>
-						<div className={`p-1.5 rounded-full border-2 border-white shadow-md ${stop.type === 'pickup' ? 'bg-green-500' : 'bg-blue-500'}`}>
-							{stop.type === 'pickup' ? (
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-									<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-									<circle cx="12" cy="10" r="3" />
-								</svg>
-							) : (
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-									<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-									<circle cx="12" cy="10" r="3" />
-								</svg>
-							)}
-						</div>
-					</AdvancedMarker>
-				))
-			}
+			{passengerStops?.map((stop, index) => (
+				<AdvancedMarker key={`stop-${index}`} position={{ lat: stop.lat, lng: stop.lng }} title={stop.label}>
+					<div className={`p-1.5 rounded-full border-2 border-white shadow-md ${stop.type === "pickup" ? "bg-green-500" : "bg-blue-500"}`}>
+						{stop.type === "pickup" ? (
+							<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-white'>
+								<path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z' />
+								<circle cx='12' cy='10' r='3' />
+							</svg>
+						) : (
+							<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-white'>
+								<path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z' />
+								<circle cx='12' cy='10' r='3' />
+							</svg>
+						)}
+					</div>
+				</AdvancedMarker>
+			))}
 
 			{/* Taxi markers (other taxis) */}
-			{
-				showTaxis &&
+			{showTaxis &&
 				taxis
 					.filter((taxi) => taxi.location)
-					.filter(
-						(taxi) =>
-							!taxiLocation ||
-							Math.abs(taxi.location!.lat - taxiLocation.lat) > 0.0001 ||
-							Math.abs(taxi.location!.lng - taxiLocation.lng) > 0.0001
-					)
+					.filter((taxi) => !taxiLocation || Math.abs(taxi.location!.lat - taxiLocation.lat) > 0.0001 || Math.abs(taxi.location!.lng - taxiLocation.lng) > 0.0001)
 					.map((taxi) => (
-						<SmoothMarker
-							key={taxi.id}
-							targetPosition={{ lat: taxi.location!.lat, lng: taxi.location!.lng }}
-							title={`${taxi.driver} - ${taxi.model}`}
-						>
-							<img
-								src="/images/taxi-3d-transparent.png"
-								width={40}
-								height={40}
-								alt="Taxi"
-							/>
+						<SmoothMarker key={taxi.id} targetPosition={{ lat: taxi.location!.lat, lng: taxi.location!.lng }} title={`${taxi.driver} - ${taxi.model}`}>
+							<img src='/images/taxi-3d-transparent.png' width={40} height={40} alt='Taxi' />
 						</SmoothMarker>
-					))
-			}
+					))}
 
 			{/* Rank markers */}
-			{
-				ranks.map((rank) => (
-					<AdvancedMarker
-						key={rank.id}
-						position={{ lat: rank.coordinates.lat, lng: rank.coordinates.lng }}
-						title={rank.name}
-						onClick={() => console.log("Rank clicked:", rank.name)}
-					>
-						<div className="cursor-pointer">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="#ef4444"
-								width="24"
-								height="24"
-								className="drop-shadow-md"
-							>
-								<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-							</svg>
-						</div>
-					</AdvancedMarker>
-				))
-			}
+			{ranks.map((rank) => (
+				<AdvancedMarker key={rank.id} position={{ lat: rank.coordinates.lat, lng: rank.coordinates.lng }} title={rank.name} onClick={() => console.log("Rank clicked:", rank.name)}>
+					<div className='cursor-pointer'>
+						<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='#ef4444' width='24' height='24' className='drop-shadow-md'>
+							<path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z' />
+						</svg>
+					</div>
+				</AdvancedMarker>
+			))}
 		</>
 	);
 };
@@ -470,30 +363,26 @@ export const MapView: React.FC<MapViewProps> = (props) => {
 		() =>
 			props.fullscreen
 				? {
-					width: "100%",
-					height: "100%",
-					zIndex: props.zIndex || -1,
-					position: "absolute" as const,
-					top: 0,
-					left: 0,
-				}
+						width: "100%",
+						height: "100%",
+						zIndex: props.zIndex || -1,
+						position: "absolute" as const,
+						top: 0,
+						left: 0,
+					}
 				: {
-					width: "100%",
-					height: props.height || "100%",
-					position: "relative" as const,
-				},
-		[props.fullscreen, props.zIndex, props.height]
+						width: "100%",
+						height: props.height || "100%",
+						position: "relative" as const,
+					},
+		[props.fullscreen, props.zIndex, props.height],
 	);
 
 	if (!apiKey) {
 		return (
-			<div
-				className="flex items-center justify-center bg-gray-100 p-4 text-center"
-				style={{ height: props.height || "200px" }}
-			>
-				<p className="text-red-500">
-					Missing <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> environment
-					variable.
+			<div className='flex items-center justify-center bg-gray-100 p-4 text-center' style={{ height: props.height || "200px" }}>
+				<p className='text-red-500'>
+					Missing <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> environment variable.
 				</p>
 			</div>
 		);
@@ -502,14 +391,7 @@ export const MapView: React.FC<MapViewProps> = (props) => {
 	return (
 		<div style={mapContainerStyle}>
 			<APIProvider apiKey={apiKey}>
-				<Map
-					mapId={mapId}
-					defaultCenter={defaultCenter}
-					defaultZoom={14}
-					style={{ width: "100%", height: "100%" }}
-					gestureHandling={props.modalMap ? "cooperative" : "auto"}
-					disableDefaultUI={false}
-				>
+				<Map mapId={mapId} defaultCenter={defaultCenter} defaultZoom={14} style={{ width: "100%", height: "100%" }} gestureHandling={props.modalMap ? "cooperative" : "auto"} disableDefaultUI={false}>
 					<MapContent {...props} />
 				</Map>
 			</APIProvider>

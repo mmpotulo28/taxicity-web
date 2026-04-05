@@ -12,12 +12,17 @@ import { Header } from "@taxiciti/ui";
 import { useDriver } from "@/context/DriverContext";
 import { apiGet, apiPost, apiRequest } from "@/lib/api-client";
 
+interface DriverRouteOption {
+	id: string;
+	name: string;
+}
+
 export default function DriverApplicationPage() {
 	const router = useRouter();
 	const { driver, isLoading } = useDriver();
 	const [submitting, setSubmitting] = useState(false);
 	const [step, setStep] = useState(1);
-	const [routes, setRoutes] = useState<any[]>([]);
+	const [routes, setRoutes] = useState<DriverRouteOption[]>([]);
 
 	// Form State
 	const [formData, setFormData] = useState({
@@ -62,7 +67,7 @@ export default function DriverApplicationPage() {
 	useEffect(() => {
 		const fetchRoutes = async () => {
 			try {
-				const data = await apiGet<{ routes?: unknown[] }>("/api/routes");
+				const data = await apiGet<{ routes?: DriverRouteOption[] }>("/api/driver/routes");
 				setRoutes(data.routes || []);
 			} catch (err) {
 				console.error("Failed to fetch routes", err);

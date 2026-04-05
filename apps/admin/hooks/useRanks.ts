@@ -18,8 +18,8 @@ export type RankWithRelations = Rank & {
 		estimatedDuration: number;
 		baseFare: number;
 	}>;
-	taxiRanks?: any[];
-	queueEntries?: any[];
+	taxiRanks?: unknown[];
+	queueEntries?: unknown[];
 };
 
 export const useRanks = () => {

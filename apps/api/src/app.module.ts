@@ -5,6 +5,7 @@ import { HealthModule } from './health/health.module';
 import { DriverModule } from './driver/driver.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
+import { UserApiModule } from './user/user-api.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UploadModule } from './upload/upload.module';
     DriverModule,
     NotificationsModule,
     UploadModule,
+    UserApiModule,
   ],
   controllers: [AppController],
   providers: [],

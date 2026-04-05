@@ -26,7 +26,7 @@ export const RouteSelection: React.FC<RouteSelectionProps> = ({ taxiId, onComple
 	useEffect(() => {
 		const fetchRoutes = async () => {
 			try {
-				const data = await apiGet<{ routes?: Route[] }>("/api/routes");
+				const data = await apiGet<{ routes?: Route[] }>("/api/driver/routes");
 				setRoutes(data.routes || []);
 			} catch (error) {
 				console.error(error);
