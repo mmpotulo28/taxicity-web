@@ -8,7 +8,7 @@ import { ToastProvider } from "@heroui/toast";
 import { ClerkProvider } from "@clerk/nextjs";
 import { clerkConfig } from "@taxiciti/configs/clerk";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MapProvider, RideProvider, PusherProvider, TelemetryProvider } from "@taxiciti/ui";
+import { MapProvider, PusherProvider, TelemetryProvider } from "@taxiciti/ui";
 import { DriverProvider } from "../context/DriverContext";
 import { type ThemeProviderProps } from "next-themes"; // Correct import for types
 
@@ -36,12 +36,10 @@ export function Providers({ children, themeProps }: ProvidersProps) {
 						<NextThemesProvider {...themeProps}>
 							<PusherProvider role='driver'>
 								<MapProvider>
-									<RideProvider>
-										<DriverProvider>
-											<ToastProvider placement='top-center' />
-											{children}
-										</DriverProvider>
-									</RideProvider>
+									<DriverProvider>
+										<ToastProvider placement='top-center' />
+										{children}
+									</DriverProvider>
 								</MapProvider>
 							</PusherProvider>
 						</NextThemesProvider>

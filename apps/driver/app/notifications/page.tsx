@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { Button } from "@heroui/button";
 import { Bell, CheckCircle, AlertTriangle, Info } from "lucide-react";
-import { apiGet, apiPatch } from "@/lib/api-client";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface Notification {
 	id: string;
-	type: "INFO" | "WARNING" | "SUCCESS" | "ERROR";
+	type: "INFO" | "WARNING" | "SUCCESS" | "ERROR" | "TRIP_UPDATE" | "PAYMENT";
 	title: string;
 	message: string;
 	read: boolean;
@@ -17,32 +16,7 @@ interface Notification {
 }
 
 export default function DriverNotificationsPage() {
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		fetchNotifications();
-	}, []);
-
-	const fetchNotifications = async () => {
-		try {
-			const data = await apiGet<Notification[]>("/api/notifications");
-			setNotifications(data);
-		} catch (error) {
-			console.error("Failed to fetch notifications:", error);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const markAsRead = async (id: string) => {
-		try {
-			await apiPatch("/api/notifications", { id });
-			setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-		} catch (error) {
-			console.error("Failed to mark notification as read:", error);
-		}
-	};
+	const { notifications, isLoading: loading, markAsRead } = useNotifications();
 
 	const getIcon = (type: string) => {
 		switch (type) {
@@ -75,7 +49,7 @@ export default function DriverNotificationsPage() {
 					<p>No notifications yet</p>
 				</div>
 			) : (
-				notifications.map((notification) => (
+				notifications.map((notification: Notification) => (
 					<Card key={notification.id} className={`w-full ${notification.read ? "opacity-60" : "border-l-4 border-primary"}`}>
 						<CardBody className='flex flex-row gap-4 items-start'>
 							<div className='mt-1'>{getIcon(notification.type)}</div>

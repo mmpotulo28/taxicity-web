@@ -1,10 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Badge, Button, Popover, PopoverTrigger, PopoverContent, ScrollShadow } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { usePusher } from "@taxiciti/ui";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useUser } from "@clerk/nextjs";
 
 export interface Notification {
 	id: string;
@@ -17,36 +15,12 @@ export interface Notification {
 }
 
 export const NotificationBell = () => {
-	const { notifications, mutate } = useNotifications();
-	const [unreadCount, setUnreadCount] = useState(0);
-	const { user } = useUser();
-	const { subscribe, unsubscribe } = usePusher();
-
-	useEffect(() => {
-		if (!user) return;
-
-		// Subscribe to global notifications
-		subscribe("notifications-global", "new-notification", () => {
-			mutate();
-			setUnreadCount((prev) => prev + 1);
-		});
-
-		// Subscribe to user specific notifications
-		subscribe(`user-${user.id}`, "new-notification", () => {
-			mutate();
-			setUnreadCount((prev) => prev + 1);
-		});
-
-		return () => {
-			unsubscribe("notifications-global");
-			unsubscribe(`user-${user.id}`);
-		};
-	}, [mutate, user, subscribe, unsubscribe]);
+	const { notifications, unreadCount } = useNotifications();
 
 	return (
 		<Popover placement='bottom-end'>
 			<PopoverTrigger>
-				<Button isIconOnly variant='light' onPress={() => setUnreadCount(0)}>
+				<Button isIconOnly variant='light'>
 					<Badge content={unreadCount} isInvisible={unreadCount === 0} color='danger' shape='circle'>
 						<Icon icon='lucide:bell' width={24} />
 					</Badge>

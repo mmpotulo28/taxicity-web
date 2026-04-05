@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
@@ -23,6 +23,9 @@ export default function DriverApplicationPage() {
 	const [submitting, setSubmitting] = useState(false);
 	const [step, setStep] = useState(1);
 	const [routes, setRoutes] = useState<DriverRouteOption[]>([]);
+	const [isLoadingRoutes, setIsLoadingRoutes] = useState(true);
+	const [routesError, setRoutesError] = useState<string | null>(null);
+	const [routeSearch, setRouteSearch] = useState("");
 
 	// Form State
 	const [formData, setFormData] = useState({
@@ -66,16 +69,45 @@ export default function DriverApplicationPage() {
 
 	useEffect(() => {
 		const fetchRoutes = async () => {
+			setIsLoadingRoutes(true);
+			setRoutesError(null);
+
 			try {
-				const data = await apiGet<{ routes?: DriverRouteOption[] }>("/api/driver/routes");
-				setRoutes(data.routes || []);
+				const limit = 200;
+				let page = 1;
+				let totalPages = 1;
+				const allRoutes: DriverRouteOption[] = [];
+
+				do {
+					const data = await apiGet<{
+						routes?: DriverRouteOption[];
+						pagination?: { pages?: number };
+					}>(`/api/user/routes?page=${page}&limit=${limit}`);
+
+					allRoutes.push(...(data.routes || []));
+					totalPages = data.pagination?.pages || 1;
+					page += 1;
+				} while (page <= totalPages);
+
+				const dedupedRoutes = Array.from(new Map(allRoutes.map((route) => [route.id, route])).values());
+				setRoutes(dedupedRoutes);
 			} catch (err) {
 				console.error("Failed to fetch routes", err);
+				setRoutesError("Failed to load routes. Please refresh and try again.");
+			} finally {
+				setIsLoadingRoutes(false);
 			}
 		};
 
 		fetchRoutes();
 	}, []);
+
+	const filteredRoutes = useMemo(() => {
+		const query = routeSearch.trim().toLowerCase();
+		if (!query) return routes;
+
+		return routes.filter((route) => route.name.toLowerCase().includes(query));
+	}, [routeSearch, routes]);
 
 	useEffect(() => {
 		if (!isLoading && driver) {
@@ -248,17 +280,41 @@ export default function DriverApplicationPage() {
 									<div className='space-y-6'>
 										<h2 className='text-xl font-semibold'>Route Selection</h2>
 										<p className='text-small text-default-500'>Select the primary route you will be operating on. You must provide a valid operating permit for this route in the next step.</p>
-										<Select label='Select Route' placeholder='Choose a route' selectedKeys={formData.routeId ? [formData.routeId] : []} onChange={(e) => setFormData({ ...formData, routeId: e.target.value })} variant='bordered'>
-											{routes.map((route) => (
-												<SelectItem key={route.id}>{route.name}</SelectItem>
-											))}
-										</Select>
+
+										{isLoadingRoutes ? (
+											<div className='flex items-center gap-3 rounded-large border border-default-200 bg-default-50 p-4'>
+												<div className='animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent' />
+												<div>
+													<p className='text-sm font-medium'>Loading routes...</p>
+													<p className='text-xs text-default-500'>Please wait while we fetch available routes.</p>
+												</div>
+											</div>
+										) : (
+											<>
+												<Input label='Search Route' placeholder='Type route name to filter (e.g. Soweto - CBD)' value={routeSearch} onChange={(e) => setRouteSearch(e.target.value)} startContent={<Icon icon='lucide:search' className='text-default-400' />} variant='bordered' isClearable onClear={() => setRouteSearch("")} />
+
+												{!routesError && (
+													<p className='text-xs text-default-500'>
+														Showing {filteredRoutes.length} of {routes.length} routes
+													</p>
+												)}
+
+												<Select label='Select Route' placeholder={filteredRoutes.length > 0 ? "Choose a route" : "No routes found"} selectedKeys={formData.routeId ? [formData.routeId] : []} onChange={(e) => setFormData({ ...formData, routeId: e.target.value })} variant='bordered' isDisabled={filteredRoutes.length === 0}>
+													{filteredRoutes.map((route) => (
+														<SelectItem key={route.id}>{route.name}</SelectItem>
+													))}
+												</Select>
+
+												{routesError && <p className='text-danger text-sm'>{routesError}</p>}
+												{!routesError && filteredRoutes.length === 0 && <p className='text-default-500 text-sm'>{routeSearch ? "No routes match your search. Try a different keyword." : "No routes are currently available."}</p>}
+											</>
+										)}
 
 										<div className='flex gap-4 mt-6'>
 											<Button variant='flat' onPress={() => setStep(2)} className='flex-1'>
 												Back
 											</Button>
-											<Button color='primary' className='flex-1' onPress={() => setStep(4)} isDisabled={!formData.routeId}>
+											<Button color='primary' className='flex-1' onPress={() => setStep(4)} isDisabled={!formData.routeId || isLoadingRoutes}>
 												Next Step
 											</Button>
 										</div>

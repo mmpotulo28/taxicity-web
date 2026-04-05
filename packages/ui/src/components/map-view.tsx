@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { APIProvider, Map, AdvancedMarker, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 
-import { useRide } from "../context/RideContext";
+import { useOptionalRide } from "../context/RideContext";
 import { useMap as useMapContext } from "../context/MapContext";
 
 // Polyline component for Google Maps
@@ -142,7 +142,10 @@ const MapContent: React.FC<MapViewProps> = ({
 }) => {
 	const map = useMap() as google.maps.Map | null;
 	const geometryLib = useMapsLibrary("geometry");
-	const { taxis, selectedRoute, ranks } = useRide();
+	const rideContext = useOptionalRide();
+	const taxis = rideContext?.taxis ?? [];
+	const selectedRoute = rideContext?.selectedRoute ?? null;
+	const ranks = rideContext?.ranks ?? [];
 	const { mapRef, userLocation, setUserLocation, pickupMarker, dropoffMarker, handleMapClick: contextHandleMapClick, setIsMapLoaded, selectionMode, isMapLoaded } = useMapContext();
 
 	const effectiveSelectionMode = selectionModeOverride || selectionMode;

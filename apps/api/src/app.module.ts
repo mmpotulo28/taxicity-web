@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { RealtimeModule } from './realtime/realtime.module';
 import { HealthModule } from './health/health.module';
 import { DriverModule } from './driver/driver.module';
-import { NotificationsModule } from './notifications/notifications.module';
 import { UploadModule } from './upload/upload.module';
 import { UserApiModule } from './user/user-api.module';
 
@@ -12,7 +11,6 @@ import { UserApiModule } from './user/user-api.module';
     RealtimeModule,
     HealthModule,
     DriverModule,
-    NotificationsModule,
     UploadModule,
     UserApiModule,
   ],

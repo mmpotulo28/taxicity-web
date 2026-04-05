@@ -9,7 +9,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { createAdapter } from '@socket.io/redis-adapter';
-import { redis } from '@taxiciti/database';
+import { prisma, redis } from '@taxiciti/database';
 import type { PaymentMethod, TripStatus } from '@taxiciti/database/types';
 import {
   CHANNELS,
@@ -39,6 +39,28 @@ interface SocketData {
 interface DriverQueuePayload {
   rankId: string;
   taxiId: string;
+}
+
+interface NotificationMarkReadPayload {
+  id?: string;
+}
+
+interface NotificationSendPayload {
+  title: string;
+  message: string;
+  type: string;
+  userId?: string;
+}
+
+interface RealtimeNotificationDto {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  userId: string;
+  read: boolean;
+  createdAt: string;
+  actionUrl?: string | null;
 }
 
 const PAYMENT_METHODS = new Set<PaymentMethod>([
@@ -303,6 +325,160 @@ export class RealtimeGateway
         success: false,
         message:
           error instanceof Error ? error.message : 'Failed to sync trips',
+      };
+    }
+  }
+
+  @SubscribeMessage(EVENTS.NOTIFICATIONS_SYNC)
+  async handleNotificationsSync(
+    @ConnectedSocket() socket: Socket,
+  ): Promise<WsAck<RealtimeNotificationDto[]>> {
+    const { userId } = this.getSocketIdentity(socket);
+
+    if (!userId) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    try {
+      const notifications = await this.getNotificationsForUser(userId);
+
+      return {
+        success: true,
+        data: notifications,
+      };
+    } catch (error) {
+      logger.error(error, `Failed syncing notifications for ${userId}`);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to sync notifications',
+      };
+    }
+  }
+
+  @SubscribeMessage(EVENTS.NOTIFICATION_MARK_READ)
+  async handleNotificationMarkRead(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: unknown,
+  ): Promise<WsAck<RealtimeNotificationDto[]>> {
+    const { userId } = this.getSocketIdentity(socket);
+
+    if (!userId) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    try {
+      const notificationId = this.isNotificationMarkReadPayload(data)
+        ? data.id
+        : undefined;
+
+      if (notificationId) {
+        await prisma.notification.updateMany({
+          where: {
+            id: notificationId,
+            OR: [{ userId }, { userId: 'ALL' }],
+          },
+          data: { isRead: true },
+        });
+      } else {
+        await prisma.notification.updateMany({
+          where: {
+            OR: [{ userId }, { userId: 'ALL' }],
+            isRead: false,
+          },
+          data: { isRead: true },
+        });
+      }
+
+      const notifications = await this.getNotificationsForUser(userId);
+
+      return {
+        success: true,
+        data: notifications,
+      };
+    } catch (error) {
+      logger.error(error, `Failed marking notifications as read for ${userId}`);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to mark notifications as read',
+      };
+    }
+  }
+
+  @SubscribeMessage(EVENTS.NOTIFICATION_SEND)
+  async handleNotificationSend(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: unknown,
+  ): Promise<WsAck<RealtimeNotificationDto>> {
+    const { userId, role } = this.getSocketIdentity(socket);
+
+    if (!userId) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    if (role !== 'admin') {
+      return { success: false, message: 'Forbidden' };
+    }
+
+    if (!this.isNotificationSendPayload(data)) {
+      return { success: false, message: 'Invalid notification payload' };
+    }
+
+    try {
+      const targetUserId = data.userId?.trim() || 'ALL';
+
+      const notification = await prisma.notification.create({
+        data: {
+          title: data.title,
+          message: data.message,
+          type: data.type as
+            | 'INFO'
+            | 'SUCCESS'
+            | 'WARNING'
+            | 'ERROR'
+            | 'TRIP_UPDATE'
+            | 'PAYMENT',
+          userId: targetUserId,
+          isRead: false,
+        },
+      });
+
+      const dto: RealtimeNotificationDto = {
+        id: notification.id,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        userId: notification.userId,
+        read: notification.isRead,
+        createdAt: notification.createdAt.toISOString(),
+        actionUrl: notification.actionUrl,
+      };
+
+      if (targetUserId === 'ALL') {
+        this.server.to('notifications-global').emit('new-notification', dto);
+      } else {
+        this.server
+          .to(CHANNELS.USER(targetUserId))
+          .emit('new-notification', dto);
+      }
+
+      return {
+        success: true,
+        data: dto,
+      };
+    } catch (error) {
+      logger.error(error, `Failed sending notification by ${userId}`);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to send notification',
       };
     }
   }
@@ -657,5 +833,52 @@ export class RealtimeGateway
     return (
       this.isNonEmptyString(value.rankId) && this.isNonEmptyString(value.taxiId)
     );
+  }
+
+  private isNotificationMarkReadPayload(
+    value: unknown,
+  ): value is NotificationMarkReadPayload {
+    if (!this.isRecord(value)) {
+      return false;
+    }
+
+    return value.id === undefined || this.isNonEmptyString(value.id);
+  }
+
+  private isNotificationSendPayload(
+    value: unknown,
+  ): value is NotificationSendPayload {
+    if (!this.isRecord(value)) {
+      return false;
+    }
+
+    return (
+      this.isNonEmptyString(value.title) &&
+      this.isNonEmptyString(value.message) &&
+      this.isNonEmptyString(value.type) &&
+      (value.userId === undefined || this.isNonEmptyString(value.userId))
+    );
+  }
+
+  private async getNotificationsForUser(
+    userId: string,
+  ): Promise<RealtimeNotificationDto[]> {
+    const notifications = await prisma.notification.findMany({
+      where: {
+        OR: [{ userId }, { userId: 'ALL' }],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return notifications.map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      userId: notification.userId,
+      read: notification.isRead,
+      createdAt: notification.createdAt.toISOString(),
+      actionUrl: notification.actionUrl,
+    }));
   }
 }

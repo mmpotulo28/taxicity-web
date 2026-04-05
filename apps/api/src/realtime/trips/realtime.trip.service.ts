@@ -295,7 +295,9 @@ export class RealtimeTripService {
       throw new WsException('Unauthorized to update this trip');
     }
 
-    if (isPassenger && !['CANCELLED'].includes(payload.status)) {
+    const isPassengerOnly = isPassenger && !isAssignedDriver;
+
+    if (isPassengerOnly && !['CANCELLED'].includes(payload.status)) {
       throw new WsException(
         'Passengers can only cancel rides in realtime flow',
       );

@@ -221,6 +221,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	const [dropoffLocation, setDropoffLocation] = useState<string>("");
 	const [ratingTrip, setRatingTrip] = useState<iTrip | null>(null);
 	const [isRestoring, setIsRestoring] = useState(true);
+	const shouldFetchTaxis = Boolean(selectedRoute || activeTrip);
 
 	const mapTripToUiTrip = React.useCallback((trip: TripApiItem): iTrip => {
 		let mappedStatus = trip.status?.toLowerCase?.() || "requested";
@@ -322,13 +323,14 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		queryFn: fetchRanks,
 	});
 
-	const { data: taxis = [], isLoading: isLoadingTaxis } = useQuery({
+	const { data: taxis = [] } = useQuery({
 		queryKey: ["taxis"],
 		queryFn: fetchTaxis,
-		refetchInterval: 5000, // Poll every 5 seconds for live location updates
+		enabled: shouldFetchTaxis,
+		refetchInterval: shouldFetchTaxis ? 5000 : false, // Poll only while user is in ride-selection/tracking flow
 	});
 
-	const { data: tripHistory = [], isLoading: isLoadingTrips } = useQuery({
+	const { data: tripHistory = [] } = useQuery({
 		queryKey: ["trips"],
 		queryFn: async () => {
 			if (!pusher) {
@@ -760,7 +762,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		isLoadingSavedLocations,
 		isSavingLocation: saveLocationMutation.isPending,
 		isDeletingLocation: deleteLocationMutation.isPending,
-		isLoading: isLoadingRoutes || isLoadingRanks || isLoadingTaxis || isLoadingTrips,
+		isLoading: isLoadingRoutes || isLoadingRanks,
 		isRestoring,
 
 		setActiveTrip,
@@ -793,4 +795,8 @@ export function useRide() {
 	}
 
 	return context;
+}
+
+export function useOptionalRide() {
+	return useContext(RideContext);
 }

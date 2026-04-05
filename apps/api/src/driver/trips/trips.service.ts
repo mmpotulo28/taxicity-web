@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -15,6 +16,20 @@ import type {
 
 @Injectable()
 export class DriverTripsService {
+  private readonly logger = new Logger(DriverTripsService.name);
+
+  private async cacheActiveTaxi(userId: string, taxiId: string): Promise<void> {
+    try {
+      await redis.set(`driver:${userId}:active_taxi`, taxiId, {
+        ex: 43200,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to cache active taxi for user ${userId}: ${error instanceof Error ? error.message : 'Unknown redis error'}`,
+      );
+    }
+  }
+
   private mapVehicleTripToDto(vehicleTrip: {
     id: string;
     status: string;
@@ -153,9 +168,7 @@ export class DriverTripsService {
     );
 
     if (activeTrip) {
-      await redis.set(`driver:${user.userId}:active_taxi`, activeTrip.taxiId, {
-        ex: 43200,
-      });
+      await this.cacheActiveTaxi(user.userId, activeTrip.taxiId);
     }
 
     return trips.map((trip) => this.mapVehicleTripToDto(trip));
@@ -216,9 +229,7 @@ export class DriverTripsService {
       },
     });
 
-    await redis.set(`driver:${user.userId}:active_taxi`, body.taxiId, {
-      ex: 43200,
-    });
+    await this.cacheActiveTaxi(user.userId, body.taxiId);
 
     return this.mapVehicleTripToDto(vehicleTrip);
   }
