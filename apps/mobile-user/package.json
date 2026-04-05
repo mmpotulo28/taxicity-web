@@ -7,10 +7,14 @@
 		"android": "dotenv -e ../../.env -- expo run:android",
 		"ios": "dotenv -e ../../.env -- expo run:ios",
 		"web": "dotenv -e ../../.env -- expo start --web",
+		"eas-build-post-install": "cd ../.. && pnpm --filter @taxiciti/utils build",
 		"build:apps": "eas build --platform android --non-interactive",
 		"type-check": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@taxiciti/configs": "workspace:*",
+		"@taxiciti/ui": "workspace:*",
+		"@taxiciti/utils": "workspace:*",
 		"@babel/runtime": "^7.28.6",
 		"@expo/vector-icons": "^15.0.3",
 		"@sentry/react-native": "^7.2.0",
