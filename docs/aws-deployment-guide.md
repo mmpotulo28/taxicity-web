@@ -19,10 +19,32 @@ We chose AWS App Runner because:
 2.  **Docker Hub Images**: Ensure the following images are pushed and accessible (public or authenticated):
     - `mmpotulo28/taxiciti-user:latest`
     - `mmpotulo28/taxiciti-driver:latest`
-
----
+    - `mmpotulo28/taxiciti-api:latest`
 
 ## 🚀 Deployment Steps
+
+### Step 0: Deploy the API App (`apps/api`)
+
+1.  **Log in to AWS Console** and search for **"App Runner"**.
+2.  Click **Create Service**.
+3.  **Source:**
+    - Repository type: **Container Registry**.
+    - Container Image URI: `mmpotulo28/taxiciti-api:latest`
+4.  **Configuration:**
+    - **Service name:** `taxiciti-api-app`
+    - **Virtual CPU & Memory:** `1 vCPU / 2 GB`
+    - **Port:** `3006`
+5.  **Environment Variables:**
+    - `DATABASE_URL`
+    - One token verification strategy:
+        - `CLERK_JWT_PUBLIC_KEY`, or
+        - `JWT_PUBLIC_KEY`, or
+        - `JWT_SECRET`
+    - `INTERNAL_PROXY_SECRET` (optional, only if using trusted proxy header forwarding)
+    - `BLOB_READ_WRITE_TOKEN`
+    - `UPLOAD_MAX_FILE_BYTES` (optional)
+    - `REDIS_URL` (or equivalent Upstash URL variables used in your environment)
+6.  **Review & Create:** Click deploy.
 
 ### Step 1: Deploy the User App (`apps/user`)
 
@@ -71,7 +93,10 @@ We chose AWS App Runner because:
     - **Virtual CPU & Memory:** `1 vCPU / 2 GB`
     - **Port:** `3000` (Caution: Ensure you set Port 3000, even though we develop on 3001 locally, the Docker container standardizes on 3000).
 5.  **Environment Variables:**
-    - Use the **exact same variables** as the User App above. Both apps share the same database and Redis infrastructure.
+    - Use the variables required by the User app.
+    - Add API routing variables:
+        - `NEXT_PUBLIC_API_URL` (public API base URL, e.g. `https://api.your-domain.com`)
+        - `API_URL` (server-side API base URL)
 6.  **Review & Create:** Click deploy.
 
 ---

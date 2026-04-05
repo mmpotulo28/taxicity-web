@@ -6,6 +6,7 @@ import { usePusher } from "@taxiciti/ui";
 import { useDriverLocation } from "../hooks/useDriverLocation";
 import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
 import type { RideAcceptedPayload, RideStatusPayload, WsAck } from "@taxiciti/utils";
+import { apiGet, apiPatch, apiPost, ApiError } from "@/lib/api-client";
 
 export interface Driver {
 	id: string;
@@ -208,12 +209,9 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 		try {
 			setIsLoading(true);
 			console.log("DriverContext: Fetching driver profile...");
-			const res = await fetch("/api/driver/me");
-			if (res.ok) {
-				console.log("DriverContext: Driver profile fetched successfully.");
-				const data = await res.json();
-				setDriver(data);
-			}
+			const data = await apiGet<Driver>("/api/driver/me");
+			console.log("DriverContext: Driver profile fetched successfully.");
+			setDriver(data);
 		} catch (error) {
 			console.error("Failed to fetch driver:", error);
 		} finally {
@@ -225,14 +223,11 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 		if (!driver) return;
 		try {
 			console.log("DriverContext: Fetching active vehicle trip...");
-			const res = await fetch("/api/driver/vehicle-trips");
-			if (res.ok) {
-				const trips = await res.json();
-				// Assuming we only handle one active trip at a time for now
-				const active = trips.find((t: VehicleTrip) => ["BOARDING", "IN_PROGRESS"].includes(t.status));
-				setActiveVehicleTrip(active || null);
-				if (active) setIsOnline(true);
-			}
+			const trips = await apiGet<VehicleTrip[]>("/api/driver/trips/vehicle");
+			// Assuming we only handle one active trip at a time for now
+			const active = trips.find((t: VehicleTrip) => ["BOARDING", "IN_PROGRESS"].includes(t.status));
+			setActiveVehicleTrip(active || null);
+			if (active) setIsOnline(true);
 		} catch (error) {
 			console.error("Failed to fetch active vehicle trip:", error);
 		}
@@ -325,27 +320,20 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 	const startShift = async (taxiId: string, routeId: string) => {
 		try {
 			console.log(`DriverContext: Starting shift with taxiId=${taxiId} and routeId=${routeId}`);
-			const res = await fetch("/api/driver/vehicle-trips", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ taxiId, routeId }),
+			const trip = await apiPost<VehicleTrip>("/api/driver/trips/vehicle", {
+				taxiId,
+				routeId,
 			});
 
-			if (res.ok) {
-				const trip = await res.json();
-				setActiveVehicleTrip(trip);
-				setIsOnline(true);
-				addToast({
-					title: "Shift Started",
-					description: "You are now active on the route.",
-					color: "success",
-				});
-			} else {
-				const error = await res.json();
-				throw new Error(error.error);
-			}
+			setActiveVehicleTrip(trip);
+			setIsOnline(true);
+			addToast({
+				title: "Shift Started",
+				description: "You are now active on the route.",
+				color: "success",
+			});
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Failed to start shift";
+			const message = error instanceof ApiError || error instanceof Error ? error.message : "Failed to start shift";
 			addToast({
 				title: "Error",
 				description: message,
@@ -358,21 +346,17 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 	const endShift = async () => {
 		if (!activeVehicleTrip) return;
 		try {
-			const res = await fetch(`/api/driver/vehicle-trips/${activeVehicleTrip.id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ status: "COMPLETED" }),
+			await apiPatch(`/api/driver/trips/vehicle/${activeVehicleTrip.id}`, {
+				status: "COMPLETED",
 			});
 
-			if (res.ok) {
-				setActiveVehicleTrip(null);
-				setIsOnline(false);
-				addToast({
-					title: "Shift Ended",
-					description: "Your run has been completed.",
-					color: "success",
-				});
-			}
+			setActiveVehicleTrip(null);
+			setIsOnline(false);
+			addToast({
+				title: "Shift Ended",
+				description: "Your run has been completed.",
+				color: "success",
+			});
 		} catch (error) {
 			console.error("Failed to end shift:", error);
 		}
@@ -444,18 +428,11 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 	const updateManualPassengers = async (count: number) => {
 		if (!activeVehicleTrip) return;
 		try {
-			const res = await fetch(`/api/driver/vehicle-trips/${activeVehicleTrip.id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ manualPassengers: count }),
+			const updatedTrip = await apiPatch<{ manualPassengers: number }>(`/api/driver/trips/vehicle/${activeVehicleTrip.id}`, {
+				manualPassengers: count,
 			});
 
-			if (res.ok) {
-				const updatedTrip = await res.json();
-				setActiveVehicleTrip((prev) => (prev ? { ...prev, manualPassengers: updatedTrip.manualPassengers } : null));
-			} else {
-				throw new Error("Failed to update manual passengers");
-			}
+			setActiveVehicleTrip((prev) => (prev ? { ...prev, manualPassengers: updatedTrip.manualPassengers } : null));
 		} catch (error) {
 			console.error("Failed to update manual passengers:", error);
 			addToast({

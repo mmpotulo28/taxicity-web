@@ -1,7 +1,6 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
-console.log("env", process.env.NODE_ENV);
 const nextConfig = {
 	output: "standalone",
 	transpilePackages: ["@taxiciti/ui", "@taxiciti/utils", "react-map-gl", "mapbox-gl"],

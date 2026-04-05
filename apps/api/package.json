@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@socket.io/redis-adapter": "^8.3.0",
+    "@vercel/blob": "^2.0.0",
     "@taxiciti/database": "workspace:*",
     "@taxiciti/utils": "workspace:*",
     "bullmq": "^5.61.0",

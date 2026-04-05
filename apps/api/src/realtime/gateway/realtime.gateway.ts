@@ -28,11 +28,17 @@ import { Server, Socket } from 'socket.io';
 import { realtimeConfig } from '../config/realtime.config';
 import { RealtimeRedisService } from '../infra/realtime.redis.service';
 import { LocationQueueService } from '../location/location-queue.service';
+import { RealtimeQueueService } from '../queue/realtime.queue.service';
 import { RealtimeTripService } from '../trips/realtime.trip.service';
 
 interface SocketData {
   userId?: string;
   role?: string;
+}
+
+interface DriverQueuePayload {
+  rankId: string;
+  taxiId: string;
 }
 
 const PAYMENT_METHODS = new Set<PaymentMethod>([
@@ -68,6 +74,7 @@ export class RealtimeGateway
   constructor(
     private readonly redisService: RealtimeRedisService,
     private readonly locationQueueService: LocationQueueService,
+    private readonly realtimeQueueService: RealtimeQueueService,
     private readonly realtimeTripService: RealtimeTripService,
   ) {}
 
@@ -172,6 +179,95 @@ export class RealtimeGateway
           error instanceof Error
             ? error.message
             : 'Failed to sync driver requests',
+      };
+    }
+  }
+
+  @SubscribeMessage(EVENTS.DRIVER_QUEUE_STATUS_SYNC)
+  async handleDriverQueueStatusSync(
+    @ConnectedSocket() socket: Socket,
+  ): Promise<WsAck<unknown>> {
+    const { userId } = this.getSocketIdentity(socket);
+
+    if (!userId) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    try {
+      const queueStatus =
+        await this.realtimeQueueService.getQueueStatus(userId);
+
+      return {
+        success: true,
+        data: queueStatus,
+      };
+    } catch (error) {
+      logger.error(error, `Failed syncing queue status for ${userId}`);
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to sync queue status',
+      };
+    }
+  }
+
+  @SubscribeMessage(EVENTS.DRIVER_QUEUE_JOIN)
+  async handleDriverQueueJoin(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: unknown,
+  ): Promise<WsAck<unknown>> {
+    const { userId } = this.getSocketIdentity(socket);
+
+    if (!userId) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    if (!this.isDriverQueuePayload(data)) {
+      return { success: false, message: 'Invalid queue payload' };
+    }
+
+    try {
+      const result = await this.realtimeQueueService.joinQueue(userId, data);
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      logger.error(error, `Failed joining queue for ${userId}`);
+      return {
+        success: false,
+        message:
+          error instanceof Error ? error.message : 'Failed to join queue',
+      };
+    }
+  }
+
+  @SubscribeMessage(EVENTS.DRIVER_QUEUE_LEAVE)
+  async handleDriverQueueLeave(
+    @ConnectedSocket() socket: Socket,
+  ): Promise<WsAck<unknown>> {
+    const { userId } = this.getSocketIdentity(socket);
+
+    if (!userId) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    try {
+      const result = await this.realtimeQueueService.leaveQueue(userId);
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      logger.error(error, `Failed leaving queue for ${userId}`);
+      return {
+        success: false,
+        message:
+          error instanceof Error ? error.message : 'Failed to leave queue',
       };
     }
   }
@@ -542,6 +638,16 @@ export class RealtimeGateway
       this.isFiniteNumber(value.lng) &&
       (value.heading === undefined || this.isFiniteNumber(value.heading)) &&
       (value.speed === undefined || this.isFiniteNumber(value.speed))
+    );
+  }
+
+  private isDriverQueuePayload(value: unknown): value is DriverQueuePayload {
+    if (!this.isRecord(value)) {
+      return false;
+    }
+
+    return (
+      this.isNonEmptyString(value.rankId) && this.isNonEmptyString(value.taxiId)
     );
   }
 }

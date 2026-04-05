@@ -1,6 +1,7 @@
 import useSWR from "swr";
+import { apiGet } from "@/lib/api-client";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = <T>(url: string) => apiGet<T>(url);
 
 export function useNotifications() {
 	const { data, error, isLoading, mutate } = useSWR("/api/notifications", fetcher);
