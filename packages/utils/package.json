@@ -5,7 +5,10 @@
 	"main": "dist/src/index.js",
 	"types": "src/index.ts",
 	"exports": {
-		".": "./dist/src/index.js"
+		".": {
+			"types": "./src/index.ts",
+			"default": "./dist/src/index.js"
+		}
 	},
 	"scripts": {
 		"check": "tsc --noEmit",

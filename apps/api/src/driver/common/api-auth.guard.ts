@@ -48,7 +48,7 @@ export class ApiAuthGuard implements CanActivate {
         throw new UnauthorizedException('Unauthorized');
       }
 
-      return verified as JwtPayload;
+      return verified;
     } catch {
       throw new UnauthorizedException('Unauthorized');
     }

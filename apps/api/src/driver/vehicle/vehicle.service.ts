@@ -58,6 +58,9 @@ export class DriverVehicleService {
       throw new BadRequestException('Validation Error');
     }
 
+    const routeId = body.routeId;
+    const permitDoc = body.permitDoc;
+
     const taxi = await prisma.taxi.findUnique({
       where: { id: taxiId },
       include: { driver: true },
@@ -70,7 +73,7 @@ export class DriverVehicleService {
     await prisma.$transaction(async (tx) => {
       await tx.taxi.update({
         where: { id: taxiId },
-        data: { permitDoc: body.permitDoc },
+        data: { permitDoc },
       });
 
       await tx.taxiOnRoute.updateMany({
@@ -82,7 +85,7 @@ export class DriverVehicleService {
         where: {
           taxiId_routeId: {
             taxiId,
-            routeId: body.routeId,
+            routeId,
           },
         },
       });
@@ -96,7 +99,7 @@ export class DriverVehicleService {
         await tx.taxiOnRoute.create({
           data: {
             taxiId,
-            routeId: body.routeId,
+            routeId,
             isActive: true,
           },
         });

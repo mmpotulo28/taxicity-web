@@ -11,6 +11,11 @@ import {
 import { ApiAuthGuard } from '../common/api-auth.guard';
 import type { AuthenticatedRequest } from '../common/api-auth.guard';
 import { getAuthenticatedUser } from '../common/auth-user.util';
+import type {
+  AcceptedPassengerDto,
+  ActiveTripsResponseDto,
+  VehicleTripDto,
+} from './dto/trips.dto';
 import { DriverTripsService } from './trips.service';
 
 @Controller('api/driver/trips')
@@ -19,26 +24,28 @@ export class DriverTripsController {
   constructor(private readonly tripsService: DriverTripsService) {}
 
   @Get('active')
-  async getActiveTrips(@Req() req: AuthenticatedRequest) {
+  async getActiveTrips(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<ActiveTripsResponseDto> {
     const user = getAuthenticatedUser(req);
     return this.tripsService.getActiveTrips(user);
   }
 
   @Get('vehicle')
-  async getVehicleTrips(@Req() req: AuthenticatedRequest): Promise<unknown> {
+  async getVehicleTrips(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<VehicleTripDto[]> {
     const user = getAuthenticatedUser(req);
-    const data = await this.tripsService.getVehicleTrips(user);
-    return data as unknown;
+    return this.tripsService.getVehicleTrips(user);
   }
 
   @Post('vehicle')
   async createVehicleTrip(
     @Req() req: AuthenticatedRequest,
     @Body() body: { taxiId?: string; routeId?: string },
-  ): Promise<unknown> {
+  ): Promise<VehicleTripDto> {
     const user = getAuthenticatedUser(req);
-    const data = await this.tripsService.createVehicleTrip(user, body);
-    return data as unknown;
+    return this.tripsService.createVehicleTrip(user, body);
   }
 
   @Patch('vehicle/:id')
@@ -46,10 +53,9 @@ export class DriverTripsController {
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() body: { status?: string; manualPassengers?: number },
-  ): Promise<unknown> {
+  ): Promise<VehicleTripDto> {
     const user = getAuthenticatedUser(req);
-    const data = await this.tripsService.updateVehicleTrip(user, id, body);
-    return data as unknown;
+    return this.tripsService.updateVehicleTrip(user, id, body);
   }
 
   @Post('vehicle/:id/passengers/:tripId/accept')
@@ -57,13 +63,12 @@ export class DriverTripsController {
     @Req() req: AuthenticatedRequest,
     @Param('id') vehicleTripId: string,
     @Param('tripId') passengerTripId: string,
-  ): Promise<unknown> {
+  ): Promise<AcceptedPassengerDto> {
     const user = getAuthenticatedUser(req);
-    const data = await this.tripsService.acceptPassenger(
+    return this.tripsService.acceptPassenger(
       user,
       vehicleTripId,
       passengerTripId,
     );
-    return data as unknown;
   }
 }

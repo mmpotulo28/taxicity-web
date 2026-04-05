@@ -7,10 +7,66 @@ import {
 import { prisma, redis } from '@taxiciti/database';
 import { pusherServer } from '@taxiciti/utils';
 import type { AuthenticatedUser } from '../common/api-auth.guard';
+import type {
+  AcceptedPassengerDto,
+  ActiveTripsResponseDto,
+  VehicleTripDto,
+} from './dto/trips.dto';
 
 @Injectable()
 export class DriverTripsService {
-  async getActiveTrips(user: AuthenticatedUser) {
+  private mapVehicleTripToDto(vehicleTrip: {
+    id: string;
+    status: string;
+    capacity: number;
+    manualPassengers: number;
+    startTime: Date | null;
+    endTime: Date | null;
+    route: { id: string; name: string } | null;
+    taxi: { id: string; licensePlate: string } | null;
+    passengers: Array<{
+      id: string;
+      userId: string;
+      status: string;
+      fare: unknown;
+      paymentMethod: string;
+      pickupAddress: string;
+      dropoffAddress: string;
+    }>;
+  }): VehicleTripDto {
+    return {
+      id: vehicleTrip.id,
+      status: vehicleTrip.status,
+      capacity: vehicleTrip.capacity,
+      manualPassengers: vehicleTrip.manualPassengers,
+      startTime: vehicleTrip.startTime
+        ? vehicleTrip.startTime.toISOString()
+        : null,
+      endTime: vehicleTrip.endTime ? vehicleTrip.endTime.toISOString() : null,
+      route: vehicleTrip.route
+        ? { id: vehicleTrip.route.id, name: vehicleTrip.route.name }
+        : null,
+      taxi: vehicleTrip.taxi
+        ? {
+            id: vehicleTrip.taxi.id,
+            licensePlate: vehicleTrip.taxi.licensePlate,
+          }
+        : null,
+      passengers: vehicleTrip.passengers.map((passenger) => ({
+        id: passenger.id,
+        userId: passenger.userId,
+        status: passenger.status,
+        fare: Number(passenger.fare),
+        paymentMethod: passenger.paymentMethod,
+        pickupAddress: passenger.pickupAddress,
+        dropoffAddress: passenger.dropoffAddress,
+      })),
+    };
+  }
+
+  async getActiveTrips(
+    user: AuthenticatedUser,
+  ): Promise<ActiveTripsResponseDto> {
     const driver = await prisma.driver.findUnique({
       where: { userId: user.userId },
       include: {
@@ -38,10 +94,29 @@ export class DriverTripsService {
       },
     });
 
-    return { trips: activeTrips };
+    return {
+      trips: activeTrips.map((trip) => ({
+        id: trip.id,
+        status: trip.status,
+        requestTime: trip.requestTime.toISOString(),
+        fare: Number(trip.fare),
+        paymentMethod: trip.paymentMethod,
+        pickupAddress: trip.pickupAddress,
+        dropoffAddress: trip.dropoffAddress,
+        route: trip.route ? { id: trip.route.id, name: trip.route.name } : null,
+        taxi: trip.taxi
+          ? {
+              id: trip.taxi.id,
+              licensePlate: trip.taxi.licensePlate,
+              make: trip.taxi.make,
+              model: trip.taxi.model,
+            }
+          : null,
+      })),
+    };
   }
 
-  async getVehicleTrips(user: AuthenticatedUser) {
+  async getVehicleTrips(user: AuthenticatedUser): Promise<VehicleTripDto[]> {
     const driver = await prisma.driver.findUnique({
       where: { userId: user.userId },
     });
@@ -83,13 +158,13 @@ export class DriverTripsService {
       });
     }
 
-    return trips;
+    return trips.map((trip) => this.mapVehicleTripToDto(trip));
   }
 
   async createVehicleTrip(
     user: AuthenticatedUser,
     body: { taxiId?: string; routeId?: string },
-  ) {
+  ): Promise<VehicleTripDto> {
     if (!body.taxiId || !body.routeId) {
       throw new BadRequestException('Invalid data');
     }
@@ -145,14 +220,14 @@ export class DriverTripsService {
       ex: 43200,
     });
 
-    return vehicleTrip;
+    return this.mapVehicleTripToDto(vehicleTrip);
   }
 
   async updateVehicleTrip(
     user: AuthenticatedUser,
     id: string,
     body: { status?: string; manualPassengers?: number },
-  ) {
+  ): Promise<VehicleTripDto> {
     const allowedStatuses = [
       'BOARDING',
       'IN_PROGRESS',
@@ -189,17 +264,28 @@ export class DriverTripsService {
       updateData.manualPassengers = body.manualPassengers;
     }
 
-    return prisma.vehicleTrip.update({
+    const updated = await prisma.vehicleTrip.update({
       where: { id },
       data: updateData,
+      include: {
+        route: true,
+        taxi: true,
+        passengers: {
+          where: {
+            status: { in: ['ACCEPTED', 'ARRIVED_AT_PICKUP', 'IN_PROGRESS'] },
+          },
+        },
+      },
     });
+
+    return this.mapVehicleTripToDto(updated);
   }
 
   async acceptPassenger(
     user: AuthenticatedUser,
     vehicleTripId: string,
     passengerTripId: string,
-  ) {
+  ): Promise<AcceptedPassengerDto> {
     const vehicleTrip = await prisma.vehicleTrip.findUnique({
       where: { id: vehicleTripId },
       include: {
@@ -294,6 +380,16 @@ export class DriverTripsService {
       },
     );
 
-    return updatedPassengerTrip;
+    return {
+      id: updatedPassengerTrip.id,
+      status: updatedPassengerTrip.status,
+      acceptTime: updatedPassengerTrip.acceptTime
+        ? updatedPassengerTrip.acceptTime.toISOString()
+        : null,
+      platformFee: Number(updatedPassengerTrip.platformFee || 0),
+      taxiId: updatedPassengerTrip.taxiId,
+      routeId: updatedPassengerTrip.routeId,
+      vehicleTripId: updatedPassengerTrip.vehicleTripId,
+    };
   }
 }

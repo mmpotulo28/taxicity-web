@@ -3,7 +3,6 @@
 	"version": "1.0.0",
 	"main": "index.ts",
 	"scripts": {
-		"dev": "dotenv -e ../../.env -- expo start -p 3005",
 		"start": "dotenv -e ../../.env -- expo start -p 3005",
 		"android": "dotenv -e ../../.env -- expo run:android",
 		"ios": "dotenv -e ../../.env -- expo run:ios",

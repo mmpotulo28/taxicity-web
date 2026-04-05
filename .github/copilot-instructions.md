@@ -92,6 +92,9 @@ You are an expert full-stack developer working in the **TaxiCity Web** monorepo.
 2. **Environment Variables:** Access via `process.env`. Secrets (like `DATABASE_URL`) are in root `.env`. Public vars often prefixed with `NEXT_PUBLIC_`.
 3. **Server Components:** Default to Server Components in `app/`. Add `"use client"` only when interactive state/hooks are needed.
 4. **Data Fetching:** Fetch data directly in Server Components using Prisma where possible. Use API routes for Client Component mutations/fetching.
+5. **Membership Checks:** For constant membership validation (enums/literal unions), use `Set` + `.has()` instead of arrays + `.includes()` to keep style and intent consistent.
+6. **API Contracts:** Do not use `Promise<unknown>` or `unknown[]` for controller/service response contracts. Define and return dedicated DTO interfaces.
+7. **DTO Mapping:** Map Prisma entities to DTOs before returning from services to avoid leaking ORM/runtime-specific types across module boundaries.
 
 ## 🧪 Testing
 

@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { prisma } from '@taxiciti/database';
 import { WsException } from '@nestjs/websockets';
+import type {
+  QueueJoinResponseDto,
+  QueueLeaveResponseDto,
+  QueueStatusDto,
+} from './dto/queue.dto';
 
 @Injectable()
 export class RealtimeQueueService {
-  async getQueueStatus(userId: string) {
+  async getQueueStatus(userId: string): Promise<QueueStatusDto> {
     const driver = await prisma.driver.findUnique({
       where: { userId },
     });
@@ -48,7 +53,10 @@ export class RealtimeQueueService {
       rank: {
         id: queueEntry.rankId,
         name: queueEntry.rank.name,
-        sourceRoutes: queueEntry.rank.sourceRoutes,
+        sourceRoutes: queueEntry.rank.sourceRoutes.map((route) => ({
+          id: route.id,
+          name: route.name,
+        })),
       },
       position: position + 1,
       queueLength,
@@ -56,7 +64,10 @@ export class RealtimeQueueService {
     };
   }
 
-  async joinQueue(userId: string, payload: { rankId: string; taxiId: string }) {
+  async joinQueue(
+    userId: string,
+    payload: { rankId: string; taxiId: string },
+  ): Promise<QueueJoinResponseDto> {
     const driver = await prisma.driver.findUnique({
       where: { userId },
     });
@@ -99,7 +110,7 @@ export class RealtimeQueueService {
     };
   }
 
-  async leaveQueue(userId: string) {
+  async leaveQueue(userId: string): Promise<QueueLeaveResponseDto> {
     const driver = await prisma.driver.findUnique({
       where: { userId },
     });

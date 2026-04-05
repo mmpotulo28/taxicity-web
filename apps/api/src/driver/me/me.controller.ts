@@ -2,7 +2,14 @@ import { Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
 import { ApiAuthGuard } from '../common/api-auth.guard';
 import type { AuthenticatedRequest } from '../common/api-auth.guard';
 import { getAuthenticatedUser } from '../common/auth-user.util';
+import type { DriverMeDto } from './dto/me.dto';
 import { DriverMeService } from './me.service';
+
+type DriverStatusInput =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'SUSPENDED'
+  | 'PENDING_VERIFICATION';
 
 @Controller('api/driver/me')
 @UseGuards(ApiAuthGuard)
@@ -10,7 +17,7 @@ export class DriverMeController {
   constructor(private readonly meService: DriverMeService) {}
 
   @Get()
-  async getDriverMe(@Req() req: AuthenticatedRequest) {
+  async getDriverMe(@Req() req: AuthenticatedRequest): Promise<DriverMeDto> {
     const user = getAuthenticatedUser(req);
     return this.meService.getDriverMe(user);
   }
@@ -20,7 +27,7 @@ export class DriverMeController {
     @Req() req: AuthenticatedRequest,
     @Body()
     body: {
-      status?: string;
+      status?: DriverStatusInput;
       isOnline?: boolean;
       phone?: string;
       email?: string;
@@ -28,7 +35,7 @@ export class DriverMeController {
       firstName?: string;
       lastName?: string;
     },
-  ) {
+  ): Promise<DriverMeDto> {
     const user = getAuthenticatedUser(req);
     return this.meService.patchDriverMe(user, body);
   }

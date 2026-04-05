@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiAuthGuard } from '../common/api-auth.guard';
 import type { AuthenticatedRequest } from '../common/api-auth.guard';
 import { getAuthenticatedUser } from '../common/auth-user.util';

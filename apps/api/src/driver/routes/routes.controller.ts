@@ -10,6 +10,10 @@ import {
 import { ApiAuthGuard } from '../common/api-auth.guard';
 import type { AuthenticatedRequest } from '../common/api-auth.guard';
 import { getAuthenticatedUser } from '../common/auth-user.util';
+import type {
+  DriverRouteAssignmentDto,
+  DriverRoutesResponseDto,
+} from './dto/routes.dto';
 import { DriverRoutesService } from './routes.service';
 
 @Controller('api')
@@ -24,7 +28,7 @@ export class DriverRoutesController {
     @Query('destRankId') destRankId?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-  ) {
+  ): Promise<DriverRoutesResponseDto> {
     return this.routesService.getRoutes({
       status,
       sourceRankId,
@@ -38,7 +42,7 @@ export class DriverRoutesController {
   async assignDriverRoute(
     @Req() req: AuthenticatedRequest,
     @Body() body: { taxiId?: string; routeId?: string },
-  ) {
+  ): Promise<DriverRouteAssignmentDto> {
     const user = getAuthenticatedUser(req);
     return this.routesService.assignDriverRoute(user, body);
   }
