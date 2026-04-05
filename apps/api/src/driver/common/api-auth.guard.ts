@@ -21,6 +21,23 @@ export interface AuthenticatedRequest extends Request {
 
 @Injectable()
 export class ApiAuthGuard implements CanActivate {
+  private logAuthFailure(
+    reason: string,
+    request: AuthenticatedRequest,
+    details?: Record<string, unknown>,
+  ) {
+    // Temporary diagnostics to pinpoint 401 causes in production logs.
+    // No tokens or secrets are logged.
+    console.warn('[ApiAuthGuard] Unauthorized request', {
+      reason,
+      method: request.method,
+      path: request.originalUrl || request.url,
+      hasAuthorizationHeader: Boolean(this.getHeader(request, 'authorization')),
+      hasForwardedUserId: Boolean(this.getHeader(request, 'x-user-id')),
+      ...details,
+    });
+  }
+
   private resolveVerificationKey(): string {
     const publicKey =
       process.env.CLERK_JWT_PUBLIC_KEY || process.env.JWT_PUBLIC_KEY;
@@ -66,6 +83,10 @@ export class ApiAuthGuard implements CanActivate {
 
     if (forwardedUserId) {
       if (!trustedProxySecret || forwardedProxySecret !== trustedProxySecret) {
+        this.logAuthFailure('forwarded proxy secret mismatch', request, {
+          hasTrustedProxySecret: Boolean(trustedProxySecret),
+          hasForwardedProxySecret: Boolean(forwardedProxySecret),
+        });
         throw new UnauthorizedException('Unauthorized');
       }
 
@@ -81,13 +102,21 @@ export class ApiAuthGuard implements CanActivate {
 
     const authorization = this.getHeader(request, 'authorization');
     if (!authorization?.startsWith('Bearer ')) {
+      this.logAuthFailure('missing bearer authorization header', request);
       throw new UnauthorizedException('Unauthorized');
     }
 
     const token = authorization.slice(7).trim();
-    const decoded = this.verifyBearerToken(token);
+    let decoded: JwtPayload;
+    try {
+      decoded = this.verifyBearerToken(token);
+    } catch {
+      this.logAuthFailure('token verification failed', request);
+      throw new UnauthorizedException('Unauthorized');
+    }
 
     if (!decoded?.sub) {
+      this.logAuthFailure('token missing sub claim', request);
       throw new UnauthorizedException('Unauthorized');
     }
 

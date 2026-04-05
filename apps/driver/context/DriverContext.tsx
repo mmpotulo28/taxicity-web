@@ -1,12 +1,12 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { addToast } from "@heroui/toast";
 import { usePusher } from "@taxiciti/ui";
 import { useDriverLocation } from "../hooks/useDriverLocation";
 import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
 import type { RideAcceptedPayload, RideStatusPayload, WsAck } from "@taxiciti/utils";
-import { apiGet, apiPatch, apiPost, ApiError } from "@/lib/api-client";
+import { apiGet, apiPatch, apiPost, ApiError, setApiTokenResolver } from "@/lib/api-client";
 
 export interface Driver {
 	id: string;
@@ -100,6 +100,7 @@ const DriverContext = createContext<DriverContextType | undefined>(undefined);
 
 export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const { user, isLoaded } = useUser();
+	const { getToken, isLoaded: isAuthLoaded, userId } = useAuth();
 	const { subscribe, unsubscribe, pusher } = usePusher();
 	const [driver, setDriver] = useState<Driver | null>(null);
 	const [isOnline, setIsOnline] = useState(false);
@@ -142,6 +143,28 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 			}),
 		[pusher],
 	);
+
+	useEffect(() => {
+		setApiTokenResolver(async () => {
+			const token = await getToken();
+			return token ?? null;
+		});
+
+		return () => {
+			setApiTokenResolver(null);
+		};
+	}, [getToken]);
+
+	const getAuthHeaders = React.useCallback(async (): Promise<HeadersInit | undefined> => {
+		const token = await getToken();
+		if (!token) {
+			return undefined;
+		}
+
+		return {
+			Authorization: `Bearer ${token}`,
+		};
+	}, [getToken]);
 
 	const syncRequestsViaSocket = React.useCallback(async () => {
 		if (!activeVehicleTrip || !driver || !pusher) {
@@ -209,7 +232,13 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 		try {
 			setIsLoading(true);
 			console.log("DriverContext: Fetching driver profile...");
-			const data = await apiGet<Driver>("/api/driver/me");
+			const headers = await getAuthHeaders();
+			if (!headers) {
+				console.warn("DriverContext: No auth token available yet for /api/driver/me");
+				return;
+			}
+
+			const data = await apiGet<Driver>("/api/driver/me", { headers });
 			console.log("DriverContext: Driver profile fetched successfully.");
 			setDriver(data);
 		} catch (error) {
@@ -217,13 +246,19 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 		} finally {
 			setIsLoading(false);
 		}
-	}, [user]);
+	}, [getAuthHeaders, user]);
 
 	const fetchActiveVehicleTrip = React.useCallback(async () => {
 		if (!driver) return;
 		try {
 			console.log("DriverContext: Fetching active vehicle trip...");
-			const trips = await apiGet<VehicleTrip[]>("/api/driver/trips/vehicle");
+			const headers = await getAuthHeaders();
+			if (!headers) {
+				console.warn("DriverContext: No auth token available yet for /api/driver/trips/vehicle");
+				return;
+			}
+
+			const trips = await apiGet<VehicleTrip[]>("/api/driver/trips/vehicle", { headers });
 			// Assuming we only handle one active trip at a time for now
 			const active = trips.find((t: VehicleTrip) => ["BOARDING", "IN_PROGRESS"].includes(t.status));
 			setActiveVehicleTrip(active || null);
@@ -231,14 +266,14 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 		} catch (error) {
 			console.error("Failed to fetch active vehicle trip:", error);
 		}
-	}, [driver]);
+	}, [driver, getAuthHeaders]);
 
 	// Fetch driver profile
 	useEffect(() => {
-		if (!isLoaded || !user) return;
+		if (!isLoaded || !isAuthLoaded || !user || !userId) return;
 		console.log("DriverContext: Loading driver profile...");
 		fetchDriver();
-	}, [isLoaded, user, fetchDriver]);
+	}, [isAuthLoaded, isLoaded, user, userId, fetchDriver]);
 
 	// Fetch active vehicle trip when driver is loaded
 	useEffect(() => {

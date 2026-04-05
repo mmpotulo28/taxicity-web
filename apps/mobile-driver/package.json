@@ -3,10 +3,10 @@
 	"version": "1.0.0",
 	"main": "index.ts",
 	"scripts": {
-		"start": "dotenv -e ../../.env -- expo start -p 3004",
-		"android": "dotenv -e ../../.env -- expo run:android",
-		"ios": "dotenv -e ../../.env -- expo run:ios",
-		"web": "dotenv -e ../../.env -- expo start --web",
+		"start": "expo start -p 3004",
+		"android": "expo run:android",
+		"ios": "expo run:ios",
+		"web": "expo start --web",
 		"eas-build-post-install": "cd ../.. && pnpm --filter @taxiciti/utils build",
 		"build:apps": "eas build --platform android --non-interactive",
 		"type-check": "tsc --noEmit"
@@ -17,7 +17,6 @@
 		"@taxiciti/utils": "workspace:*",
 		"@babel/runtime": "^7.28.6",
 		"@expo/vector-icons": "^15.0.3",
-		"@sentry/react-native": "^7.2.0",
 		"expo": "~54.0.33",
 		"expo-constants": "~18.0.13",
 		"expo-dev-client": "~6.0.20",

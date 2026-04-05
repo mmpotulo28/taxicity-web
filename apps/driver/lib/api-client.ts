@@ -16,7 +16,14 @@ interface ApiRequestOptions extends Omit<RequestInit, "body"> {
 	retries?: number;
 }
 
+type ApiTokenResolver = () => Promise<string | null>;
+
 const DEFAULT_API_ORIGIN = "http://localhost:3006";
+let tokenResolver: ApiTokenResolver | null = null;
+
+export function setApiTokenResolver(resolver: ApiTokenResolver | null) {
+	tokenResolver = resolver;
+}
 
 function getApiOrigin() {
 	const configured = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || DEFAULT_API_ORIGIN;
@@ -37,6 +44,17 @@ function resolveApiUrl(url: string) {
 }
 
 async function getClerkToken(): Promise<string | null> {
+	if (tokenResolver) {
+		try {
+			const token = await tokenResolver();
+			if (token) {
+				return token;
+			}
+		} catch {
+			// Fall back to global Clerk lookup.
+		}
+	}
+
 	if (globalThis.window === undefined) {
 		return null;
 	}

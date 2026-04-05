@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getSentryExpoConfig } from "@sentry/react-native/metro.js";
+import { getDefaultConfig } from "expo/metro-config.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, "../..");
 
-const config = getSentryExpoConfig(projectRoot);
+const config = getDefaultConfig(projectRoot);
 
 // 1. Watch all files within the monorepo
 config.watchFolders = [workspaceRoot, ...(config.watchFolders || [])];

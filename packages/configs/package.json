@@ -7,7 +7,8 @@
 		"./eslint": "./eslint.config.mts",
 		"./tsconfig": "./base.json",
 		"./clerk": "./src/clerk.ts",
-		"./telemetry": "./src/telemetry.ts"
+		"./telemetry": "./src/telemetry.ts",
+		"./telemetry-mobile": "./src/telemetry-mobile.ts"
 	},
 	"files": [
 		"dist",
