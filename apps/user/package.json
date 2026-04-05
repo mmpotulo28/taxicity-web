@@ -4,7 +4,9 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"predev": "pnpm --filter @taxiciti/utils build",
 		"dev": "dotenv -e ../../.env -- next dev --turbopack -p 3000",
+		"prebuild": "pnpm --filter @taxiciti/utils build",
 		"build": "next build",
 		"start": "next start",
 		"lint": "eslint . --fix",
