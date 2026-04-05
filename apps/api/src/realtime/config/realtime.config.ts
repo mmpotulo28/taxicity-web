@@ -18,6 +18,31 @@ function parseCorsOrigins(raw: string | undefined): string[] {
     .filter((item) => item.length > 0);
 }
 
+function normalizeEnvUrl(raw: string | undefined): string | undefined {
+  if (!raw) {
+    return undefined;
+  }
+
+  const trimmed = raw.trim();
+  const maybeDecoded = (() => {
+    try {
+      return decodeURIComponent(trimmed);
+    } catch {
+      return trimmed;
+    }
+  })();
+
+  // Strip accidental wrapping quotes from env systems/secrets.
+  if (
+    (maybeDecoded.startsWith('"') && maybeDecoded.endsWith('"')) ||
+    (maybeDecoded.startsWith("'") && maybeDecoded.endsWith("'"))
+  ) {
+    return maybeDecoded.slice(1, -1).trim();
+  }
+
+  return maybeDecoded;
+}
+
 const envOrigins = parseCorsOrigins(process.env.CORS_ORIGINS);
 
 const allowedOrigins =
@@ -61,7 +86,7 @@ export const realtimeConfig = {
   internalApiKey: process.env.WS_INTERNAL_API_KEY ?? '',
   corsOrigins: allowedOrigins,
   redisUrl:
-    process.env.REDIS_URL ??
-    process.env.UPSTASH_REDIS_URL ??
+    normalizeEnvUrl(process.env.REDIS_URL) ??
+    normalizeEnvUrl(process.env.UPSTASH_REDIS_URL) ??
     'redis://localhost:6379',
 } as const;
