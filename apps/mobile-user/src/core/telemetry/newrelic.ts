@@ -4,5 +4,5 @@ export function initNewRelic(appToken: string) {
 if (!appToken) {
 return;
 }
-NewRelic.startAgent(appToken);
+NewRelic.startAgent(appToken, {});
 }

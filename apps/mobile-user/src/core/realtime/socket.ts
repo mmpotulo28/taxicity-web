@@ -42,9 +42,10 @@ this.socket.disconnect();
 }
 
 subscribe<TEvent extends keyof RealtimeEvents>(event: TEvent, callback: (payload: RealtimeEvents[TEvent]) => void): () => void {
-this.socket.on(event, callback);
+const listener = (payload: unknown) => callback(payload as RealtimeEvents[TEvent]);
+this.socket.on(event as string, listener);
 return () => {
-this.socket.off(event, callback);
+this.socket.off(event as string, listener);
 };
 }
 }

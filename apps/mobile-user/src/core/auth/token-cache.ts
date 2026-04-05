@@ -8,8 +8,8 @@ return await SecureStore.getItemAsync(key);
 return null;
 }
 },
-setToken: async (key: string, value: string): Promise<void> => {
-await SecureStore.setItemAsync(key, value);
+saveToken: async (key: string, token: string): Promise<void> => {
+await SecureStore.setItemAsync(key, token);
 },
 clearToken: async (key: string): Promise<void> => {
 await SecureStore.deleteItemAsync(key);

@@ -1,13 +1,13 @@
 import { useAuth } from "@clerk/clerk-expo";
-import { useRouter, useSegments } from "expo-router";
+import { usePathname, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 
-const authScreens = new Set(["sign-in", "sign-up"]);
 const protectedGroups = new Set(["(tabs)", "(ride)"]);
 
 export function useProtectedRoute() {
 const { isLoaded, isSignedIn } = useAuth();
 const segments = useSegments();
+const pathname = usePathname();
 const router = useRouter();
 
 useEffect(() => {
@@ -16,9 +16,8 @@ return;
 }
 
 const first = segments[0];
-const second = segments[1];
 const inProtectedGroup = typeof first === "string" && protectedGroups.has(first);
-const inAuthFlow = first === "(auth)" && typeof second === "string" && authScreens.has(second);
+const inAuthFlow = pathname.startsWith("/(auth)/");
 
 if (!isSignedIn && inProtectedGroup) {
 router.replace("/(auth)/sign-in");
@@ -28,5 +27,5 @@ return;
 if (isSignedIn && inAuthFlow) {
 router.replace("/(tabs)");
 }
-}, [isLoaded, isSignedIn, router, segments]);
+}, [isLoaded, isSignedIn, pathname, router, segments]);
 }
