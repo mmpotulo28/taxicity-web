@@ -603,6 +603,16 @@ export class RealtimeGateway
         .to(CHANNELS.USER(updatedTrip.userId))
         .emit(EVENTS.RIDE_STATUS_CHANGED, updatedTrip);
 
+      if (updatedTrip.status === 'CANCELLED' && !updatedTrip.taxiId) {
+        this.server
+          .to(CHANNELS.ROUTE(updatedTrip.routeId))
+          .emit(EVENTS.RIDE_TAKEN, {
+            requestId: updatedTrip.id,
+            driverId: null,
+            status: updatedTrip.status,
+          });
+      }
+
       if (updatedTrip.taxi?.driver?.userId) {
         this.server
           .to(CHANNELS.USER(updatedTrip.taxi.driver.userId))

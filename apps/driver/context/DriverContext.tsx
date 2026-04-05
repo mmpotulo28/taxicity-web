@@ -265,7 +265,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 			});
 		});
 
-		subscribe(channelName, EVENTS.RIDE_TAKEN, (data: { requestId: string; driverId: string }) => {
+		subscribe(channelName, EVENTS.RIDE_TAKEN, (data: { requestId: string; driverId: string | null; status?: string }) => {
 			console.log("Trip cancelled/taken:", data.requestId);
 
 			// Update Incoming Requests
@@ -278,6 +278,13 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 				const isPassenger = prev.passengers.some((p) => p.id === data.requestId);
 
 				if (isPassenger) {
+					if (data.status === "CANCELLED") {
+						return {
+							...prev,
+							passengers: prev.passengers.map((p) => (p.id === data.requestId ? { ...p, status: "CANCELLED" } : p)),
+						};
+					}
+
 					return {
 						...prev,
 						passengers: prev.passengers.filter((p) => p.id !== data.requestId),
@@ -287,8 +294,8 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 			});
 
 			addToast({
-				title: "Request Taken",
-				description: "Another driver has accepted this request.",
+				title: data.status === "CANCELLED" ? "Trip Cancelled" : "Request Taken",
+				description: data.status === "CANCELLED" ? "Passenger cancelled the request." : "Another driver has accepted this request.",
 				color: "default",
 			});
 		});
@@ -298,6 +305,43 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 			unsubscribe(channelName);
 		};
 	}, [activeVehicleTrip, driver, subscribe, unsubscribe, pusher]);
+
+	useEffect(() => {
+		if (!driver || !user || !pusher) return;
+
+		const userChannel = CHANNELS.USER(user.id);
+
+		subscribe(userChannel, EVENTS.RIDE_STATUS_CHANGED, (updatedTrip: Trip) => {
+			setIncomingRequests((prev) => prev.filter((request) => request.id !== updatedTrip.id));
+
+			setActiveVehicleTrip((prev) => {
+				if (!prev) return null;
+
+				const hasPassenger = prev.passengers.some((passenger) => passenger.id === updatedTrip.id);
+				if (!hasPassenger) {
+					return prev;
+				}
+
+				return {
+					...prev,
+					passengers: prev.passengers.map((passenger) => (passenger.id === updatedTrip.id ? { ...passenger, ...updatedTrip } : passenger)),
+				};
+			});
+
+			if (updatedTrip.status === "CANCELLED") {
+				addToast({
+					title: "Passenger Cancelled",
+					description: "Trip status updated to cancelled.",
+					color: "warning",
+				});
+			}
+		});
+
+		return () => {
+			pusher.emit("unsubscribe", userChannel);
+			unsubscribe(userChannel);
+		};
+	}, [driver, user, pusher, subscribe, unsubscribe]);
 
 	// Initial fetch for requests when active via websocket ack sync.
 	useEffect(() => {

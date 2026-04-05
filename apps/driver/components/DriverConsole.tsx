@@ -17,23 +17,13 @@ import { RankQueue } from "./RankQueue";
 import { RequestModal } from "./RequestModal";
 
 export function DriverConsole() {
-	const {
-		driver,
-		activeVehicleTrip,
-		incomingRequests,
-		startShift,
-		endShift,
-		acceptRequest,
-		declineRequest,
-		updatePassengerStatus,
-		updateManualPassengers,
-		currentLocation,
-	} = useDriver();
+	const { driver, activeVehicleTrip, incomingRequests, startShift, endShift, acceptRequest, declineRequest, updatePassengerStatus, updateManualPassengers, currentLocation } = useDriver();
 
 	const [selectedTaxi, setSelectedTaxi] = useState("");
 	const [selectedRoute, setSelectedRoute] = useState("");
 	const [mode, setMode] = useState<"roaming" | "rank">("roaming");
 	const [isInQueue, setIsInQueue] = useState(false);
+	const [statusUpdateTripId, setStatusUpdateTripId] = useState<string | null>(null);
 	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 	const endShiftDisclosure = useDisclosure();
 	const hasNotifiedRef = React.useRef<string | null>(null);
@@ -81,27 +71,39 @@ export function DriverConsole() {
 		}
 	};
 
+	const handlePassengerStatusUpdate = async (tripId: string, status: string) => {
+		setStatusUpdateTripId(tripId);
+		try {
+			await updatePassengerStatus(tripId, status);
+		} finally {
+			setStatusUpdateTripId(null);
+		}
+	};
+
 	// Calculate sorted passengers and map stops
 	const { sortedPassengers, mapStops, routePoints } = useMemo(() => {
 		if (!activeVehicleTrip) return { sortedPassengers: [], mapStops: [], routePoints: [] };
 
 		const points = activeVehicleTrip.route.popularLocations || [];
-		const stops: { lat: number; lng: number; type: 'pickup' | 'dropoff'; label: string; sortIndex: number }[] = [];
+		const stops: { lat: number; lng: number; type: "pickup" | "dropoff"; label: string; sortIndex: number }[] = [];
 
 		// Sort passengers by next stop
 		const sorted = [...activeVehicleTrip.passengers].sort((a, b) => {
 			const getNextStopIndex = (p: Trip) => {
 				// If completed, push to bottom
-				if (p.status === 'COMPLETED') return Infinity;
+				if (p.status === "COMPLETED") return Infinity;
 
-				const targetLat = p.status === 'IN_PROGRESS' ? p.dropoffLat : p.pickupLat;
-				const targetLng = p.status === 'IN_PROGRESS' ? p.dropoffLng : p.pickupLng;
+				const targetLat = p.status === "IN_PROGRESS" ? p.dropoffLat : p.pickupLat;
+				const targetLng = p.status === "IN_PROGRESS" ? p.dropoffLng : p.pickupLng;
 
 				let minIdx = 0;
 				let minDist = Infinity;
 				points.forEach((pt, idx) => {
 					const d = Math.hypot(pt.lat - targetLat, pt.lng - targetLng);
-					if (d < minDist) { minDist = d; minIdx = idx; }
+					if (d < minDist) {
+						minDist = d;
+						minIdx = idx;
+					}
 				});
 				return minIdx;
 			};
@@ -110,23 +112,23 @@ export function DriverConsole() {
 		});
 
 		// Generate map markers for stops
-		activeVehicleTrip.passengers.forEach(p => {
-			if (p.status === 'ACCEPTED' || p.status === 'ARRIVED_AT_PICKUP') {
+		activeVehicleTrip.passengers.forEach((p) => {
+			if (p.status === "ACCEPTED" || p.status === "ARRIVED_AT_PICKUP") {
 				stops.push({
 					lat: p.pickupLat,
 					lng: p.pickupLng,
-					type: 'pickup',
+					type: "pickup",
 					label: `Pickup: ${p.user?.firstName}`,
-					sortIndex: -1 // Not used for sorting here
+					sortIndex: -1, // Not used for sorting here
 				});
 			}
-			if (['ACCEPTED', 'ARRIVED_AT_PICKUP', 'IN_PROGRESS'].includes(p.status)) {
+			if (["ACCEPTED", "ARRIVED_AT_PICKUP", "IN_PROGRESS"].includes(p.status)) {
 				stops.push({
 					lat: p.dropoffLat,
 					lng: p.dropoffLng,
-					type: 'dropoff',
+					type: "dropoff",
 					label: `Dropoff: ${p.user?.firstName}`,
-					sortIndex: -1
+					sortIndex: -1,
 				});
 			}
 		});
@@ -139,10 +141,10 @@ export function DriverConsole() {
 		if (!currentLocation || sortedPassengers.length === 0) return;
 
 		const nextPassenger = sortedPassengers[0];
-		const isPickup = nextPassenger.status !== 'IN_PROGRESS';
+		const isPickup = nextPassenger.status !== "IN_PROGRESS";
 		const targetLat = isPickup ? nextPassenger.pickupLat : nextPassenger.dropoffLat;
 		const targetLng = isPickup ? nextPassenger.pickupLng : nextPassenger.dropoffLng;
-		const stopId = `${nextPassenger.id}-${isPickup ? 'pickup' : 'dropoff'}`;
+		const stopId = `${nextPassenger.id}-${isPickup ? "pickup" : "dropoff"}`;
 
 		// Approx distance in meters (1 deg lat ~ 111km)
 		const dist = Math.hypot(currentLocation.lat - targetLat, currentLocation.lng - targetLng) * 111000;
@@ -150,7 +152,7 @@ export function DriverConsole() {
 		if (dist < 150 && hasNotifiedRef.current !== stopId) {
 			addToast({
 				title: "Arriving at Stop",
-				description: `You are near ${nextPassenger.user?.firstName}'s ${isPickup ? 'pickup' : 'dropoff'}.`,
+				description: `You are near ${nextPassenger.user?.firstName}'s ${isPickup ? "pickup" : "dropoff"}.`,
 				color: "primary",
 			});
 			hasNotifiedRef.current = stopId;
@@ -162,72 +164,67 @@ export function DriverConsole() {
 	// 0. Shift Summary Screen (Post-Shift)
 	if (!activeVehicleTrip && lastTripStats) {
 		return (
-			<div className="h-[calc(100vh-64px)] w-full flex items-center justify-center p-4 bg-default-50">
-				<motion.div
-					initial={{ opacity: 0, scale: 0.95 }}
-					animate={{ opacity: 1, scale: 1 }}
-					className="w-full max-w-md">
-					<Card className="shadow-2xl border-t-8 border-t-success">
-						<CardHeader className="flex flex-col gap-2 items-center text-center pb-2 pt-8">
-							<div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mb-2 text-success ring-8 ring-success/5">
-								<Icon icon="solar:check-circle-bold-duotone" width={48} />
+			<div className='h-[calc(100vh-64px)] w-full flex items-center justify-center p-4 bg-default-50'>
+				<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='w-full max-w-md'>
+					<Card className='shadow-2xl border-t-8 border-t-success'>
+						<CardHeader className='flex flex-col gap-2 items-center text-center pb-2 pt-8'>
+							<div className='w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mb-2 text-success ring-8 ring-success/5'>
+								<Icon icon='solar:check-circle-bold-duotone' width={48} />
 							</div>
-							<h2 className="text-2xl font-bold text-default-900">Shift Completed</h2>
-							<p className="text-default-500">
-								Here is your cash-up summary for the route.
-							</p>
+							<h2 className='text-2xl font-bold text-default-900'>Shift Completed</h2>
+							<p className='text-default-500'>Here is your cash-up summary for the route.</p>
 						</CardHeader>
-						<CardBody className="space-y-6 p-6">
-							<div className="bg-default-50 p-5 rounded-2xl border border-default-200/60 space-y-4">
-								<div className="text-center pb-4 border-b border-dashed border-default-200">
-									<p className="text-xs uppercase tracking-wider font-bold text-default-400 mb-1">Route</p>
-									<p className="font-bold text-lg text-default-800">{lastTripStats.route}</p>
+						<CardBody className='space-y-6 p-6'>
+							<div className='bg-default-50 p-5 rounded-2xl border border-default-200/60 space-y-4'>
+								<div className='text-center pb-4 border-b border-dashed border-default-200'>
+									<p className='text-xs uppercase tracking-wider font-bold text-default-400 mb-1'>Route</p>
+									<p className='font-bold text-lg text-default-800'>{lastTripStats.route}</p>
 								</div>
 
-								<div className="space-y-3">
-									<div className="flex justify-between items-center text-sm">
-										<span className="text-default-500">Total Passengers</span>
-										<span className="font-semibold">{lastTripStats.totalPassengers}</span>
+								<div className='space-y-3'>
+									<div className='flex justify-between items-center text-sm'>
+										<span className='text-default-500'>Total Passengers</span>
+										<span className='font-semibold'>{lastTripStats.totalPassengers}</span>
 									</div>
-									<div className="flex justify-between items-center text-sm">
-										<span className="text-default-500">Trips (App)</span>
-										<span className="font-semibold">{lastTripStats.appPassengers}</span>
+									<div className='flex justify-between items-center text-sm'>
+										<span className='text-default-500'>Trips (App)</span>
+										<span className='font-semibold'>{lastTripStats.appPassengers}</span>
 									</div>
-									<div className="flex justify-between items-center text-sm">
-										<span className="text-default-500">Trips (Walk-In)</span>
-										<span className="font-semibold">{lastTripStats.manualPassengers}</span>
+									<div className='flex justify-between items-center text-sm'>
+										<span className='text-default-500'>Trips (Walk-In)</span>
+										<span className='font-semibold'>{lastTripStats.manualPassengers}</span>
 									</div>
 								</div>
 
-								<div className="h-px bg-default-200 my-2" />
+								<div className='h-px bg-default-200 my-2' />
 
-								<div className="space-y-1">
-									<div className="flex justify-between items-center text-sm">
-										<span className="text-default-600">Total Revenue</span>
-										<span className="font-bold">{formatCurrency(lastTripStats.totalRevenue)}</span>
+								<div className='space-y-1'>
+									<div className='flex justify-between items-center text-sm'>
+										<span className='text-default-600'>Total Revenue</span>
+										<span className='font-bold'>{formatCurrency(lastTripStats.totalRevenue)}</span>
 									</div>
-									<div className="flex justify-between items-center text-sm text-danger/80">
+									<div className='flex justify-between items-center text-sm text-danger/80'>
 										<span>Less: Paid Online</span>
 										<span>- {formatCurrency(lastTripStats.digitalRevenue)}</span>
 									</div>
-									<div className="flex justify-between items-center text-xl font-black text-success pt-3 pb-1">
+									<div className='flex justify-between items-center text-xl font-black text-success pt-3 pb-1'>
 										<span>CASH DUE</span>
 										<span>{formatCurrency(lastTripStats.cashDue)}</span>
 									</div>
 								</div>
 							</div>
 
-							<div className="bg-warning/10 text-warning-700 p-3 rounded-lg text-xs flex gap-2 items-start">
-								<Icon icon="solar:info-circle-bold" width={16} className="mt-0.5 min-w-[16px]" />
+							<div className='bg-warning/10 text-warning-700 p-3 rounded-lg text-xs flex gap-2 items-start'>
+								<Icon icon='solar:info-circle-bold' width={16} className='mt-0.5 min-w-[16px]' />
 								<p>Please hand over the exact cash amount to the marshal or owner before starting your next shift.</p>
 							</div>
 
 							<Button
-								color="primary"
-								size="lg"
-								className="w-full font-bold shadow-lg shadow-primary/20"
+								color='primary'
+								size='lg'
+								className='w-full font-bold shadow-lg shadow-primary/20'
 								onPress={() => setLastTripStats(null)} // Clear stats to go back to start
-								endContent={<Icon icon="lucide:arrow-right" />}>
+								endContent={<Icon icon='lucide:arrow-right' />}>
 								Start New Shift
 							</Button>
 						</CardBody>
@@ -246,29 +243,17 @@ export function DriverConsole() {
 		// Mode State (Lifted to top-level)
 
 		return (
-			<div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center bg-default-50 p-4 gap-6">
-
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					className="w-full max-w-md space-y-4">
-
+			<div className='min-h-[calc(100vh-64px)] flex flex-col items-center justify-center bg-default-50 p-4 gap-6'>
+				<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className='w-full max-w-md space-y-4'>
 					{/* Vehicle Selection is always first */}
-					<Card className="w-full shadow-sm">
-						<CardBody className="p-4">
-							<Select
-								label="Select Vehicle"
-								placeholder="Choose a taxi"
-								selectedKeys={selectedTaxi ? [selectedTaxi] : []}
-								onChange={(e) => setSelectedTaxi(e.target.value)}
-								variant="bordered"
-								size="sm"
-								startContent={<Icon icon="lucide:car" className="text-default-400" />}>
+					<Card className='w-full shadow-sm'>
+						<CardBody className='p-4'>
+							<Select label='Select Vehicle' placeholder='Choose a taxi' selectedKeys={selectedTaxi ? [selectedTaxi] : []} onChange={(e) => setSelectedTaxi(e.target.value)} variant='bordered' size='sm' startContent={<Icon icon='lucide:car' className='text-default-400' />}>
 								{availableTaxis.map((taxi) => (
 									<SelectItem key={taxi.id} textValue={`${taxi.licensePlate} - ${taxi.model}`}>
-										<div className="flex flex-col">
-											<span className="font-medium">{taxi.licensePlate}</span>
-											<span className="text-tiny text-default-400">{taxi.model}</span>
+										<div className='flex flex-col'>
+											<span className='font-medium'>{taxi.licensePlate}</span>
+											<span className='text-tiny text-default-400'>{taxi.model}</span>
 										</div>
 									</SelectItem>
 								))}
@@ -278,19 +263,13 @@ export function DriverConsole() {
 
 					{/* Mode Switcher */}
 					{selectedTaxi && !isInQueue && (
-						<div className="flex p-1 bg-default-200/50 rounded-lg">
-							<button
-								onClick={() => setMode("roaming")}
-								className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${mode === "roaming" ? "bg-white shadow-sm text-primary" : "text-default-500 hover:text-default-700"
-									}`}>
-								<Icon icon="lucide:map" width={16} />
+						<div className='flex p-1 bg-default-200/50 rounded-lg'>
+							<button onClick={() => setMode("roaming")} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${mode === "roaming" ? "bg-white shadow-sm text-primary" : "text-default-500 hover:text-default-700"}`}>
+								<Icon icon='lucide:map' width={16} />
 								Roaming
 							</button>
-							<button
-								onClick={() => setMode("rank")}
-								className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${mode === "rank" ? "bg-white shadow-sm text-primary" : "text-default-500 hover:text-default-700"
-									}`}>
-								<Icon icon="solar:users-group-rounded-bold" width={16} />
+							<button onClick={() => setMode("rank")} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${mode === "rank" ? "bg-white shadow-sm text-primary" : "text-default-500 hover:text-default-700"}`}>
+								<Icon icon='solar:users-group-rounded-bold' width={16} />
 								Rank Queue
 							</button>
 						</div>
@@ -298,33 +277,19 @@ export function DriverConsole() {
 
 					{/* Roaming Mode: Select Route & Start */}
 					{mode === "roaming" && selectedTaxi && !isInQueue && (
-						<Card className="w-full shadow-medium">
-							<CardHeader className="flex flex-col gap-2 items-center pt-6 pb-2">
-								<h2 className="text-xl font-bold">Start Roaming Shift</h2>
-								<p className="text-default-500 text-center text-sm px-4">
-									Select a route to begin picking up passengers along the way.
-								</p>
+						<Card className='w-full shadow-medium'>
+							<CardHeader className='flex flex-col gap-2 items-center pt-6 pb-2'>
+								<h2 className='text-xl font-bold'>Start Roaming Shift</h2>
+								<p className='text-default-500 text-center text-sm px-4'>Select a route to begin picking up passengers along the way.</p>
 							</CardHeader>
-							<CardBody className="space-y-4 p-6 pt-2">
-								<Select
-									label="Select Route"
-									placeholder="Choose a route"
-									selectedKeys={selectedRoute ? [selectedRoute] : []}
-									onChange={(e) => setSelectedRoute(e.target.value)}
-									variant="bordered"
-									startContent={<Icon icon="lucide:map" className="text-default-400" />}>
+							<CardBody className='space-y-4 p-6 pt-2'>
+								<Select label='Select Route' placeholder='Choose a route' selectedKeys={selectedRoute ? [selectedRoute] : []} onChange={(e) => setSelectedRoute(e.target.value)} variant='bordered' startContent={<Icon icon='lucide:map' className='text-default-400' />}>
 									{availableRoutes.map((route) => (
 										<SelectItem key={route.id}>{route.name}</SelectItem>
 									))}
 								</Select>
 
-								<Button
-									color="primary"
-									size="lg"
-									className="w-full font-semibold shadow-lg shadow-primary/20"
-									isDisabled={!selectedRoute}
-									onPress={() => startShift(selectedTaxi, selectedRoute)}
-									endContent={<Icon icon="lucide:arrow-right" />}>
+								<Button color='primary' size='lg' className='w-full font-semibold shadow-lg shadow-primary/20' isDisabled={!selectedRoute} onPress={() => startShift(selectedTaxi, selectedRoute)} endContent={<Icon icon='lucide:arrow-right' />}>
 									Go Online
 								</Button>
 							</CardBody>
@@ -333,7 +298,7 @@ export function DriverConsole() {
 
 					{/* Rank Mode: Queue Interface */}
 					{(mode === "rank" || isInQueue) && selectedTaxi && (
-						<div className="w-full">
+						<div className='w-full'>
 							<RankQueue
 								taxiId={selectedTaxi}
 								currentLocation={currentLocation || null} // Pass current location for sorting
@@ -345,12 +310,11 @@ export function DriverConsole() {
 
 					{/* Welcome / Empty State */}
 					{!selectedTaxi && (
-						<div className="text-center py-8 text-default-400">
-							<Icon icon="lucide:arrow-up" className="mx-auto mb-2 animate-bounce" width={24} />
+						<div className='text-center py-8 text-default-400'>
+							<Icon icon='lucide:arrow-up' className='mx-auto mb-2 animate-bounce' width={24} />
 							<p>Please select a vehicle to continue</p>
 						</div>
 					)}
-
 				</motion.div>
 			</div>
 		);
@@ -358,36 +322,26 @@ export function DriverConsole() {
 
 	// 2. Active Shift Screen
 	return (
-		<div className="relative h-[calc(100vh-64px)] w-full overflow-hidden flex flex-col lg:flex-row">
+		<div className='relative h-[calc(100vh-64px)] w-full overflow-hidden flex flex-col lg:flex-row'>
 			{/* Map Layer */}
-			<div className="absolute inset-0 lg:relative lg:flex-grow lg:h-full z-0">
-				<MapView
-					showRoute={true}
-					routePolyline={activeVehicleTrip.route.polyline || undefined}
-					passengerStops={mapStops}
-					isDriver={true}
-					taxiLocation={currentLocation || undefined}
-				/>
+			<div className='absolute inset-0 lg:relative lg:flex-grow lg:h-full z-0'>
+				<MapView showRoute={true} routePolyline={activeVehicleTrip.route.polyline || undefined} passengerStops={mapStops} isDriver={true} taxiLocation={currentLocation || undefined} />
 			</div>
 
 			{/* Overlay / Sidebar Panel */}
-			<div className="absolute bottom-0 left-0 right-0 lg:relative lg:w-96 lg:h-full bg-background/95 backdrop-blur-md border-t lg:border-t-0 lg:border-l border-default-200 z-10 flex flex-col max-h-[60vh] lg:max-h-full shadow-2xl transition-all">
+			<div className='absolute bottom-0 left-0 right-0 lg:relative lg:w-96 lg:h-full bg-background/95 backdrop-blur-md border-t lg:border-t-0 lg:border-l border-default-200 z-10 flex flex-col max-h-[60vh] lg:max-h-full shadow-2xl transition-all'>
 				{/* Header */}
-				<div className="p-4 border-b border-default-100 bg-background/50 sticky top-0 z-20">
-					<div className="flex justify-between items-start mb-2 flex-wrap gap-2">
+				<div className='p-4 border-b border-default-100 bg-background/50 sticky top-0 z-20'>
+					<div className='flex justify-between items-start mb-2 flex-wrap gap-2'>
 						<div>
-							<p className="text-xs font-bold text-primary uppercase tracking-wider">
-								Current Route
-							</p>
-							<h3 className="font-bold text-lg truncate pr-2">
-								{activeVehicleTrip.route.name}
-							</h3>
+							<p className='text-xs font-bold text-primary uppercase tracking-wider'>Current Route</p>
+							<h3 className='font-bold text-lg truncate pr-2'>{activeVehicleTrip.route.name}</h3>
 						</div>
 						<Button
-							color="danger"
-							variant="shadow"
-							size="sm"
-							className="font-bold min-w-0 px-3"
+							color='danger'
+							variant='shadow'
+							size='sm'
+							className='font-bold min-w-0 px-3'
 							onPress={() => {
 								if (window.confirm("Are you sure you want to trigger the Panic Button? This will alert support and track your location.")) {
 									addToast({
@@ -397,87 +351,55 @@ export function DriverConsole() {
 									});
 								}
 							}}
-							startContent={<Icon icon="lucide:siren" width={16} />}
-						>
+							startContent={<Icon icon='lucide:siren' width={16} />}>
 							SOS
 						</Button>
 					</div>
 
 					{/* Passenger Status & Manual Controls */}
-					<div className="mt-4 p-3 bg-default-50 rounded-xl border border-default-200">
-						<div className="flex justify-between items-center mb-3">
-							<div className="flex flex-col">
-								<span className="text-xs font-semibold text-default-500 uppercase">Occupancy</span>
-								<div className="flex items-baseline gap-1">
-									<span className={`text-xl font-bold ${remainingCapacity === 0 ? 'text-danger' : 'text-default-900'}`}>
-										{totalPassengers}
-									</span>
-									<span className="text-sm text-default-400">/ {activeVehicleTrip.capacity}</span>
+					<div className='mt-4 p-3 bg-default-50 rounded-xl border border-default-200'>
+						<div className='flex justify-between items-center mb-3'>
+							<div className='flex flex-col'>
+								<span className='text-xs font-semibold text-default-500 uppercase'>Occupancy</span>
+								<div className='flex items-baseline gap-1'>
+									<span className={`text-xl font-bold ${remainingCapacity === 0 ? "text-danger" : "text-default-900"}`}>{totalPassengers}</span>
+									<span className='text-sm text-default-400'>/ {activeVehicleTrip.capacity}</span>
 								</div>
 							</div>
 
-							<div className="flex items-center gap-3">
-								<div className="flex flex-col items-end">
-									<span className="text-[10px] font-bold text-default-400 uppercase tracking-wider mb-1">
-										Walk-Ins
-									</span>
-									<div className="flex items-center gap-1 bg-white rounded-lg border border-default-200 p-1 shadow-sm">
-										<Button
-											isIconOnly
-											size="sm"
-											variant="light"
-											onPress={handleManualRemove}
-											isDisabled={manualPassengers === 0}
-											className="w-6 h-6 min-w-6 text-default-500"
-										>
-											<Icon icon="lucide:minus" width={14} />
+							<div className='flex items-center gap-3'>
+								<div className='flex flex-col items-end'>
+									<span className='text-[10px] font-bold text-default-400 uppercase tracking-wider mb-1'>Walk-Ins</span>
+									<div className='flex items-center gap-1 bg-white rounded-lg border border-default-200 p-1 shadow-sm'>
+										<Button isIconOnly size='sm' variant='light' onPress={handleManualRemove} isDisabled={manualPassengers === 0} className='w-6 h-6 min-w-6 text-default-500'>
+											<Icon icon='lucide:minus' width={14} />
 										</Button>
-										<span className="w-6 text-center font-bold text-default-700 text-sm">
-											{manualPassengers}
-										</span>
-										<Button
-											isIconOnly
-											size="sm"
-											variant="light"
-											onPress={handleManualAdd}
-											isDisabled={remainingCapacity === 0}
-											className="w-6 h-6 min-w-6 text-primary"
-										>
-											<Icon icon="lucide:plus" width={14} />
+										<span className='w-6 text-center font-bold text-default-700 text-sm'>{manualPassengers}</span>
+										<Button isIconOnly size='sm' variant='light' onPress={handleManualAdd} isDisabled={remainingCapacity === 0} className='w-6 h-6 min-w-6 text-primary'>
+											<Icon icon='lucide:plus' width={14} />
 										</Button>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						<div className="flex gap-2 justify-between items-center pt-2 border-t border-default-200/50">
-							<div className="flex items-center gap-1 text-xs text-default-500">
-								<Icon icon="lucide:smartphone" width={14} className="text-primary" />
-								<span className="font-medium text-default-700">{activeVehicleTrip.passengers.length}</span>
+						<div className='flex gap-2 justify-between items-center pt-2 border-t border-default-200/50'>
+							<div className='flex items-center gap-1 text-xs text-default-500'>
+								<Icon icon='lucide:smartphone' width={14} className='text-primary' />
+								<span className='font-medium text-default-700'>{activeVehicleTrip.passengers.length}</span>
 								<span>App</span>
 							</div>
-							<div className="h-3 w-px bg-default-300"></div>
-							<div className="flex items-center gap-1 text-xs text-default-500">
-								<Icon icon="lucide:users" width={14} className="text-default-400" />
+							<div className='h-3 w-px bg-default-300'></div>
+							<div className='flex items-center gap-1 text-xs text-default-500'>
+								<Icon icon='lucide:users' width={14} className='text-default-400' />
 								<span>{manualPassengers} Walk-in</span>
 							</div>
-							<div className="flex gap-2 justify-end ml-auto">
-								<Button
-									color="primary"
-									size="sm"
-									onPress={onOpen}
-									className="h-8 font-medium"
-									startContent={<Icon icon="lucide:qr-code" width={16} />}>
+							<div className='flex gap-2 justify-end ml-auto'>
+								<Button color='primary' size='sm' onPress={onOpen} className='h-8 font-medium' startContent={<Icon icon='lucide:qr-code' width={16} />}>
 									QR Code
 								</Button>
-								<Button
-									color="danger"
-									variant="flat"
-									size="sm"
-									onPress={endShiftDisclosure.onOpen}
-									className="h-8 font-medium"
-									isIconOnly>
-									<Icon icon="lucide:power" width={16} />
+								<Button color='danger' variant='flat' size='sm' onPress={endShiftDisclosure.onOpen} className='h-8 font-medium' isIconOnly>
+									<Icon icon='lucide:power' width={16} />
 								</Button>
 							</div>
 						</div>
@@ -485,28 +407,19 @@ export function DriverConsole() {
 				</div>
 
 				{/* Scrollable Content */}
-				<div className="overflow-y-auto flex-1 p-4 space-y-6">
-
-
+				<div className='overflow-y-auto flex-1 p-4 space-y-6'>
 					{/* Passenger Manifest */}
-					<div className="space-y-3">
-						<h3 className="font-semibold text-sm text-default-600">Passenger Manifest</h3>
+					<div className='space-y-3'>
+						<h3 className='font-semibold text-sm text-default-600'>Passenger Manifest</h3>
 						{sortedPassengers.length === 0 ? (
-							<div className="text-center py-8 border-2 border-dashed border-default-200 rounded-lg">
-								<Icon
-									icon="lucide:users"
-									className="w-8 h-8 mx-auto text-default-300 mb-2"
-								/>
-								<p className="text-sm text-default-400">Vehicle is empty</p>
+							<div className='text-center py-8 border-2 border-dashed border-default-200 rounded-lg'>
+								<Icon icon='lucide:users' className='w-8 h-8 mx-auto text-default-300 mb-2' />
+								<p className='text-sm text-default-400'>Vehicle is empty</p>
 							</div>
 						) : (
-							<div className="space-y-2">
+							<div className='space-y-2'>
 								{sortedPassengers.map((p) => (
-									<PassengerCard
-										key={p.id}
-										passenger={p}
-										onUpdateStatus={updatePassengerStatus}
-									/>
+									<PassengerCard key={p.id} passenger={p} onUpdateStatus={handlePassengerStatusUpdate} isUpdating={statusUpdateTripId === p.id} />
 								))}
 							</div>
 						)}
@@ -514,13 +427,13 @@ export function DriverConsole() {
 				</div>
 			</div>
 
-			<Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
+			<Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop='blur'>
 				<ModalContent>
 					{(onClose) => (
 						<>
-							<ModalHeader className="flex flex-col gap-1">Scan to Board</ModalHeader>
-							<ModalBody className="items-center py-8">
-								<div className="p-4 bg-white rounded-xl shadow-lg">
+							<ModalHeader className='flex flex-col gap-1'>Scan to Board</ModalHeader>
+							<ModalBody className='items-center py-8'>
+								<div className='p-4 bg-white rounded-xl shadow-lg'>
 									<QRCode
 										value={JSON.stringify({
 											type: "BOARDING",
@@ -530,12 +443,10 @@ export function DriverConsole() {
 										size={200}
 									/>
 								</div>
-								<p className="text-center text-default-500 mt-4">
-									Ask passengers to scan this code to confirm boarding.
-								</p>
+								<p className='text-center text-default-500 mt-4'>Ask passengers to scan this code to confirm boarding.</p>
 							</ModalBody>
 							<ModalFooter>
-								<Button color="primary" onPress={onClose}>
+								<Button color='primary' onPress={onClose}>
 									Close
 								</Button>
 							</ModalFooter>
@@ -544,87 +455,70 @@ export function DriverConsole() {
 				</ModalContent>
 			</Modal>
 
-			<Modal isOpen={endShiftDisclosure.isOpen} onOpenChange={endShiftDisclosure.onOpenChange} backdrop="blur">
+			<Modal isOpen={endShiftDisclosure.isOpen} onOpenChange={endShiftDisclosure.onOpenChange} backdrop='blur'>
 				<ModalContent>
 					{(onClose) => (
 						<>
-							<ModalHeader className="flex flex-col gap-1">Cash Up & End Shift</ModalHeader>
-							<ModalBody className="py-4">
-								<div className="bg-default-50 p-4 rounded-xl border border-default-100 space-y-3">
-									<div className="flex justify-between items-center text-sm font-semibold text-default-600 border-b border-default-200 pb-2">
+							<ModalHeader className='flex flex-col gap-1'>Cash Up & End Shift</ModalHeader>
+							<ModalBody className='py-4'>
+								<div className='bg-default-50 p-4 rounded-xl border border-default-100 space-y-3'>
+									<div className='flex justify-between items-center text-sm font-semibold text-default-600 border-b border-default-200 pb-2'>
 										<span>Route: {activeVehicleTrip.route.name}</span>
 									</div>
 
-									<div className="space-y-2">
-										<p className="text-xs font-bold text-default-500 uppercase">Passenger Breakdown</p>
-										<div className="flex justify-between items-center text-sm">
-											<span className="text-default-500">App (Cash)</span>
-											<span className="font-semibold">
-												{activeVehicleTrip.passengers.filter(p => p.paymentMethod === 'CASH').length}
-												<span className="text-default-400 mx-1">x</span>
+									<div className='space-y-2'>
+										<p className='text-xs font-bold text-default-500 uppercase'>Passenger Breakdown</p>
+										<div className='flex justify-between items-center text-sm'>
+											<span className='text-default-500'>App (Cash)</span>
+											<span className='font-semibold'>
+												{activeVehicleTrip.passengers.filter((p) => p.paymentMethod === "CASH").length}
+												<span className='text-default-400 mx-1'>x</span>
 												{formatCurrency(activeVehicleTrip.route.baseFare)}
 											</span>
 										</div>
-										<div className="flex justify-between items-center text-sm">
-											<span className="text-default-500">App (Digital)</span>
-											<span className="font-semibold">
-												{activeVehicleTrip.passengers.filter(p => p.paymentMethod !== 'CASH').length}
-												<span className="text-default-400 mx-1">x</span>
+										<div className='flex justify-between items-center text-sm'>
+											<span className='text-default-500'>App (Digital)</span>
+											<span className='font-semibold'>
+												{activeVehicleTrip.passengers.filter((p) => p.paymentMethod !== "CASH").length}
+												<span className='text-default-400 mx-1'>x</span>
 												{formatCurrency(activeVehicleTrip.route.baseFare)}
 											</span>
 										</div>
-										<div className="flex justify-between items-center text-sm">
-											<span className="text-default-500">Walk-Ins (Cash)</span>
-											<span className="font-semibold">
+										<div className='flex justify-between items-center text-sm'>
+											<span className='text-default-500'>Walk-Ins (Cash)</span>
+											<span className='font-semibold'>
 												{manualPassengers}
-												<span className="text-default-400 mx-1">x</span>
+												<span className='text-default-400 mx-1'>x</span>
 												{formatCurrency(activeVehicleTrip.route.baseFare)}
 											</span>
 										</div>
 									</div>
 
-									<div className="h-px bg-default-200 my-2" />
+									<div className='h-px bg-default-200 my-2' />
 
-									<div className="bg-white p-3 rounded-lg border border-default-200 space-y-1">
-										<div className="flex justify-between items-center text-sm">
-											<span className="text-default-600">Total Revenue</span>
-											<span className="font-bold">
-												{formatCurrency(
-													(activeVehicleTrip.passengers.length + manualPassengers) * activeVehicleTrip.route.baseFare
-												)}
-											</span>
+									<div className='bg-white p-3 rounded-lg border border-default-200 space-y-1'>
+										<div className='flex justify-between items-center text-sm'>
+											<span className='text-default-600'>Total Revenue</span>
+											<span className='font-bold'>{formatCurrency((activeVehicleTrip.passengers.length + manualPassengers) * activeVehicleTrip.route.baseFare)}</span>
 										</div>
-										<div className="flex justify-between items-center text-sm text-danger">
+										<div className='flex justify-between items-center text-sm text-danger'>
 											<span>Less: Digital Payments</span>
-											<span>
-												- {formatCurrency(
-													activeVehicleTrip.passengers
-														.filter(p => p.paymentMethod !== 'CASH')
-														.reduce((acc) => acc + Number(activeVehicleTrip.route.baseFare), 0)
-												)}
-											</span>
+											<span>- {formatCurrency(activeVehicleTrip.passengers.filter((p) => p.paymentMethod !== "CASH").reduce((acc) => acc + Number(activeVehicleTrip.route.baseFare), 0))}</span>
 										</div>
-										<div className="flex justify-between items-center text-lg font-black text-success pt-2 border-t border-dashed border-default-200 mt-2">
+										<div className='flex justify-between items-center text-lg font-black text-success pt-2 border-t border-dashed border-default-200 mt-2'>
 											<span>CASH DUE</span>
-											<span>
-												{formatCurrency(
-													(activeVehicleTrip.passengers.filter(p => p.paymentMethod === 'CASH').length * activeVehicleTrip.route.baseFare) +
-													(manualPassengers * activeVehicleTrip.route.baseFare)
-												)}
-											</span>
+											<span>{formatCurrency(activeVehicleTrip.passengers.filter((p) => p.paymentMethod === "CASH").length * activeVehicleTrip.route.baseFare + manualPassengers * activeVehicleTrip.route.baseFare)}</span>
 										</div>
 									</div>
 								</div>
-								<p className="text-center text-xs text-default-500 mt-2">
-									Ensure you have this cash amount ready for the owner/marshal before ending.
-								</p>
+								<p className='text-center text-xs text-default-500 mt-2'>Ensure you have this cash amount ready for the owner/marshal before ending.</p>
 							</ModalBody>
 							<ModalFooter>
-								<Button variant="flat" onPress={onClose}>
+								<Button variant='flat' onPress={onClose}>
 									Cancel
 								</Button>
 								<Button
-									color="danger"
+									color='danger'
 									onPress={async () => {
 										// Capture Trip Stats before Ending
 										const stats = {
@@ -634,18 +528,14 @@ export function DriverConsole() {
 											manualPassengers: manualPassengers,
 											baseFare: activeVehicleTrip.route.baseFare,
 											totalRevenue: (activeVehicleTrip.passengers.length + manualPassengers) * activeVehicleTrip.route.baseFare,
-											digitalRevenue: activeVehicleTrip.passengers
-												.filter(p => p.paymentMethod !== 'CASH')
-												.reduce((acc) => acc + Number(activeVehicleTrip.route.baseFare), 0),
-											cashDue: (activeVehicleTrip.passengers.filter(p => p.paymentMethod === 'CASH').length * activeVehicleTrip.route.baseFare) +
-												(manualPassengers * activeVehicleTrip.route.baseFare)
+											digitalRevenue: activeVehicleTrip.passengers.filter((p) => p.paymentMethod !== "CASH").reduce((acc) => acc + Number(activeVehicleTrip.route.baseFare), 0),
+											cashDue: activeVehicleTrip.passengers.filter((p) => p.paymentMethod === "CASH").length * activeVehicleTrip.route.baseFare + manualPassengers * activeVehicleTrip.route.baseFare,
 										};
 
 										await endShift(); // This will set activeVehicleTrip to null
 										setLastTripStats(stats); // This triggers the Summary Screen
 										onClose();
-									}}
-								>
+									}}>
 									End Shift
 								</Button>
 							</ModalFooter>
@@ -654,24 +544,13 @@ export function DriverConsole() {
 				</ModalContent>
 			</Modal>
 
-			<RequestModal
-				isOpen={incomingRequests.length > 0}
-				request={incomingRequests[0] || null}
-				onClose={() => incomingRequests[0] && declineRequest(incomingRequests[0].id)}
-				onAccept={acceptRequest}
-			/>
+			<RequestModal isOpen={incomingRequests.length > 0} request={incomingRequests[0] || null} onClose={() => incomingRequests[0] && declineRequest(incomingRequests[0].id)} onAccept={acceptRequest} />
 		</div>
 	);
 }
 
-function PassengerCard({
-	passenger,
-	onUpdateStatus,
-}: {
-	passenger: Trip;
-	onUpdateStatus: (id: string, status: string) => void;
-}) {
-	const getStatusColor = (status: string): "warning" | "primary" | "success" | "default" => {
+function PassengerCard({ passenger, onUpdateStatus, isUpdating }: { passenger: Trip; onUpdateStatus: (id: string, status: string) => Promise<void>; isUpdating: boolean }) {
+	const getStatusColor = (status: string): "warning" | "primary" | "success" | "danger" | "default" => {
 		switch (status) {
 			case "ACCEPTED":
 				return "warning";
@@ -679,6 +558,8 @@ function PassengerCard({
 				return "primary";
 			case "IN_PROGRESS":
 				return "success";
+			case "CANCELLED":
+				return "danger";
 			default:
 				return "default";
 		}
@@ -710,43 +591,49 @@ function PassengerCard({
 				icon: "lucide:log-out",
 			};
 		}
+		if (passenger.status === "CANCELLED") {
+			return {
+				label: "Mark Arrived",
+				color: "warning" as const,
+				action: () => onUpdateStatus(passenger.id, "ARRIVED_AT_PICKUP"),
+				icon: "lucide:map-pin-check",
+			};
+		}
 		return null;
 	};
 
 	const action = getAction();
 
 	return (
-		<Card className="shadow-sm hover:shadow-md transition-shadow">
-			<CardBody className="p-3">
-				<div className="flex items-center justify-between gap-3">
-					<div className="flex-1 min-w-0">
-						<div className="flex items-center gap-2 mb-1">
-							<p className="font-semibold text-sm truncate">
-								{passenger.user?.firstName || "Passenger"}
-							</p>
-							<Chip
-								size="sm"
-								color={getStatusColor(passenger.status)}
-								variant="dot"
-								className="h-5 text-[10px] px-1">
+		<Card className='shadow-sm hover:shadow-md transition-shadow'>
+			<CardBody className='p-3'>
+				<div className='flex items-center justify-between gap-3'>
+					<div className='flex-1 min-w-0'>
+						<div className='flex items-center gap-2 mb-1'>
+							<p className='font-semibold text-sm truncate'>{passenger.user?.firstName || "Passenger"}</p>
+							<Chip size='sm' color={getStatusColor(passenger.status)} variant='dot' className='h-5 text-[10px] px-1'>
 								{passenger.status.replace(/_/g, " ")}
 							</Chip>
 						</div>
-						<div className="flex items-center gap-1 text-xs text-default-500">
-							<Icon icon="lucide:map-pin" width={10} />
-							<span className="truncate">{passenger.dropoffAddress}</span>
+						<div className='flex items-center gap-1 text-xs text-default-500'>
+							<Icon icon='lucide:map-pin' width={10} />
+							<span className='truncate'>{passenger.dropoffAddress}</span>
 						</div>
 					</div>
 
 					{action && (
 						<Button
-							size="sm"
+							size='sm'
 							color={action.color}
 							variant={action.color === "default" ? "bordered" : "solid"}
-							onPress={action.action}
-							isIconOnly
-							className="min-w-[32px] w-8 h-8">
-							<Icon icon={action.icon} width={16} />
+							onPress={() => {
+								void action.action();
+							}}
+							isLoading={isUpdating}
+							isDisabled={isUpdating}
+							startContent={!isUpdating ? <Icon icon={action.icon} width={14} /> : undefined}
+							className='min-w-[120px]'>
+							{isUpdating ? "Updating..." : action.label}
 						</Button>
 					)}
 				</div>
