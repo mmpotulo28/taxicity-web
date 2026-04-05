@@ -4,18 +4,18 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "next dev --turbopack -p 3003",
+		"dev": "dotenv -e ../../.env -- next dev --turbopack -p 3003",
 		"build": "next build",
 		"start": "next start",
-		"lint": "eslint .",
-		"check": "eslint . && tsc --noEmit"
+		"lint": "eslint . --fix",
+		"check": "eslint . --fix && tsc --noEmit"
 	},
 	"dependencies": {
 		"@heroui/react": "^2.8.7",
 		"@heroui/system": "2.4.22",
 		"@heroui/theme": "2.4.22",
-		"@taxyciti/configs": "workspace:*",
-		"@taxyciti/ui": "workspace:*",
+		"@taxiciti/configs": "workspace:*",
+		"@taxiciti/ui": "workspace:*",
 		"clsx": "2.1.1",
 		"framer-motion": "^11.0.0",
 		"lucide-react": "^0.330.0",

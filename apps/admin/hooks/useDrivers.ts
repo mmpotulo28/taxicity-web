@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Driver } from "@taxyciti/database/types";
+import { Driver } from "@taxiciti/database/types";
 import { addToast } from "@heroui/toast";
 
 export const useDrivers = () => {

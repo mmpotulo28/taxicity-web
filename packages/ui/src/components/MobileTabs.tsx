@@ -38,9 +38,7 @@ const tabs = [
 const MobileTabs = () => {
 	const pathname = usePathname();
 
-	const [currentPage, setCurrentPage] = useState<
-		"home" | "settings" | "trip-history" | "support" | "route"
-	>("home");
+	const [currentPage, setCurrentPage] = useState<"home" | "settings" | "trip-history" | "support" | "route">("home");
 
 	useEffect(() => {
 		const handleRouteChange = (url: string) => {
@@ -53,14 +51,15 @@ const MobileTabs = () => {
 
 		handleRouteChange(pathname || "");
 
-		return () => { };
+		return () => {};
 	}, [pathname]);
 
-	if (pathname?.startsWith("/driver")) return null;
+	const shouldHideTabs = pathname?.startsWith("/auth");
+	if (shouldHideTabs) return null;
 
 	return (
-		<footer className="z-50 bg-background border-t border-default-200 shadow-lg h-16 rounded-t-2xl">
-			<nav className="flex justify-around items-center">
+		<footer className='z-50 bg-red absolute bottom-0 left-0 right-0 border-t border-default-200 shadow-lg h-16 rounded-t-2xl'>
+			<nav className='flex justify-around items-center'>
 				{tabs.map((tab) => {
 					const isActive = currentPage === tab.key;
 
@@ -72,34 +71,17 @@ const MobileTabs = () => {
 								${isActive ? "bg-primary/10 text-primary font-semibold shadow-md" : "text-default-700"}
 								hover:bg-primary/5 active:scale-95 ${tab.main ? "shadow-lg rounded-xl bg-primary text-white w-16 h-16 absolute top-[-20px]" : "rounded-none"}`}
 							href={tab.href}
-							radius="none"
+							radius='none'
 							style={{
 								position: "relative",
 								minWidth: 64,
 							}}
-							variant="light">
-							<Icon
-								className={cn(
-									"text-2xl text-default-700",
-									tab.main ? "w-8 h-8" : "h-4 w-4",
-								)}
-								fontSize={24}
-								icon={tab.icon}
-							/>
+							variant='light'>
+							<Icon className={cn("text-2xl text-default-700", tab.main ? "w-8 h-8" : "h-4 w-4")} fontSize={24} icon={tab.icon} />
 
-							<span className={`text-xs ${isActive ? "font-bold" : "font-normal"}`}>
-								{tab.label}
-							</span>
+							<span className={`text-xs ${isActive ? "font-bold" : "font-normal"}`}>{tab.label}</span>
 
-							{isActive && (
-								<span
-									className={cn(
-										"absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full ",
-										tab.main ? "bg-white" : "bg-primary",
-									)}
-									style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)" }}
-								/>
-							)}
+							{isActive && <span className={cn("absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full ", tab.main ? "bg-white" : "bg-primary")} style={{ boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)" }} />}
 						</Button>
 					);
 				})}

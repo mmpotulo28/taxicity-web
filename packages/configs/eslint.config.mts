@@ -1,15 +1,39 @@
-import js from "@eslint/js";
+import jsImport from "@eslint/js";
 import globals from "globals";
-import tseslint from "typescript-eslint";
-import pluginReact from "eslint-plugin-react";
-import pluginReactHooks from "eslint-plugin-react-hooks";
+import tseslintImport from "typescript-eslint";
+import pluginReactImport from "eslint-plugin-react";
+import pluginReactHooksImport from "eslint-plugin-react-hooks";
 
-export default tseslint.config(
+const tseslint = (tseslintImport as unknown as { default?: typeof tseslintImport }).default ?? tseslintImport;
+
+const js = (jsImport as unknown as { default?: typeof jsImport }).default ?? jsImport;
+
+const pluginReact = (pluginReactImport as unknown as { default?: typeof pluginReactImport }).default ?? pluginReactImport;
+
+const pluginReactHooks =
+	(
+		pluginReactHooksImport as unknown as {
+			default?: typeof pluginReactHooksImport;
+		}
+	).default ?? pluginReactHooksImport;
+
+const reactFlatConfig = (pluginReact as { configs?: { flat?: { recommended?: object } } }).configs?.flat?.recommended ?? {
+	plugins: {
+		react: pluginReact,
+	},
+	rules: {},
+};
+
+const tsRecommended = (tseslint as { configs?: { recommended?: object[] } }).configs?.recommended ?? [];
+
+const createConfig = (tseslint as { config?: (...configs: object[]) => object[] }).config ?? ((...configs: object[]) => configs);
+
+export default createConfig(
 	{
 		ignores: [".next/**", "node_modules/**", "dist/**", "build/**", "coverage/**", "public/**", "**/*.d.ts", "prisma/generated/**"],
 	},
 	{
-		extends: [js.configs.recommended, ...tseslint.configs.recommended, pluginReact.configs.flat.recommended],
+		extends: [(js as { configs?: { recommended?: object } }).configs?.recommended ?? {}, ...tsRecommended, reactFlatConfig],
 		files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
 		languageOptions: {
 			globals: {

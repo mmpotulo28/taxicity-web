@@ -5,7 +5,7 @@ import { Button, Card, CardBody } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 
-import { useRide, LocationSelector } from "@taxyciti/ui";
+import { useRide, LocationSelector } from "@taxiciti/ui";
 
 
 const LocationPage: React.FC = () => {

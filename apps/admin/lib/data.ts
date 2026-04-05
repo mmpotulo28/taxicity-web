@@ -414,7 +414,7 @@ export const rankDetails = ranks.map((rank) => ({
 // 	{
 // 		id: "admin1",
 // 		name: "Sarah Johnson",
-// 		email: "sarah.johnson@taxyciti.co.za",
+// 		email: "sarah.johnson@taxiciti.co.za",
 // 		role: "Super Admin",
 // 		status: "active",
 // 		lastLogin: "2023-11-20 09:45 AM",
@@ -423,7 +423,7 @@ export const rankDetails = ranks.map((rank) => ({
 // 	{
 // 		id: "admin2",
 // 		name: "Michael Brown",
-// 		email: "michael.brown@taxyciti.co.za",
+// 		email: "michael.brown@taxiciti.co.za",
 // 		role: "Operations Manager",
 // 		status: "active",
 // 		lastLogin: "2023-11-19 16:30 PM",
@@ -432,7 +432,7 @@ export const rankDetails = ranks.map((rank) => ({
 // 	{
 // 		id: "admin3",
 // 		name: "Thandi Nkosi",
-// 		email: "thandi.nkosi@taxyciti.co.za",
+// 		email: "thandi.nkosi@taxiciti.co.za",
 // 		role: "Support Agent",
 // 		status: "active",
 // 		lastLogin: "2023-11-20 08:15 AM",
@@ -441,7 +441,7 @@ export const rankDetails = ranks.map((rank) => ({
 // 	{
 // 		id: "admin4",
 // 		name: "David Wilson",
-// 		email: "david.wilson@taxyciti.co.za",
+// 		email: "david.wilson@taxiciti.co.za",
 // 		role: "Data Analyst",
 // 		status: "inactive",
 // 		lastLogin: "2023-11-15 14:20 PM",
@@ -582,7 +582,7 @@ export const reportTemplates = [
 		type: "revenue",
 		format: "PDF",
 		schedule: "daily",
-		recipients: ["admin1@taxyciti.co.za", "admin2@taxyciti.co.za"],
+		recipients: ["admin1@taxiciti.co.za", "admin2@taxiciti.co.za"],
 	},
 	{
 		id: "report2",
@@ -591,7 +591,7 @@ export const reportTemplates = [
 		type: "performance",
 		format: "Excel",
 		schedule: "monthly",
-		recipients: ["admin2@taxyciti.co.za"],
+		recipients: ["admin2@taxiciti.co.za"],
 	},
 	{
 		id: "report3",
@@ -600,7 +600,7 @@ export const reportTemplates = [
 		type: "operations",
 		format: "PDF",
 		schedule: "weekly",
-		recipients: ["admin2@taxyciti.co.za", "admin4@taxyciti.co.za"],
+		recipients: ["admin2@taxiciti.co.za", "admin4@taxiciti.co.za"],
 	},
 	{
 		id: "report4",
@@ -609,7 +609,7 @@ export const reportTemplates = [
 		type: "customer",
 		format: "PDF",
 		schedule: "quarterly",
-		recipients: ["admin1@taxyciti.co.za", "admin3@taxyciti.co.za"],
+		recipients: ["admin1@taxiciti.co.za", "admin3@taxiciti.co.za"],
 	},
 ];
 
@@ -618,7 +618,7 @@ export const adminUsers: iAdminUser[] = [
 	{
 		id: "admin1",
 		name: "Manelisi Mbola",
-		email: "manelisi@taxyciti.co.za",
+		email: "manelisi@taxiciti.co.za",
 		role: "Super Admin",
 		status: "active",
 		lastLogin: "2023-11-15T08:30:00",
@@ -627,7 +627,7 @@ export const adminUsers: iAdminUser[] = [
 	{
 		id: "admin2",
 		name: "Sarah Johnson",
-		email: "sarah@taxyciti.co.za",
+		email: "sarah@taxiciti.co.za",
 		role: "Operations Manager",
 		status: "active",
 		lastLogin: "2023-11-14T14:20:00",
@@ -636,7 +636,7 @@ export const adminUsers: iAdminUser[] = [
 	{
 		id: "admin3",
 		name: "Thabo Nkosi",
-		email: "thabo@taxyciti.co.za",
+		email: "thabo@taxiciti.co.za",
 		role: "Support Agent",
 		status: "active",
 		lastLogin: "2023-11-15T09:15:00",
@@ -645,7 +645,7 @@ export const adminUsers: iAdminUser[] = [
 	{
 		id: "admin4",
 		name: "Lisa Wong",
-		email: "lisa@taxyciti.co.za",
+		email: "lisa@taxiciti.co.za",
 		role: "Data Analyst",
 		status: "inactive",
 		lastLogin: "2023-10-30T11:45:00",

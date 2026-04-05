@@ -34,7 +34,7 @@ import { Icon } from "@iconify/react";
 import { addToast } from "@heroui/toast";
 
 import { useTaxis } from "@/hooks/useTaxis";
-import { Taxi, Driver, TaxiOnRoute, TaxiLocation } from "@taxyciti/database/types";
+import { Taxi, Driver, TaxiOnRoute, TaxiLocation } from "@taxiciti/database/types";
 
 type TaxiWithRelations = Taxi & {
 	driver: Driver | null;
@@ -150,8 +150,8 @@ export default function TaxisPage() {
 				</Button>
 			</div>
 
-			<Card>
-				<CardHeader className="flex flex-col gap-4">
+			<div className="flex flex-col gap-6">
+				<div className="flex flex-row flex-wrap justify-between gap-4">
 					<div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
 						<div className="flex gap-3 flex-col sm:flex-row">
 							<Input
@@ -193,7 +193,8 @@ export default function TaxisPage() {
 
 					<Tabs
 						aria-label="Taxi status tabs"
-						color="primary"
+						color="secondary"
+						variant="light"
 						selectedKey={activeTab}
 						onSelectionChange={(key) => {
 							setActiveTab(key as string);
@@ -204,9 +205,9 @@ export default function TaxisPage() {
 						<Tab key="busy" title="Busy" />
 						<Tab key="offline" title="Offline" />
 					</Tabs>
-				</CardHeader>
+				</div>
 
-				<CardBody>
+				<div>
 					<Table
 						aria-label="Taxi management table"
 						bottomContent={
@@ -235,6 +236,7 @@ export default function TaxisPage() {
 						</TableHeader>
 
 						<TableBody
+
 							emptyContent={<div className="text-center">No taxis found</div>}
 							isLoading={isLoading}
 							items={paginatedTaxis}
@@ -311,8 +313,8 @@ export default function TaxisPage() {
 							)}
 						</TableBody>
 					</Table>
-				</CardBody>
-			</Card>
+				</div>
+			</div>
 
 			{/* Taxi Details Modal */}
 			{selectedTaxi && (

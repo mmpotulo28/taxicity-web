@@ -17,12 +17,34 @@ We chose AWS App Runner because:
 
 1.  **AWS Account**: You must have access to the AWS Console.
 2.  **Docker Hub Images**: Ensure the following images are pushed and accessible (public or authenticated):
-    - `mmpotulo28/taxyciti-user:latest`
-    - `mmpotulo28/taxyciti-driver:latest`
-
----
+    - `mmpotulo28/taxiciti-user:latest`
+    - `mmpotulo28/taxiciti-driver:latest`
+    - `mmpotulo28/taxiciti-api:latest`
 
 ## 🚀 Deployment Steps
+
+### Step 0: Deploy the API App (`apps/api`)
+
+1.  **Log in to AWS Console** and search for **"App Runner"**.
+2.  Click **Create Service**.
+3.  **Source:**
+    - Repository type: **Container Registry**.
+    - Container Image URI: `mmpotulo28/taxiciti-api:latest`
+4.  **Configuration:**
+    - **Service name:** `taxiciti-api-app`
+    - **Virtual CPU & Memory:** `1 vCPU / 2 GB`
+    - **Port:** `3006`
+5.  **Environment Variables:**
+    - `DATABASE_URL`
+    - One token verification strategy:
+        - `CLERK_JWT_PUBLIC_KEY`, or
+        - `JWT_PUBLIC_KEY`, or
+        - `JWT_SECRET`
+    - `INTERNAL_PROXY_SECRET` (optional, only if using trusted proxy header forwarding)
+    - `BLOB_READ_WRITE_TOKEN`
+    - `UPLOAD_MAX_FILE_BYTES` (optional)
+    - `REDIS_URL` (or equivalent Upstash URL variables used in your environment)
+6.  **Review & Create:** Click deploy.
 
 ### Step 1: Deploy the User App (`apps/user`)
 
@@ -31,11 +53,11 @@ We chose AWS App Runner because:
 3.  **Source:**
     - Repository type: **Container Registry**.
     - Provider: **Amazon ECR / Public** (or your private Docker Hub provider settings).
-    - Container Image URI: `mmpotulo28/taxyciti-user:latest`
+    - Container Image URI: `mmpotulo28/taxiciti-user:latest`
 4.  **Deployment triggers:**
     - Select **Automatic**. (This ensures that whenever you run `docker push` locally or via GitHub Actions, AWS updates the site automatically).
 5.  **Configuration:**
-    - **Service name:** `taxyciti-user-app`
+    - **Service name:** `taxiciti-user-app`
     - **Virtual CPU & Memory:** `1 vCPU / 2 GB` (Start small, scale up if needed).
     - **Port:** `3000` (Our Docker container exposes port 3000).
 6.  **Environment Variables:**
@@ -63,15 +85,18 @@ We chose AWS App Runner because:
 
 1.  Go back to the App Runner dashboard and click **Create Service**.
 2.  **Source:**
-    - Container Image URI: `mmpotulo28/taxyciti-driver:latest`
+    - Container Image URI: `mmpotulo28/taxiciti-driver:latest`
 3.  **Deployment triggers:**
     - Select **Automatic**.
 4.  **Configuration:**
-    - **Service name:** `taxyciti-driver-app`
+    - **Service name:** `taxiciti-driver-app`
     - **Virtual CPU & Memory:** `1 vCPU / 2 GB`
     - **Port:** `3000` (Caution: Ensure you set Port 3000, even though we develop on 3001 locally, the Docker container standardizes on 3000).
 5.  **Environment Variables:**
-    - Use the **exact same variables** as the User App above. Both apps share the same database and Redis infrastructure.
+    - Use the variables required by the User app.
+    - Add API routing variables:
+        - `NEXT_PUBLIC_API_URL` (public API base URL, e.g. `https://api.your-domain.com`)
+        - `API_URL` (server-side API base URL)
 6.  **Review & Create:** Click deploy.
 
 ---
@@ -83,7 +108,7 @@ We chose AWS App Runner because:
 App Runner gives you a default URL (e.g., `https://xyz123.awsapprunner.com`). To use your own domain:
 
 1.  Go to the **Custom Domains** tab in your App Runner service.
-2.  Add your domain (e.g., `app.taxyciti.co.za`).
+2.  Add your domain (e.g., `app.taxiciti.co.za`).
 3.  Add the provided CNAME records to your DNS provider (GoDaddy, Cloudflare, etc.).
 4.  App Runner handles the SSL certificate validation automatically.
 

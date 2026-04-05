@@ -1,7 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { Rank } from "@taxyciti/database/types";
+import { Rank } from "@taxiciti/database/types";
 import { addToast } from "@heroui/toast";
+
+// Extended Rank type with relations returned by the API
+export type RankWithRelations = Rank & {
+	_count?: {
+		taxiRanks: number;
+		sourceRoutes: number;
+		queueEntries: number;
+		trips: number;
+	};
+	sourceRoutes?: Array<{
+		id: string;
+		name: string;
+		distance: number;
+		estimatedDuration: number;
+		baseFare: number;
+	}>;
+	taxiRanks?: unknown[];
+	queueEntries?: unknown[];
+};
 
 export const useRanks = () => {
 	const queryClient = useQueryClient();
@@ -13,7 +32,7 @@ export const useRanks = () => {
 		isError,
 		error,
 		refetch,
-	} = useQuery<Rank[]>({
+	} = useQuery<RankWithRelations[]>({
 		queryKey: ["ranks"],
 		queryFn: async () => {
 			const { data } = await axios.get("/api/ranks");

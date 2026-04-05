@@ -60,8 +60,9 @@ These components are required to bridge the gap between the Admin, Driver, and U
     - [x] "Refresh" capability
 - [x] **Routes Management** (Basic CRUD)
 - [x] **Fleets (Taxi/Driver) Management**
-- [ ] **Live Operations Map** ( _Priority: Medium_ )
+- [x] **Live Operations Map** ( _Priority: Medium_ )
     - **Goal:** "God view" of all active taxis moving on the map.
+    - **Current State:** Implemented at /dashboard/map using real-time taxi locations.
 - [ ] **Dispute Resolution Portal** ( _Priority: Low_ )
     - **Goal:** Handling user/driver reports within the admin panel.
 

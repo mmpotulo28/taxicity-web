@@ -7,41 +7,39 @@ import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ClerkProvider } from "@clerk/nextjs";
-import { clerkConfig } from "@taxyciti/configs/clerk";
+import { clerkConfig } from "@taxiciti/configs/clerk";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { PusherProvider, TelemetryProvider } from "@taxyciti/ui";
+import { PusherProvider, TelemetryProvider } from "@taxiciti/ui";
 
 export interface ProvidersProps {
- children: React.ReactNode;
- themeProps?: ThemeProviderProps;
+	children: React.ReactNode;
+	themeProps?: ThemeProviderProps;
 }
 
 declare module "@react-types/shared" {
- interface RouterConfig {
-  routerOptions: NonNullable<
-   Parameters<ReturnType<typeof useRouter>["push"]>[1]
-  >;
- }
+	interface RouterConfig {
+		routerOptions: NonNullable<Parameters<ReturnType<typeof useRouter>["push"]>[1]>;
+	}
 }
 
 const queryClient = new QueryClient();
 
 export function Providers({ children, themeProps }: ProvidersProps) {
- const router = useRouter();
+	const router = useRouter();
 
- return (
-  <ClerkProvider appearance={clerkConfig.appearance}>
-   <TelemetryProvider appName="TaxyCiTi Admin" version="1.0.0">
-    <QueryClientProvider client={queryClient}>
-     <ReactQueryDevtools initialIsOpen={false} />
-     <HeroUIProvider navigate={router.push}>
-      <NextThemesProvider {...themeProps}>
-       <PusherProvider>{children}</PusherProvider>
-      </NextThemesProvider>
-     </HeroUIProvider>
-    </QueryClientProvider>
-   </TelemetryProvider>
-  </ClerkProvider>
- );
+	return (
+		<ClerkProvider appearance={clerkConfig.appearance}>
+			<TelemetryProvider appName='TaxiCiTi Admin' version='1.0.0'>
+				<QueryClientProvider client={queryClient}>
+					<ReactQueryDevtools initialIsOpen={false} />
+					<HeroUIProvider navigate={router.push}>
+						<NextThemesProvider {...themeProps}>
+							<PusherProvider role='admin'>{children}</PusherProvider>
+						</NextThemesProvider>
+					</HeroUIProvider>
+				</QueryClientProvider>
+			</TelemetryProvider>
+		</ClerkProvider>
+	);
 }

@@ -1,0 +1,30 @@
+export const CHANNELS = {
+	VEHICLE: (id: string) => `vehicle-${id}`,
+	USER: (id: string) => `user-${id}`,
+	TRIP: (id: string) => `trip-${id}`,
+	ROUTE: (id: string) => `route-${id}`,
+	DRIVER: "driver",
+	USER_GLOBAL: "user",
+} as const;
+
+export const EVENTS = {
+	LOCATION_UPDATE: "location-update",
+	RIDE_REQUEST: "ride-request",
+	NEW_RIDE_REQUEST: "new-ride-request",
+	RIDE_ACCEPTED: "ride-accepted",
+	RIDE_TAKEN: "ride-taken",
+	RIDE_STATUS_UPDATE: "ride-status-update",
+	RIDE_STATUS_CHANGED: "ride-status-changed",
+	DRIVER_REQUESTS_SYNC: "driver-requests-sync",
+	DRIVER_QUEUE_STATUS_SYNC: "driver-queue-status-sync",
+	DRIVER_QUEUE_JOIN: "driver-queue-join",
+	DRIVER_QUEUE_LEAVE: "driver-queue-leave",
+	USER_TRIPS_SYNC: "user-trips-sync",
+	NOTIFICATIONS_SYNC: "notifications-sync",
+	NOTIFICATION_MARK_READ: "notification-mark-read",
+	NOTIFICATION_SEND: "notification-send",
+	NEW_MESSAGE: "new-message",
+	SEND_MESSAGE: "send-message",
+	DRIVER_LOCATION: "driver-location",
+	TRIP_UPDATED: "trip-updated",
+} as const;

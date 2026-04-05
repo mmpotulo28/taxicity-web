@@ -19,7 +19,6 @@ export { default as MobileTabs } from "./components/MobileTabs";
 export { default as RatingModal } from "./components/RatingModal";
 export { default as RouteCard } from "./components/RouteCard";
 export { default as TaxiCard } from "./components/TaxiCard";
-export { default as TaxiMap } from "./components/TaxiMap";
 export { default as TripCard } from "./components/TripCard";
 export { default as TripModal } from "./components/TripModal";
 export { default as TripRating } from "./components/TripRating";

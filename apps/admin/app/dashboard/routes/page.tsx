@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Breadcrumbs, BreadcrumbItem } from "@heroui/breadcrumbs";
 import {
@@ -11,56 +11,50 @@ import {
 	DropdownItem,
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Pagination } from "@heroui/pagination";
 import { Chip } from "@heroui/chip";
 import { addToast } from "@heroui/toast";
 
 // Import mock data (fallback)
 import { routes as mockRoutes, ranks } from "@/lib/data";
-import { useRoutes } from "@/hooks/useRoutes";
+import { useRoutes, RouteWithRanks } from "@/hooks/useRoutes";
 
 export default function RoutesPage() {
-	const { routes: realRoutes, isLoading: isRoutesLoading, updateRoute } = useRoutes();
+	const { routes: realRoutes } = useRoutes();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
+	const router = useRouter();
+
+
+
 	// Combine routes data with rank information
 	const dataToUse = realRoutes && realRoutes.length > 0 ? realRoutes : null;
-	let routesWithRanks: any[] = [];
+	 
+	let routesWithRanks: RouteWithRanks[] = [];
 
 	if (dataToUse) {
 		routesWithRanks = dataToUse.map(r => ({
+			...r,
 			id: r.id,
 			name: r.name,
 			originRank: r.sourceRank,
 			destRank: r.destRank,
-			estimatedDuration: r.estimatedDuration ? `${r.estimatedDuration} min` : "N/A",
-			estimatedFare: r.baseFare ? `R${Number(r.baseFare).toFixed(2)}` : "N/A",
-			distance: r.distance ? `${r.distance} km` : "N/A",
-			status: "active" // Default for now if status isn't on Route model, or check schema
+			estimatedDuration: r.estimatedDuration ? r.estimatedDuration : 0,
+			estimatedFare: r.baseFare ? Number(r.baseFare).toFixed(2) : 0,
+			distance: r.distance ? r.distance : 0,
+			status: "ACTIVE" // Default for now if status isn't on Route model, or check schema
 		}));
-	} else {
-		// Fallback to mock
-		routesWithRanks = mockRoutes.map((route) => {
-			const originRank = ranks.find((r) => r.id === route.rankId);
-			const destRank = route.destinationRankId
-				? ranks.find((r) => r.id === route.destinationRankId)
-				: null;
-
-			return {
-				...route,
-				originRank,
-				destRank,
-			};
-		});
 	}
 
 	// Filter routes based on search query and status
 	const filteredRoutes = routesWithRanks.filter((route) => {
 		const matchesSearch =
 			route.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			(route.originRank?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+			(route.sourceRank?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
 			(route.destRank?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
 		const matchesStatus = statusFilter ? route.status === statusFilter : true;
@@ -86,13 +80,12 @@ export default function RoutesPage() {
 		}
 	};
 
-	const handleEdit = (id: string) => {
-		addToast({
-			title: "Edit Route",
-			description: `Editing route with ID: ${id}`,
-			color: "primary",
-		});
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const handleEdit = (route: any) => {
+		router.push(`/dashboard/routes/${route.id}`);
 	};
+
+	const handleSaveRoute = async () => { };
 
 	const handleToggleStatus = (id: string, currentStatus: string) => {
 		// In a real app, this would be an API call
@@ -107,6 +100,8 @@ export default function RoutesPage() {
 
 	return (
 		<div className="space-y-6">
+			{/* Modal-based editing removed: use subpages for editing */}
+
 			<div className="flex justify-between items-center">
 				<div>
 					<h1 className="text-2xl font-bold">Routes Management</h1>
@@ -116,9 +111,11 @@ export default function RoutesPage() {
 					</Breadcrumbs>
 				</div>
 
-				<Button color="primary" startContent={<Icon icon="lucide:plus" />}>
-					Add New Route
-				</Button>
+				<Link href="/dashboard/routes/new">
+					<Button color="primary" startContent={<Icon icon="lucide:plus" />}>
+						Add New Route
+					</Button>
+				</Link>
 			</div>
 
 			<Card className="shadow-sm">
@@ -205,13 +202,13 @@ export default function RoutesPage() {
 											</div>
 										</td>
 										<td className="py-4 px-4">
-											{route.originRank?.name || "Unknown"}
+											{route.sourceRank?.name || "Unknown"}
 										</td>
 										<td className="py-4 px-4">
 											{route.destRank?.name || "Unknown"}
 										</td>
 										<td className="py-4 px-4">{route.distance}</td>
-										<td className="py-4 px-4">{route.estimatedFare}</td>
+										<td className="py-4 px-4">R{route.baseFare.toString()}</td>
 										<td className="py-4 px-4">{route.estimatedDuration}</td>
 										<td className="py-4 px-4">
 											<Chip color={getStatusColor(route.status)} size="sm">
@@ -220,18 +217,28 @@ export default function RoutesPage() {
 										</td>
 										<td className="py-4 px-4">
 											<div className="flex gap-2">
+												<Link href={`/dashboard/routes/${route.id}`}>
+													<Button
+														isIconOnly
+														size="sm"
+														variant="light"
+														color="primary">
+														<Icon icon="lucide:eye" />
+													</Button>
+												</Link>
+
 												<Button
 													isIconOnly
 													size="sm"
 													variant="light"
-													onPress={() => handleEdit(route.id)}>
+													onPress={() => handleEdit(route)}>
 													<Icon icon="lucide:edit-2" />
 												</Button>
 
 												<Button
 													isIconOnly
 													color={
-														route.status === "active"
+														route.status === "ACTIVE"
 															? "danger"
 															: "success"
 													}
@@ -242,7 +249,7 @@ export default function RoutesPage() {
 													}>
 													<Icon
 														icon={
-															route.status === "active"
+															route.status === "ACTIVE"
 																? "lucide:x"
 																: "lucide:check"
 														}
