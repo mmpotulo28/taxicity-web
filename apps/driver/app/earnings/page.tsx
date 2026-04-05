@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { formatCurrency } from "@taxiciti/utils";
@@ -9,6 +9,7 @@ import { Pagination } from "@heroui/pagination";
 import { ScrollShadow } from "@heroui/scroll-shadow";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
+import { useAuth } from "@clerk/nextjs";
 import { apiGet } from "@/lib/api-client";
 
 interface Trip {
@@ -33,25 +34,37 @@ interface EarningStats {
 }
 
 export default function DriverEarningsPage() {
+	const { isLoaded, isSignedIn, getToken } = useAuth();
 	const [stats, setStats] = useState<EarningStats | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [page, setPage] = useState(1);
 	const rowsPerPage = 5;
 
-	useEffect(() => {
-		fetchEarnings();
-	}, []);
-
-	const fetchEarnings = async () => {
+	const fetchEarnings = useCallback(async () => {
 		try {
-			const data = await apiGet<EarningStats>("/api/driver/earnings");
+			const token = await getToken();
+			const headers: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
+			const data = await apiGet<EarningStats>("/api/driver/earnings", { headers });
 			setStats(data);
 		} catch (error) {
 			console.error("Failed to fetch earnings:", error);
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [getToken]);
+
+	useEffect(() => {
+		if (!isLoaded) {
+			return;
+		}
+
+		if (!isSignedIn) {
+			setLoading(false);
+			return;
+		}
+
+		void fetchEarnings();
+	}, [fetchEarnings, isLoaded, isSignedIn]);
 
 	const trips = useMemo(() => stats?.trips || [], [stats]);
 

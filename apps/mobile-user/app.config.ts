@@ -1,22 +1,10 @@
-import { ExpoConfig } from "expo/config";
-
-const appConfig: ExpoConfig = {
+const appConfig = {
 	name: "TaxiCiTi",
 	slug: "taxiciti-app",
 	version: "1.1.0",
 	orientation: "portrait",
 	icon: "./assets/icon.png",
-	plugins: [
-		"./plugins/withNewRelic.ts",
-		[
-			"@sentry/react-native/expo",
-			{
-				url: "https://sentry.io/",
-				project: "taxyciti-app",
-				organization: "mpotulom",
-			},
-		],
-	],
+	plugins: ["./plugins/withNewRelic.ts"],
 	userInterfaceStyle: "dark",
 	newArchEnabled: true,
 	platforms: ["ios", "android"],

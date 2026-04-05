@@ -1,9 +1,9 @@
 import ConfigPlugins from "@expo/config-plugins";
 const { withProjectBuildGradle, withAppBuildGradle, createRunOncePlugin } = ConfigPlugins;
 
-const withNewRelicAndroid = (config: any) => {
+const withNewRelicAndroid = (config) => {
 	// Update android/build.gradle
-	config = withProjectBuildGradle(config, (config: any) => {
+	config = withProjectBuildGradle(config, (config) => {
 		if (config.modResults.language === "groovy") {
 			const buildGradle = config.modResults.contents;
 			// Add the New Relic classpath dependency if it doesn't exist
@@ -19,7 +19,7 @@ const withNewRelicAndroid = (config: any) => {
 	});
 
 	// Update android/app/build.gradle
-	config = withAppBuildGradle(config, (config: any) => {
+	config = withAppBuildGradle(config, (config) => {
 		if (config.modResults.language === "groovy") {
 			const appBuildGradle = config.modResults.contents;
 			// Apply the New Relic plugin if it hasn't been applied yet
@@ -37,7 +37,7 @@ apply plugin: "newrelic"`,
 	return config;
 };
 
-const withNewRelic = (config: any) => {
+const withNewRelic = (config) => {
 	return withNewRelicAndroid(config);
 };
 
