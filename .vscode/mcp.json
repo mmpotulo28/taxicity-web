@@ -1,15 +1,21 @@
 {
-  "servers": {
-    "Sentry": {
-      "url": "https://mcp.sentry.dev/mcp/mpotulom/taxiciti-web",
-      "type": "http"
-    },
-    "next-devtools": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "next-devtools-mcp@latest"
-      ]
-    }
-  }
+	"servers": {
+		"Sentry": {
+			"url": "https://mcp.sentry.dev/mcp/mpotulom/taxiciti-web",
+			"type": "http"
+		},
+		"next-devtools": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"next-devtools-mcp@latest"
+			],
+			"type": "stdio"
+		},
+		"TaxiCiti API Installation": {
+			"type": "http",
+			"url": "https://mcp.scalar.com/mcp/b5eabd26-75ee-47df-b227-2c5a23a8a348"
+		}
+	},
+	"inputs": []
 }

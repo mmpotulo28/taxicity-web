@@ -21,7 +21,7 @@ export class UserSystemService {
         search: '/api/user/search',
       },
       documentation: {
-        interactive: '/api-docs',
+        interactive: '/reference',
         openapi: '/api/user/openapi',
         readme: '/docs/API.md',
       },

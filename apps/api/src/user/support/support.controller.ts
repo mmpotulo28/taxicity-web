@@ -9,6 +9,18 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { ApiAuthGuard } from '../../driver/common/api-auth.guard';
 import type { AuthenticatedRequest } from '../../driver/common/api-auth.guard';
 import type {
@@ -19,10 +31,25 @@ import { UserSupportService } from './support.service';
 
 @Controller('api/user/support')
 @UseGuards(ApiAuthGuard)
+@ApiTags('User - Support')
+@ApiBearerAuth('bearerAuth')
 export class UserSupportController {
   constructor(private readonly userSupportService: UserSupportService) {}
 
   @Get()
+  @ApiOperation({
+    summary: 'List support tickets',
+    description:
+      'Returns the authenticated user support tickets with optional filters and pagination.',
+  })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'priority', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiOkResponse({ description: 'Support tickets returned successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token.' })
+  @ApiBadRequestResponse({ description: 'Invalid query parameters.' })
   listSupportTickets(
     @Req() req: AuthenticatedRequest,
     @Query('status') status?: string,
@@ -41,6 +68,13 @@ export class UserSupportController {
   }
 
   @Post()
+  @ApiOperation({
+    summary: 'Create support ticket',
+    description: 'Creates a new support ticket for the authenticated user.',
+  })
+  @ApiCreatedResponse({ description: 'Support ticket created successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token.' })
+  @ApiBadRequestResponse({ description: 'Invalid request body.' })
   createSupportTicket(
     @Req() req: AuthenticatedRequest,
     @Body() body: Record<string, unknown>,
@@ -49,6 +83,14 @@ export class UserSupportController {
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', description: 'Support ticket identifier' })
+  @ApiOperation({
+    summary: 'Get support ticket',
+    description: 'Returns support ticket details for the authenticated user.',
+  })
+  @ApiOkResponse({ description: 'Support ticket returned successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token.' })
+  @ApiNotFoundResponse({ description: 'Support ticket not found.' })
   getSupportTicket(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
@@ -57,6 +99,15 @@ export class UserSupportController {
   }
 
   @Put(':id')
+  @ApiParam({ name: 'id', description: 'Support ticket identifier' })
+  @ApiOperation({
+    summary: 'Update support ticket',
+    description: 'Updates a support ticket owned by the authenticated user.',
+  })
+  @ApiOkResponse({ description: 'Support ticket updated successfully.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token.' })
+  @ApiNotFoundResponse({ description: 'Support ticket not found.' })
+  @ApiBadRequestResponse({ description: 'Invalid request body.' })
   updateSupportTicket(
     @Req() req: AuthenticatedRequest,
     @Param('id') id: string,

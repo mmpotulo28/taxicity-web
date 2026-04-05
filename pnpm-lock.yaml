@@ -476,9 +476,15 @@ importers:
       '@nestjs/platform-socket.io':
         specifier: ^11.1.6
         version: 11.1.18(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.18)(rxjs@7.8.2)
+      '@nestjs/swagger':
+        specifier: ^11.2.6
+        version: 11.2.6(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)
       '@nestjs/websockets':
         specifier: ^11.1.6
         version: 11.1.18(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(@nestjs/platform-socket.io@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@scalar/nestjs-api-reference':
+        specifier: ^1.1.6
+        version: 1.1.6
       '@socket.io/redis-adapter':
         specifier: ^8.3.0
         version: 8.3.0(socket.io-adapter@2.5.6)
@@ -584,11 +590,11 @@ importers:
     dependencies:
       '@trigger.dev/sdk':
         specifier: 4.3.3
-        version: 4.3.3(ai@6.0.33(zod@4.3.6))(typescript@5.6.3)(zod@4.3.6)
+        version: 4.3.3(ai@6.0.33(zod@4.3.6))(typescript@5.9.3)(zod@4.3.6)
     devDependencies:
       '@trigger.dev/build':
         specifier: 4.3.3
-        version: 4.3.3(typescript@5.6.3)
+        version: 4.3.3(typescript@5.9.3)
 
   apps/driver:
     dependencies:
@@ -597,10 +603,10 @@ importers:
         version: 6.37.1(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@heroui/system':
         specifier: 2.4.22
-        version: 2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 2.4.22(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@heroui/toast':
         specifier: 2.0.16
-        version: 2.0.16(@heroui/system@2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 2.0.16(@heroui/system@2.4.22(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@sentry/nextjs':
         specifier: ^10.32.1
         version: 10.38.0(@opentelemetry/context-async-hooks@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(webpack@5.105.4(@swc/core@1.15.11(@swc/helpers@0.5.18)))
@@ -4080,6 +4086,9 @@ packages:
   '@microsoft/fetch-event-source@2.0.1':
     resolution: {integrity: sha512-W6CLUJ2eBMw3Rec70qrsEW0jOm/3twwJv21mrmj2yORiaVmVYGS4sSS5yUwvQc1ZlDLYGPnClVWmUUMagKNsfA==}
 
+  '@microsoft/tsdoc@0.16.0':
+    resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
+
   '@mrleebo/prisma-ast@0.13.1':
     resolution: {integrity: sha512-XyroGQXcHrZdvmrGJvsA9KNeOOgGMg1Vg9OlheUsBOSKznLMDl+YChxbkboRHvtFYJEMRYmlV3uoo/njCw05iw==}
     engines: {node: '>=16'}
@@ -4161,6 +4170,19 @@ packages:
       '@nestjs/websockets':
         optional: true
 
+  '@nestjs/mapped-types@2.1.0':
+    resolution: {integrity: sha512-W+n+rM69XsFdwORF11UqJahn4J3xi4g/ZEOlJNL6KoW5ygWSmBB2p0S2BZ4FQeS/NDH72e6xIcu35SfJnE8bXw==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      class-transformer: ^0.4.0 || ^0.5.0
+      class-validator: ^0.13.0 || ^0.14.0
+      reflect-metadata: ^0.1.12 || ^0.2.0
+    peerDependenciesMeta:
+      class-transformer:
+        optional: true
+      class-validator:
+        optional: true
+
   '@nestjs/platform-express@11.1.18':
     resolution: {integrity: sha512-s6GdHMTa3qx0fJewR74Xa30ysPHfBEqxIwZ7BGSTLoAEQ1vTP24urNl+b6+s49NFLEIOyeNho5fN/9/I17QlOw==}
     peerDependencies:
@@ -4178,6 +4200,23 @@ packages:
     resolution: {integrity: sha512-q9lr0wGwgBHLarD4uno3XiW4JX60WPlg2VTgbqPHl/6bT4u1IEEzj+q9Tad3bVnqL5mlDF3vrZ2tj+x13CJpmw==}
     peerDependencies:
       typescript: '>=4.8.2'
+
+  '@nestjs/swagger@11.2.6':
+    resolution: {integrity: sha512-oiXOxMQqDFyv1AKAqFzSo6JPvMEs4uA36Eyz/s2aloZLxUjcLfUMELSLSNQunr61xCPTpwEOShfmO7NIufKXdA==}
+    peerDependencies:
+      '@fastify/static': ^8.0.0 || ^9.0.0
+      '@nestjs/common': ^11.0.1
+      '@nestjs/core': ^11.0.1
+      class-transformer: '*'
+      class-validator: '*'
+      reflect-metadata: ^0.1.12 || ^0.2.0
+    peerDependenciesMeta:
+      '@fastify/static':
+        optional: true
+      class-transformer:
+        optional: true
+      class-validator:
+        optional: true
 
   '@nestjs/testing@11.1.18':
     resolution: {integrity: sha512-frzwNlpBgtAzI3hp/qo57DZoRO4RMTH1wST3QUYEhRTHyfPkLpzkWz3jV/mhApXjD0yT56Ptlzn6zuYPLh87Lw==}
@@ -4670,8 +4709,8 @@ packages:
       typescript:
         optional: true
 
-  '@prisma/config@6.19.2':
-    resolution: {integrity: sha512-kadBGDl+aUswv/zZMk9Mx0C8UZs1kjao8H9/JpI4Wh4SHZaM7zkTwiKn/iFLfRg+XtOAo/Z/c6pAYhijKl0nzQ==}
+  '@prisma/config@6.19.3':
+    resolution: {integrity: sha512-CBPT44BjlQxEt8kiMEauji2WHTDoVBOKl7UlewXmUgBPnr/oPRZC3psci5chJnYmH0ivEIog2OU9PGWoki3DLQ==}
 
   '@prisma/config@7.3.0':
     resolution: {integrity: sha512-QyMV67+eXF7uMtKxTEeQqNu/Be7iH+3iDZOQZW5ttfbSwBamCSdwPszA0dum+Wx27I7anYTPLmRmMORKViSW1A==}
@@ -5798,6 +5837,10 @@ packages:
     resolution: {integrity: sha512-efc6SJX41w4kyVpO0JnvNvvCsiQePKGLGx4bQ5yPp/8xifLrwvgZM1O3AglQq+pxrb0olR928+PINEkBBF+MLg==}
     engines: {node: '>=20'}
 
+  '@scalar/core@0.4.6':
+    resolution: {integrity: sha512-lIlCUx0O18ei63j7Z7QTAVAuh66sdms9zoDPhpDOzHTVObnb7n0f3J306sT3H9KQsoWKQrEsnKx4LcZLw/TlPw==}
+    engines: {node: '>=22'}
+
   '@scalar/draggable@0.3.0':
     resolution: {integrity: sha512-T/79XY5HGNo9Lte7wlnrH393zjiulom4HuwW4u8RtaafWxIdtXykD2+TgiO0KTreyzCrWyWrESqiqKKJMe2nKg==}
     engines: {node: '>=20'}
@@ -5805,6 +5848,10 @@ packages:
   '@scalar/helpers@0.2.10':
     resolution: {integrity: sha512-VS32setBEAGY9JifuDZKHIq8SUCUWLEfL1V+h3s5V4wcmE8OZVkzaJemsMq/YAM9e7gb9ZbkvJLL4zzEvPSrVg==}
     engines: {node: '>=20'}
+
+  '@scalar/helpers@0.4.3':
+    resolution: {integrity: sha512-Gv2V7SFreLx3DltzF2lKXdaJSH5cP1LOyt9PxON1cSWGxkrs3sg93c1taEJsW24E9ckfYXkL5hjCAVLfAN3wQw==}
+    engines: {node: '>=22'}
 
   '@scalar/icons@0.5.2':
     resolution: {integrity: sha512-jN0qXmaR1zGW9vZ5HUkhD1StM+52t+GONYstbo199h7tDYSsY+oWxtkuYqdWESiNg1VtNyJ9PruMmTi/PVyq/A==}
@@ -5817,6 +5864,10 @@ packages:
   '@scalar/json-magic@0.9.5':
     resolution: {integrity: sha512-+IZngReH0P+ima7y9u/f5QJD60AdISG81ezhwEVrYhsp46PiJp7YyOd0z1YLiOgwV0jkPlPo74T/FVBcM2ejuw==}
     engines: {node: '>=20'}
+
+  '@scalar/nestjs-api-reference@1.1.6':
+    resolution: {integrity: sha512-v1TT+1wKWUO7sGcDyIegs23JNIu/V/+xcdFXMFEHoYn9Hak58ae9OdR4TmigfQEdFD69jsfurBtOhofCaVCrgQ==}
+    engines: {node: '>=22'}
 
   '@scalar/oas-utils@0.6.32':
     resolution: {integrity: sha512-YODrtQJkfm2XHd6sSa51viydJKWlRAN7ydDh452iZGMIPsdvZF7T1gpBH0VsVPCcp/q8uMx3zMov6v8p13Ponw==}
@@ -5861,6 +5912,10 @@ packages:
     resolution: {integrity: sha512-2u/pZTauRLoUDD2PpJF8XDflZX3PgaYSD72cFDBL1WVM/jb0IxoWggxWKm34OR03LnNYbTvXlwfyr2QZ0hm3Xg==}
     engines: {node: '>=20'}
 
+  '@scalar/types@0.7.6':
+    resolution: {integrity: sha512-n5d7neeGTY/yS36AwAv3FAyCnJbbLjMPwyuEXBLgxHcb5i8DXnNfwy1nzz8jx/EJ88i1zmQ8BuMs+207saHgNA==}
+    engines: {node: '>=22'}
+
   '@scalar/use-codemirror@0.13.29':
     resolution: {integrity: sha512-7WuoPl/u3X7mTHTEkxMCyvFirsevVnvldTykavYvHWSdbjL4ZX1HuFz7jRqtA4rjCEF6aMxyhmR/2k/bgMdVGQ==}
     engines: {node: '>=20'}
@@ -5876,6 +5931,9 @@ packages:
   '@scalar/workspace-store@0.28.1':
     resolution: {integrity: sha512-0siWAIjo6/wphvNLBsJb+HqPD5arH9HkOZn//zvpU2222razTqVlocrHIVh20GS3iKFIIADEroZcD49hKnIphA==}
     engines: {node: '>=18'}
+
+  '@scarf/scarf@1.4.0':
+    resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
 
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
@@ -8093,6 +8151,9 @@ packages:
 
   effect@3.18.4:
     resolution: {integrity: sha512-b1LXQJLe9D11wfnOKAk3PKxuqYshQ0Heez+y5pnkd3jLj1yx9QhM72zZ9uUrOQyNvrs2GZZd/3maL0ZV18YuDA==}
+
+  effect@3.21.0:
+    resolution: {integrity: sha512-PPN80qRokCd1f015IANNhrwOnLO7GrrMQfk4/lnZRE/8j7UPWrNNjPV0uBrZutI/nHzernbW+J0hdqQysHiSnQ==}
 
   electron-to-chromium@1.5.286:
     resolution: {integrity: sha512-9tfDXhJ4RKFNerfjdCcZfufu49vg620741MNs26a9+bhLThdB+plgMeou98CAaHu/WATj2iHOOHTp1hWtABj2A==}
@@ -10440,8 +10501,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  mlly@1.8.0:
-    resolution: {integrity: sha512-l8D9ODSRWLe2KHJSifWGwBqpTZXIXTeo8mlKjY+E2HAakaTeNpqAyBZ8GSqLzHgw4XmHmC8whvpjJNMbFZN7/g==}
+  mlly@1.8.2:
+    resolution: {integrity: sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==}
 
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
@@ -10824,6 +10885,9 @@ packages:
   path-scurry@2.0.2:
     resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
     engines: {node: 18 || 20 || >=22}
+
+  path-to-regexp@8.3.0:
+    resolution: {integrity: sha512-7jdwVIRtsP8MYpdXSwOS0YdD0Du+qOoF/AEPIt88PcCFrZCzx41oxku1jD88hZBwbNUIEfpqvuhjFaMAqMTWnA==}
 
   path-to-regexp@8.4.2:
     resolution: {integrity: sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA==}
@@ -11997,6 +12061,9 @@ packages:
   svg-pathdata@6.0.3:
     resolution: {integrity: sha512-qsjeeq5YjBZ5eMdFuUa4ZosMLxgr5RZ+F+Y1OrDhuOCEInRMA3x74XdBtggJcj9kOeInz0WE+LgCPDkZFlBYJw==}
     engines: {node: '>=12.0.0'}
+
+  swagger-ui-dist@5.31.0:
+    resolution: {integrity: sha512-zSUTIck02fSga6rc0RZP3b7J7wgHXwLea8ZjgLA3Vgnb8QeOl3Wou2/j5QkzSGeoz6HusP/coYuJl33aQxQZpg==}
 
   swr@2.3.4:
     resolution: {integrity: sha512-bYd2lrhc+VarcpkgWclcUi92wYCpOgMws9Sd1hG1ntAu0NEy+14CbotuFjshBU2kt9rYj9TSmDcybpxpeTU1fg==}
@@ -15705,6 +15772,17 @@ snapshots:
     transitivePeerDependencies:
       - framer-motion
 
+  '@heroui/spinner@2.2.23(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@heroui/shared-utils': 2.1.11
+      '@heroui/system': 2.4.22(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@heroui/system-rsc': 2.3.19(@heroui/theme@2.4.26(tailwindcss@4.1.11))(react@19.2.3)
+      '@heroui/theme': 2.4.26(tailwindcss@4.1.11)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+    transitivePeerDependencies:
+      - framer-motion
+
   '@heroui/spinner@2.2.27(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@heroui/shared-utils': 2.1.12
@@ -15753,6 +15831,13 @@ snapshots:
       clsx: 1.2.1
       react: 19.2.3
 
+  '@heroui/system-rsc@2.3.19(@heroui/theme@2.4.26(tailwindcss@4.1.11))(react@19.2.3)':
+    dependencies:
+      '@heroui/theme': 2.4.26(tailwindcss@4.1.11)
+      '@react-types/shared': 3.32.0(react@19.2.3)
+      clsx: 1.2.1
+      react: 19.2.3
+
   '@heroui/system-rsc@2.3.22(@heroui/theme@2.4.26(tailwindcss@4.1.11))(react@19.2.3)':
     dependencies:
       '@heroui/theme': 2.4.26(tailwindcss@4.1.11)
@@ -15763,6 +15848,19 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.13(react@19.2.3)
       '@heroui/system-rsc': 2.3.19(@heroui/theme@2.4.22(tailwindcss@4.1.11))(react@19.2.3)
+      '@react-aria/i18n': 3.12.12(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@react-aria/overlays': 3.29.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@react-aria/utils': 3.30.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      framer-motion: 11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+    transitivePeerDependencies:
+      - '@heroui/theme'
+
+  '@heroui/system@2.4.22(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@heroui/react-utils': 2.1.13(react@19.2.3)
+      '@heroui/system-rsc': 2.3.19(@heroui/theme@2.4.26(tailwindcss@4.1.11))(react@19.2.3)
       '@react-aria/i18n': 3.12.12(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@react-aria/overlays': 3.29.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@react-aria/utils': 3.30.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -15892,6 +15990,22 @@ snapshots:
       '@heroui/spinner': 2.2.23(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@heroui/system': 2.4.22(@heroui/theme@2.4.22(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@heroui/theme': 2.4.22(tailwindcss@4.1.11)
+      '@heroui/use-is-mobile': 2.2.12(react@19.2.3)
+      '@react-aria/interactions': 3.25.5(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@react-aria/toast': 3.0.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@react-stately/toast': 3.1.2(react@19.2.3)
+      framer-motion: 11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+
+  '@heroui/toast@2.0.16(@heroui/system@2.4.22(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@heroui/react-utils': 2.1.13(react@19.2.3)
+      '@heroui/shared-icons': 2.1.10(react@19.2.3)
+      '@heroui/shared-utils': 2.1.11
+      '@heroui/spinner': 2.2.23(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@heroui/system': 2.4.22(@heroui/theme@2.4.26(tailwindcss@4.1.11))(framer-motion@11.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@heroui/theme': 2.4.26(tailwindcss@4.1.11)
       '@heroui/use-is-mobile': 2.2.12(react@19.2.3)
       '@react-aria/interactions': 3.25.5(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@react-aria/toast': 3.0.7(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -17000,6 +17114,8 @@ snapshots:
 
   '@microsoft/fetch-event-source@2.0.1': {}
 
+  '@microsoft/tsdoc@0.16.0': {}
+
   '@mrleebo/prisma-ast@0.13.1':
     dependencies:
       chevrotain: 10.5.0
@@ -17085,6 +17201,11 @@ snapshots:
       '@nestjs/platform-express': 11.1.18(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)
       '@nestjs/websockets': 11.1.18(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(@nestjs/platform-socket.io@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
 
+  '@nestjs/mapped-types@2.1.0(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)':
+    dependencies:
+      '@nestjs/common': 11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      reflect-metadata: 0.2.2
+
   '@nestjs/platform-express@11.1.18(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)':
     dependencies:
       '@nestjs/common': 11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -17119,6 +17240,18 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - chokidar
+
+  '@nestjs/swagger@11.2.6(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(reflect-metadata@0.2.2)':
+    dependencies:
+      '@microsoft/tsdoc': 0.16.0
+      '@nestjs/common': 11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.18(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.18)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/mapped-types': 2.1.0(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)
+      js-yaml: 4.1.1
+      lodash: 4.17.23
+      path-to-regexp: 8.3.0
+      reflect-metadata: 0.2.2
+      swagger-ui-dist: 5.31.0
 
   '@nestjs/testing@11.1.18(@nestjs/common@11.1.18(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(@nestjs/platform-express@11.1.18)':
     dependencies:
@@ -17648,11 +17781,11 @@ snapshots:
       prisma: 7.4.0(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.6.3)
       typescript: 5.6.3
 
-  '@prisma/config@6.19.2':
+  '@prisma/config@6.19.3':
     dependencies:
       c12: 3.1.0
       deepmerge-ts: 7.1.5
-      effect: 3.18.4
+      effect: 3.21.0
       empathic: 2.0.0
     transitivePeerDependencies:
       - magicast
@@ -19360,10 +19493,10 @@ snapshots:
 
   '@rushstack/eslint-patch@1.15.0': {}
 
-  '@s2-dev/streamstore@0.17.3(typescript@5.6.3)':
+  '@s2-dev/streamstore@0.17.3(typescript@5.9.3)':
     dependencies:
       '@protobuf-ts/runtime': 2.11.1
-      typescript: 5.6.3
+      typescript: 5.9.3
 
   '@scalar/agent-chat@0.4.8(axios@1.13.4)(tailwindcss@4.1.11)(typescript@5.6.3)':
     dependencies:
@@ -19567,6 +19700,10 @@ snapshots:
       - supports-color
       - typescript
 
+  '@scalar/core@0.4.6':
+    dependencies:
+      '@scalar/types': 0.7.6
+
   '@scalar/draggable@0.3.0(typescript@5.6.3)':
     dependencies:
       vue: 3.5.27(typescript@5.6.3)
@@ -19574,6 +19711,8 @@ snapshots:
       - typescript
 
   '@scalar/helpers@0.2.10': {}
+
+  '@scalar/helpers@0.4.3': {}
 
   '@scalar/icons@0.5.2(typescript@5.6.3)':
     dependencies:
@@ -19593,6 +19732,10 @@ snapshots:
     dependencies:
       '@scalar/helpers': 0.2.10
       yaml: 2.8.2
+
+  '@scalar/nestjs-api-reference@1.1.6':
+    dependencies:
+      '@scalar/core': 0.4.6
 
   '@scalar/oas-utils@0.6.32(typescript@5.6.3)':
     dependencies:
@@ -19677,6 +19820,13 @@ snapshots:
       type-fest: 5.4.3
       zod: 4.3.6
 
+  '@scalar/types@0.7.6':
+    dependencies:
+      '@scalar/helpers': 0.4.3
+      nanoid: 5.1.6
+      type-fest: 5.4.3
+      zod: 4.3.6
+
   '@scalar/use-codemirror@0.13.29(typescript@5.6.3)':
     dependencies:
       '@codemirror/autocomplete': 6.20.0
@@ -19736,6 +19886,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
       - typescript
+
+  '@scarf/scarf@1.4.0': {}
 
   '@sec-ant/readable-stream@0.4.1': {}
 
@@ -20200,15 +20352,15 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
-  '@trigger.dev/build@4.3.3(typescript@5.6.3)':
+  '@trigger.dev/build@4.3.3(typescript@5.9.3)':
     dependencies:
-      '@prisma/config': 6.19.2
-      '@trigger.dev/core': 4.3.3(typescript@5.6.3)
-      mlly: 1.8.0
+      '@prisma/config': 6.19.3
+      '@trigger.dev/core': 4.3.3(typescript@5.9.3)
+      mlly: 1.8.2
       pkg-types: 1.3.1
       resolve: 1.22.11
       tinyglobby: 0.2.15
-      tsconfck: 3.1.3(typescript@5.6.3)
+      tsconfck: 3.1.3(typescript@5.9.3)
     transitivePeerDependencies:
       - bufferutil
       - magicast
@@ -20216,7 +20368,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@trigger.dev/core@4.3.3(typescript@5.6.3)':
+  '@trigger.dev/core@4.3.3(typescript@5.9.3)':
     dependencies:
       '@bugsnag/cuid': 3.2.1
       '@electric-sql/client': 1.0.14
@@ -20233,7 +20385,7 @@ snapshots:
       '@opentelemetry/sdk-trace-base': 2.0.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-node': 2.0.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.36.0
-      '@s2-dev/streamstore': 0.17.3(typescript@5.6.3)
+      '@s2-dev/streamstore': 0.17.3(typescript@5.9.3)
       dequal: 2.0.3
       eventsource: 3.0.7
       eventsource-parser: 3.0.6
@@ -20257,11 +20409,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@trigger.dev/sdk@4.3.3(ai@6.0.33(zod@4.3.6))(typescript@5.6.3)(zod@4.3.6)':
+  '@trigger.dev/sdk@4.3.3(ai@6.0.33(zod@4.3.6))(typescript@5.9.3)(zod@4.3.6)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/semantic-conventions': 1.36.0
-      '@trigger.dev/core': 4.3.3(typescript@5.6.3)
+      '@trigger.dev/core': 4.3.3(typescript@5.9.3)
       chalk: 5.6.2
       cronstrue: 2.59.0
       debug: 4.4.3
@@ -22257,6 +22409,11 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
 
+  effect@3.21.0:
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      fast-check: 3.23.2
+
   electron-to-chromium@1.5.286: {}
 
   emittery@0.13.1: {}
@@ -23260,7 +23417,7 @@ snapshots:
   fix-dts-default-cjs-exports@1.0.1:
     dependencies:
       magic-string: 0.30.21
-      mlly: 1.8.0
+      mlly: 1.8.2
       rollup: 4.57.1
 
   flat-cache@4.0.1:
@@ -25482,7 +25639,7 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
-  mlly@1.8.0:
+  mlly@1.8.2:
     dependencies:
       acorn: 8.16.0
       pathe: 2.0.3
@@ -25882,6 +26039,8 @@ snapshots:
       lru-cache: 11.2.5
       minipass: 7.1.3
 
+  path-to-regexp@8.3.0: {}
+
   path-to-regexp@8.4.2: {}
 
   path-type@4.0.0: {}
@@ -25989,7 +26148,7 @@ snapshots:
   pkg-types@1.3.1:
     dependencies:
       confbox: 0.1.8
-      mlly: 1.8.0
+      mlly: 1.8.2
       pathe: 2.0.3
 
   pkg-types@2.3.0:
@@ -27328,6 +27487,10 @@ snapshots:
   svg-pathdata@6.0.3:
     optional: true
 
+  swagger-ui-dist@5.31.0:
+    dependencies:
+      '@scarf/scarf': 1.4.0
+
   swr@2.3.4(react@19.2.3):
     dependencies:
       dequal: 2.0.3
@@ -27574,9 +27737,9 @@ snapshots:
 
   tsafe@1.8.12: {}
 
-  tsconfck@3.1.3(typescript@5.6.3):
+  tsconfck@3.1.3(typescript@5.9.3):
     optionalDependencies:
-      typescript: 5.6.3
+      typescript: 5.9.3
 
   tsconfig-paths-webpack-plugin@4.2.0:
     dependencies:

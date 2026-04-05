@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "../lib/utils";
+import { cn } from "@taxiciti/utils";
 import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
