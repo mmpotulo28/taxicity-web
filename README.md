@@ -192,6 +192,13 @@ docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxi
 docker push mmpotulo28/taxiciti-driver:latest
 ```
 
+**API App (ECS/App Runner):**
+
+```bash
+docker build --platform linux/amd64 -f apps/api/Dockerfile -t mmpotulo28/taxiciti-api:latest .
+docker push mmpotulo28/taxiciti-api:latest
+```
+
 **Websocket Server:**
 
 ```bash
