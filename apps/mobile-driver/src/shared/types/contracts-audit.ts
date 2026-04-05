@@ -58,7 +58,7 @@ export interface SocketContract<TPayload = unknown, TAck = unknown> {
 }
 
 export type DriverSocketChecklist = {
-  requestsSync: SocketContract<{}, DriverRequest[]>;
+  requestsSync: SocketContract<Record<string, never>, DriverRequest[]>;
   accept: SocketContract<{ requestId: string }, DriverRequest>;
   decline: SocketContract<{ requestId: string }, { success: boolean }>;
   statusUpdate: SocketContract<{ rideId: string; status: TripStatus }, DriverRequest>;

@@ -8,7 +8,7 @@ export interface SocketAck<TData> {
 
 export interface DriverSocketContracts {
   "driver-requests-sync": {
-    payload: {};
+    payload: Record<string, never>;
     ack: DriverRequest[];
   };
   "ride-accepted": {

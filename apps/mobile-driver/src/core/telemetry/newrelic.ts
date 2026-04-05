@@ -9,5 +9,16 @@ export function initNewRelic() {
     return;
   }
 
-  NewRelic.startAgent(token);
+  NewRelic.startAgent(token, {
+    analyticsEventEnabled: true,
+    networkRequestEnabled: true,
+    crashReportingEnabled: true,
+    interactionTracingEnabled: true,
+    loggingEnabled: false,
+    webViewInstrumentation: false,
+    fedRampEnabled: false,
+    offlineStorageEnabled: true,
+    newEventSystemEnabled: true,
+    distributedTracingEnabled: true
+  });
 }
