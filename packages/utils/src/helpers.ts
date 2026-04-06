@@ -18,3 +18,7 @@ export const getHost = (app: "user" | "driver") => {
 	console.log("Using host:", host);
 	return host;
 };
+
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}

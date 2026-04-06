@@ -1,4 +1,5 @@
 import { apiClient } from "../../../core/api/client";
+import { isRecord } from "@taxiciti/utils";
 import type { TripHistoryItemDto, TripRatingPayloadDto } from "../dto/trip-history.dto";
 
 interface RawDriver {
@@ -30,10 +31,6 @@ interface RawTrip {
 	taxiId?: string;
 	taxi?: RawTaxi;
 	route?: RawRoute;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
 }
 
 function pickTripArray(payload: unknown): RawTrip[] {

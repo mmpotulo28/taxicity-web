@@ -1,9 +1,5 @@
 import { io, type Socket } from "socket.io-client";
-
-const REALTIME_EVENTS = {
-TRIP_UPDATED: "trip-updated",
-NEW_MESSAGE: "new-message",
-} as const;
+import { EVENTS } from "@taxiciti/utils";
 
 export interface SocketConfig {
 url: string;
@@ -17,8 +13,8 @@ status: string;
 }
 
 export interface RealtimeEvents {
-[REALTIME_EVENTS.TRIP_UPDATED]: TripUpdatedPayload;
-[REALTIME_EVENTS.NEW_MESSAGE]: { message: string; tripId: string };
+	[EVENTS.TRIP_UPDATED]: TripUpdatedPayload;
+	[EVENTS.NEW_MESSAGE]: { message: string; tripId: string };
 }
 
 export class SocketAdapter {

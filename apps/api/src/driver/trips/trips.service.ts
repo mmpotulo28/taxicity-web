@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { prisma, redis } from '@taxiciti/database';
-import { pusherServer } from '@taxiciti/utils';
+import { EVENTS, pusherServer } from '@taxiciti/utils';
 import type { AuthenticatedUser } from '../common/api-auth.guard';
 import type {
   AcceptedPassengerDto,
@@ -378,7 +378,7 @@ export class DriverTripsService {
 
     await pusherServer.trigger(
       `trip-${passengerTripId}`,
-      'trip-updated',
+      EVENTS.TRIP_UPDATED,
       updatedPassengerTrip,
     );
 

@@ -1,4 +1,5 @@
 import * as SecureStore from "expo-secure-store";
+import { isRecord } from "@taxiciti/utils";
 
 const SETTINGS_KEY = "mobile-user:settings-preferences";
 
@@ -15,10 +16,6 @@ export const defaultUserSettingsPreferences: UserSettingsPreferences = {
 	shareTripDataEnabled: false,
 	locationTrackingEnabled: true,
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
 
 function toBoolean(value: unknown, fallback: boolean): boolean {
 	return typeof value === "boolean" ? value : fallback;

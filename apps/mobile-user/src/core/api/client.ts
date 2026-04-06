@@ -5,6 +5,7 @@ identityResponseInterceptor,
 type RequestInterceptor,
 type ResponseInterceptor,
 } from "./interceptors";
+import { isRecord } from "@taxiciti/utils";
 
 const DEFAULT_API_ORIGIN = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3006";
 
@@ -23,10 +24,6 @@ return path;
 
 const normalized = DEFAULT_API_ORIGIN.replace(/\/$/, "");
 return path.startsWith("/") ? `${normalized}${path}` : `${normalized}/${path}`;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-return typeof value === "object" && value !== null;
 }
 
 async function parseJsonSafe(response: Response): Promise<unknown> {
