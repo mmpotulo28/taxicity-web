@@ -111,7 +111,12 @@ export async function getRideTaxis(): Promise<TaxiDto[]> {
 
 export async function requestRide(payload: RideRequestDto): Promise<RideRequestResponseDto> {
 	const response = await apiClient.post<ApiEnvelope<never>, RideRequestDto>("/api/user/trips", payload);
-	return response.trip || {
+	const nestedTrip =
+		typeof response.data === "object" && response.data !== null && "trip" in response.data
+			? (response.data as { trip?: RideRequestResponseDto }).trip
+			: undefined;
+	const directTrip = typeof response === "object" && response !== null && "id" in response ? (response as RideRequestResponseDto) : undefined;
+	return response.trip || nestedTrip || directTrip || {
 		id: "",
 		status: "requested",
 		requestTime: new Date().toISOString(),
