@@ -109,8 +109,7 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
 
 export const PHASE0_BLOCKERS: string[] = [
   "TODO(contract): confirm explicit ride-declined socket event and fallback HTTP endpoint for declined requests",
-  "TODO(contract): confirm server ack SLA and retry contract for driver-location publishes",
-  "TODO(contract): confirm canonical shift mode enum and persistence for ROAMING vs QUEUE"
+  "TODO(contract): confirm server ack SLA and retry contract for driver-location publishes"
 ];
 
 export type _ContractSanity = VehicleTrip;

@@ -10,7 +10,6 @@ export async function fetchActiveShift() {
 }
 
 export async function startShift(input: ShiftStartInput) {
-  // TODO(contract): backend shift start mode support to be confirmed for ROAMING vs QUEUE persistence.
   return apiClient.post<VehicleTrip, { taxiId: string; routeId: string }>(
     "/api/driver/trips/vehicle",
     {

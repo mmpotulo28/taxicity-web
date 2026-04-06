@@ -60,7 +60,6 @@ export interface VehicleTrip {
 export interface ShiftStartInput {
   taxiId: string;
   routeId: string;
-  mode: "ROAMING" | "QUEUE";
 }
 
 export interface DriverLocationPayload {

@@ -10,7 +10,7 @@ export default function ShiftStartScreen() {
   const startShift = useStartShift();
 
   const onStart = async () => {
-    await startShift.mutateAsync({ taxiId, routeId, mode: "ROAMING" });
+    await startShift.mutateAsync({ taxiId, routeId });
     router.replace("/(shift)/active");
   };
 
