@@ -29,7 +29,7 @@ const appConfig: ExpoConfig = {
     image: "./assets/splash.png",
     resizeMode: "contain",
     backgroundColor: "#000000",
-    imageWith: 150
+    imageWidth: 150
   },
   ios: {
     supportsTablet: false,
