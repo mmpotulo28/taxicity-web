@@ -19,6 +19,10 @@ export interface DriverSocketContracts {
     payload: { rideId: string; status: TripStatus };
     ack: DriverRequest;
   };
+  "ride-declined": {
+    payload: { requestId: string };
+    ack: { success: boolean; requestId?: string };
+  };
   "driver-location": {
     payload: DriverLocationPayload;
     ack: { success: boolean };
