@@ -96,8 +96,8 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
     event: "driver-location",
     payloadType: { taxiId: "", lat: 0, lng: 0 },
     ackType: { success: true },
-    source: "apps/driver/context/DriverContext.tsx",
-    todo: "TODO(contract): backend ack currently fire-and-forget in web flow, explicit ack timeout contract required"
+    source: "apps/api/src/realtime/gateway/realtime.gateway.ts (handleDriverLocation fire-and-forget), apps/mobile-driver/src/shared/utils/location-publisher.ts",
+    todo: "TODO(contract): backend has no explicit ack for driver-location; introduce ack callback contract before relying on emitWithAck"
   },
   queueJoin: {
     event: "driver-queue-join",
@@ -109,7 +109,7 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
 
 export const PHASE0_BLOCKERS: string[] = [
   "TODO(contract): align decline behavior by adding backend explicit decline socket or use local-only remove behavior",
-  "TODO(contract): confirm server ack SLA and retry contract for driver-location publishes"
+  "TODO(contract): define backend ack callback contract for driver-location if delivery guarantees/retry semantics are required"
 ];
 
 export type _ContractSanity = VehicleTrip;

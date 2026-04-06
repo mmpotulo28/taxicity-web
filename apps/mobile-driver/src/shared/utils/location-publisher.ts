@@ -2,7 +2,7 @@ import { AppState } from "react-native";
 import type { LocationObject, LocationSubscription } from "expo-location";
 
 import { startAdaptiveTracking, type TrackingCadence } from "../../core/location/tracking";
-import { emitWithAck } from "../../core/socket/client";
+import { emitWithoutAck } from "../../core/socket/client";
 import { logger } from "../../core/telemetry/logger";
 
 let subscription: LocationSubscription | null = null;
@@ -13,7 +13,7 @@ function normalizeCadence(): TrackingCadence {
 
 async function publishLocation(location: LocationObject, taxiId: string) {
   try {
-    await emitWithAck("driver-location", {
+    await emitWithoutAck("driver-location", {
       taxiId,
       lat: location.coords.latitude,
       lng: location.coords.longitude,

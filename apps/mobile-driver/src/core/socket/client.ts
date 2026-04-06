@@ -55,3 +55,11 @@ export async function emitWithAck<TEvent extends keyof DriverSocketContracts>(
     });
   });
 }
+
+export async function emitWithoutAck<TEvent extends keyof DriverSocketContracts>(
+  event: TEvent,
+  payload: DriverSocketContracts[TEvent]["payload"]
+): Promise<void> {
+  const socket = await getDriverSocket();
+  socket.emit(event, payload);
+}
