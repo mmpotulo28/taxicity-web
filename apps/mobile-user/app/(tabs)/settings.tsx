@@ -1,7 +1,7 @@
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import { useUserSettingsPreferences } from "../../src/features/settings/hooks/use-user-settings-preferences";
 
 export default function SettingsTabScreen() {
@@ -28,12 +28,24 @@ export default function SettingsTabScreen() {
 	};
 
 	const handleResetPreferences = async () => {
-		try {
-			await resetPreferences();
-			setResetStatus("done");
-		} catch {
-			setResetStatus("error");
-		}
+		Alert.alert("Reset Preferences", "This will restore all notification and privacy settings to defaults.", [
+			{
+				text: "Cancel",
+				style: "cancel",
+			},
+			{
+				text: "Reset",
+				style: "destructive",
+				onPress: async () => {
+					try {
+						await resetPreferences();
+						setResetStatus("done");
+					} catch {
+						setResetStatus("error");
+					}
+				},
+			},
+		]);
 	};
 
 	return (

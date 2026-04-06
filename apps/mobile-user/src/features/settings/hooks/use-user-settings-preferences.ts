@@ -52,13 +52,21 @@ export function useUserSettingsPreferences() {
 		await updatePreferences(defaultUserSettingsPreferences);
 	}, [updatePreferences]);
 
+	const retrySave = useCallback(async () => {
+		if (!preferences) {
+			return;
+		}
+		await updatePreferences(preferences);
+	}, [preferences, updatePreferences]);
+
 	return useMemo(
 		() => ({
 			preferences,
 			saveStatus,
 			togglePreference,
 			resetPreferences,
+			retrySave,
 		}),
-		[preferences, resetPreferences, saveStatus, togglePreference]
+		[preferences, resetPreferences, retrySave, saveStatus, togglePreference]
 	);
 }

@@ -3,7 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useUserSettingsPreferences } from "../../src/features/settings/hooks/use-user-settings-preferences";
 
 export default function PrivacyScreen() {
-	const { preferences, saveStatus, togglePreference } = useUserSettingsPreferences();
+	const { preferences, saveStatus, togglePreference, retrySave } = useUserSettingsPreferences();
 
 	return (
 		<View className='flex-1 justify-center bg-black px-6'>
@@ -30,7 +30,12 @@ export default function PrivacyScreen() {
 			) : null}
 			{saveStatus === "saving" ? <Text className='mb-4 text-neutral-400'>Saving privacy controls...</Text> : null}
 			{saveStatus === "saved" ? <Text className='mb-4 text-brand'>Privacy controls saved.</Text> : null}
-			{saveStatus === "error" ? <Text className='mb-4 text-red-300'>Failed to save privacy controls. Try again.</Text> : null}
+			{saveStatus === "error" ? <Text className='mb-2 text-red-300'>Failed to save privacy controls. Try again.</Text> : null}
+			{saveStatus === "error" ? (
+				<Pressable className='mb-4 rounded-md border border-red-300 px-5 py-4' onPress={retrySave}>
+					<Text className='text-red-300'>Retry Save</Text>
+				</Pressable>
+			) : null}
 			<Pressable className='rounded-md border border-neutral-700 px-5 py-4' onPress={() => router.push("/(tabs)/settings")}>
 				<Text className='text-white'>Return to Settings</Text>
 			</Pressable>
