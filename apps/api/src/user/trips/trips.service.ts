@@ -8,6 +8,7 @@ import { prisma } from '@taxiciti/database';
 import type { AuthenticatedRequest } from '../../driver/common/api-auth.guard';
 import type {
   EntityDto,
+  TripsListResponseDto,
   TripsBoardRideResponseDto,
 } from '../common/user-api.dto';
 import { UserApiHelpers } from '../common/user-api.helpers';
@@ -30,22 +31,39 @@ export class UserTripsService {
     });
   }
 
-  listTrips(req: AuthenticatedRequest): Promise<EntityDto[]> {
+  listTrips(
+    req: AuthenticatedRequest,
+    query: Record<string, string | undefined> = {},
+  ): Promise<TripsListResponseDto> {
     const userId = this.userApiHelpers.getUserId(req);
+    const paging = this.userApiHelpers.parsePaging(query.page, query.limit);
 
-    return prisma.trip.findMany({
-      where: { userId },
-      orderBy: { requestTime: 'desc' },
-      include: {
-        route: true,
-        taxi: {
-          include: {
-            driver: true,
+    return Promise.all([
+      prisma.trip.findMany({
+        where: { userId },
+        orderBy: { requestTime: 'desc' },
+        include: {
+          route: true,
+          taxi: {
+            include: {
+              driver: true,
+            },
           },
+          rank: true,
         },
-        rank: true,
+        skip: paging.skip,
+        take: paging.limit,
+      }),
+      prisma.trip.count({ where: { userId } }),
+    ]).then(([trips, total]) => ({
+      trips,
+      pagination: {
+        page: paging.page,
+        limit: paging.limit,
+        total,
+        pages: Math.ceil(total / paging.limit),
       },
-    });
+    }));
   }
 
   async getTrip(req: AuthenticatedRequest, id: string): Promise<EntityDto> {

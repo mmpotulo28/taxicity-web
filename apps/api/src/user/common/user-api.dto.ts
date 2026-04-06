@@ -36,6 +36,11 @@ export interface TripsBoardRideResponseDto {
   trip: EntityDto;
 }
 
+export interface TripsListResponseDto {
+  trips: EntityDto[];
+  pagination: ApiPaginationDto;
+}
+
 export interface DriversListResponseDto {
   drivers: EntityDto[];
   pagination: ApiPaginationDto;

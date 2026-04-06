@@ -33,6 +33,23 @@ interface RawTrip {
 	route?: RawRoute;
 }
 
+interface RawPagination {
+	page?: number;
+	limit?: number;
+	total?: number;
+	pages?: number;
+}
+
+interface RawTripsListPayload {
+	trips?: RawTrip[];
+	data?: RawTrip[] | { trips?: RawTrip[] };
+	pagination?: RawPagination;
+}
+
+function isRawTrip(value: unknown): value is RawTrip {
+	return isRecord(value) && typeof value.id === "string";
+}
+
 function pickTripArray(payload: unknown): RawTrip[] {
 	if (!isRecord(payload)) {
 		return [];
@@ -79,13 +96,22 @@ function mapTrip(raw: RawTrip): TripHistoryItemDto {
 }
 
 export async function getTripHistory(): Promise<TripHistoryItemDto[]> {
-	const payload = await apiClient.get<unknown>("/api/user/trips");
+	const payload = await apiClient.get<RawTripsListPayload>("/api/user/trips");
 	return pickTripArray(payload).map(mapTrip);
 }
 
 export async function getTripById(tripId: string): Promise<TripHistoryItemDto | null> {
-	const history = await getTripHistory();
-	return history.find((trip) => trip.id === tripId) || null;
+	const payload = await apiClient.get<unknown>(`/api/user/trips/${tripId}`);
+	if (!isRecord(payload)) {
+		return null;
+	}
+	if ("id" in payload && typeof payload.id === "string") {
+		return isRawTrip(payload) ? mapTrip(payload) : null;
+	}
+	if (isRecord(payload.data) && "id" in payload.data && typeof payload.data.id === "string") {
+		return isRawTrip(payload.data) ? mapTrip(payload.data) : null;
+	}
+	return null;
 }
 
 export async function submitTripRating(tripId: string, payload: TripRatingPayloadDto): Promise<void> {

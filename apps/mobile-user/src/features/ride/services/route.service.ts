@@ -1,5 +1,9 @@
 import { apiClient } from "../../../core/api/client";
-import type { RouteDto, RoutesResponseDto } from "../dto/route.dto";
+import type { RouteDto } from "../dto/ride-funnel.dto";
+
+interface RoutesResponseDto {
+	routes: RouteDto[];
+}
 
 interface RawRoute {
 id: string;

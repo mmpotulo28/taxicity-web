@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -22,6 +24,7 @@ import { ApiAuthGuard } from '../../driver/common/api-auth.guard';
 import type { AuthenticatedRequest } from '../../driver/common/api-auth.guard';
 import type {
   EntityDto,
+  TripsListResponseDto,
   TripsBoardRideResponseDto,
 } from '../common/user-api.dto';
 import { UserTripsService } from './trips.service';
@@ -48,12 +51,18 @@ export class UserTripsController {
   @ApiOperation({
     summary: 'List current user trips',
     description:
-      'Returns trips for the authenticated user ordered by request time.',
+      'Returns paginated trips for the authenticated user ordered by request time.',
   })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   @ApiOkResponse({ description: 'Trips returned successfully.' })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token.' })
-  listTrips(@Req() req: AuthenticatedRequest): Promise<EntityDto[]> {
-    return this.userTripsService.listTrips(req);
+  listTrips(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<TripsListResponseDto> {
+    return this.userTripsService.listTrips(req, { page, limit });
   }
 
   @Get('trips/:id')

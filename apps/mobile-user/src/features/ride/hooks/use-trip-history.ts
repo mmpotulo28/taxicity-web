@@ -6,6 +6,8 @@ export function useTripHistory() {
 	const tripsQuery = useQuery({
 		queryKey: ["mobile-user", "trip-history"],
 		queryFn: getTripHistory,
+		staleTime: 30_000,
+		gcTime: 300_000,
 	});
 
 	return {
@@ -19,6 +21,8 @@ export function useTripDetails(tripId: string) {
 		queryKey: ["mobile-user", "trip-details", tripId],
 		queryFn: () => getTripById(tripId),
 		enabled: Boolean(tripId),
+		staleTime: 30_000,
+		gcTime: 300_000,
 	});
 
 	const rateTripMutation = useMutation({
