@@ -83,8 +83,8 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
     event: "ride-declined",
     payloadType: { requestId: "" },
     ackType: { success: true },
-    source: "apps/driver/context/DriverContext.tsx (local-only decline), apps/mobile-driver/src/features/requests/services/requests.service.ts (local-only decline)",
-    todo: "TODO(contract): add backend ride-declined subscription/ack before switching mobile decline from local-only to socket emit"
+    source: "apps/api/src/realtime/gateway/realtime.gateway.ts (ride-declined subscribe+ack), apps/mobile-driver/src/features/requests/services/requests.service.ts (socket decline with local fallback)",
+    todo: "TODO(contract): add explicit server-side decline state mutation/broadcast semantics if decline must affect other clients"
   },
   statusUpdate: {
     event: "ride-status-update",
@@ -108,7 +108,6 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
 };
 
 export const PHASE0_BLOCKERS: string[] = [
-  "TODO(contract): implement backend ride-declined subscription + ack contract",
   "TODO(contract): define backend ack callback contract for driver-location if delivery guarantees/retry semantics are required"
 ];
 

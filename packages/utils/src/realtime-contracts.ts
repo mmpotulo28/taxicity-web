@@ -19,6 +19,10 @@ export interface RideAcceptedPayload {
 	requestId: string;
 }
 
+export interface RideDeclinedPayload {
+	requestId: string;
+}
+
 export interface RideStatusPayload {
 	rideId: string;
 	status: TripStatus;

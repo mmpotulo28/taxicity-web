@@ -18,6 +18,7 @@ import {
   type ChatMessagePayload,
   type DriverLocationMessage,
   type RideAcceptedPayload,
+  type RideDeclinedPayload,
   type RideRequestPayload,
   type RideStatusPayload,
   type WsAck,
@@ -576,6 +577,38 @@ export class RealtimeGateway
     }
   }
 
+  @SubscribeMessage(EVENTS.RIDE_DECLINED)
+  async handleRideDeclined(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() data: unknown,
+  ): Promise<WsAck<{ success: boolean; requestId: string }>> {
+    const { userId } = this.getSocketIdentity(socket);
+    if (!userId) {
+      return { success: false, message: 'Unauthorized' };
+    }
+
+    if (!this.isRideDeclinedPayload(data)) {
+      return { success: false, message: 'Invalid ride declined payload' };
+    }
+
+    try {
+      return {
+        success: true,
+        data: {
+          success: true,
+          requestId: data.requestId,
+        },
+      };
+    } catch (error) {
+      logger.error(error, `Failed declining realtime trip ${data.requestId}`);
+      return {
+        success: false,
+        message:
+          error instanceof Error ? error.message : 'Failed to decline ride',
+      };
+    }
+  }
+
   @SubscribeMessage(EVENTS.RIDE_STATUS_UPDATE)
   async handleRideStatusUpdate(
     @ConnectedSocket() socket: Socket,
@@ -804,6 +837,10 @@ export class RealtimeGateway
       typeof value.status === 'string' &&
       TRIP_STATUSES.has(value.status as TripStatus)
     );
+  }
+
+  private isRideDeclinedPayload(value: unknown): value is RideDeclinedPayload {
+    return this.isRecord(value) && this.isNonEmptyString(value.requestId);
   }
 
   private isChatMessagePayload(value: unknown): value is ChatMessagePayload {

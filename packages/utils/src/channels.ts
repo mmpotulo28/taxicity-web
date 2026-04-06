@@ -12,6 +12,7 @@ export const EVENTS = {
 	RIDE_REQUEST: "ride-request",
 	NEW_RIDE_REQUEST: "new-ride-request",
 	RIDE_ACCEPTED: "ride-accepted",
+	RIDE_DECLINED: "ride-declined",
 	RIDE_TAKEN: "ride-taken",
 	RIDE_STATUS_UPDATE: "ride-status-update",
 	RIDE_STATUS_CHANGED: "ride-status-changed",
