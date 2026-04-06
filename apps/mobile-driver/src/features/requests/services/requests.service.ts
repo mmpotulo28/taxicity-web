@@ -21,7 +21,7 @@ export async function acceptDriverRequest(requestId: string) {
 }
 
 export async function declineDriverRequest(requestId: string) {
-  return emitWithAck("ride-declined", { requestId });
+  return { success: true, requestId };
 }
 
 export async function updatePassengerStatus(rideId: string, status: DriverRequest["status"]) {

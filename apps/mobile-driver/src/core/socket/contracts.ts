@@ -30,6 +30,6 @@ export interface DriverSocketContracts {
 }
 
 export const SOCKET_CONTRACT_TODOS = {
-  decline: "TODO(contract): backend ride decline event + ack is not present in current api realtime gateway subscriptions",
+  decline: "TODO(contract): backend ride-declined subscription is absent; keep decline local-only until server contract is added",
   locationAck: "TODO(contract): backend driver-location handler is fire-and-forget (no ack callback), keep mobile publish as non-ack emit"
 } as const;
