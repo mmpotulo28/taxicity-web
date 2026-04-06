@@ -30,6 +30,6 @@ export interface DriverSocketContracts {
 }
 
 export const SOCKET_CONTRACT_TODOS = {
-  decline: "TODO(contract): backend ride decline event + ack not documented in active web flow",
+  decline: "TODO(contract): backend ride decline event + ack is not present in current api realtime gateway subscriptions",
   locationAck: "TODO(contract): backend location ack currently not guaranteed"
 } as const;

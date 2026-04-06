@@ -21,15 +21,7 @@ export async function acceptDriverRequest(requestId: string) {
 }
 
 export async function declineDriverRequest(requestId: string) {
-  try {
-    return await emitWithAck("ride-declined", { requestId });
-  } catch {
-    // TODO(contract): pending backend confirmation for explicit decline endpoint.
-    await apiClient.post<{ success: boolean }, { requestId: string }>("/api/driver/requests/decline", {
-      requestId
-    });
-    return { success: true, requestId };
-  }
+  return emitWithAck("ride-declined", { requestId });
 }
 
 export async function updatePassengerStatus(rideId: string, status: DriverRequest["status"]) {

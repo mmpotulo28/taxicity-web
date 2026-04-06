@@ -83,8 +83,8 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
     event: "ride-declined",
     payloadType: { requestId: "" },
     ackType: { success: true },
-    source: "Phase 0 gap",
-    todo: "TODO(contract): backend event name and ack contract for explicit decline flow is missing in active web codepaths"
+    source: "apps/driver/context/DriverContext.tsx (local-only decline), apps/api/src/realtime/gateway/realtime.gateway.ts (no subscribe handler)",
+    todo: "TODO(contract): backend explicit decline socket event/ack is not implemented in current realtime gateway"
   },
   statusUpdate: {
     event: "ride-status-update",
@@ -108,7 +108,7 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
 };
 
 export const PHASE0_BLOCKERS: string[] = [
-  "TODO(contract): confirm explicit ride-declined socket event and fallback HTTP endpoint for declined requests",
+  "TODO(contract): align decline behavior by adding backend explicit decline socket or use local-only remove behavior",
   "TODO(contract): confirm server ack SLA and retry contract for driver-location publishes"
 ];
 
