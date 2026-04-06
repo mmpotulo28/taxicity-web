@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { getTripById, getTripHistory, submitTripRating } from "../services/trip-history.service";
+import { getTripById, getTripHistory, getTripHistoryPage, submitTripRating } from "../services/trip-history.service";
 
 export function useTripHistory() {
 	const tripsQuery = useQuery({
@@ -12,6 +12,27 @@ export function useTripHistory() {
 
 	return {
 		tripsQuery,
+	};
+}
+
+export function useTripHistoryInfinite(limit = 20) {
+	const infiniteTripsQuery = useInfiniteQuery({
+		queryKey: ["mobile-user", "trip-history", "infinite", limit],
+		initialPageParam: 1,
+		queryFn: ({ pageParam }) => getTripHistoryPage(pageParam, limit),
+		getNextPageParam: (lastPage) => {
+			const { page, pages } = lastPage.pagination;
+			return page < pages ? page + 1 : undefined;
+		},
+		staleTime: 30_000,
+		gcTime: 300_000,
+	});
+
+	const trips = (infiniteTripsQuery.data?.pages ?? []).flatMap((page) => page.items);
+
+	return {
+		infiniteTripsQuery,
+		trips,
 	};
 }
 

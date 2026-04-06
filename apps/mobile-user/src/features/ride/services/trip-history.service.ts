@@ -46,6 +46,18 @@ interface RawTripsListPayload {
 	pagination?: RawPagination;
 }
 
+export interface TripHistoryPaginationDto {
+	page: number;
+	limit: number;
+	total: number;
+	pages: number;
+}
+
+export interface TripHistoryPageDto {
+	items: TripHistoryItemDto[];
+	pagination: TripHistoryPaginationDto;
+}
+
 function isRawTrip(value: unknown): value is RawTrip {
 	return isRecord(value) && typeof value.id === "string";
 }
@@ -65,6 +77,33 @@ function pickTripArray(payload: unknown): RawTrip[] {
 		return payload.data.trips as RawTrip[];
 	}
 	return [];
+}
+
+function toNumber(value: unknown, fallback: number): number {
+	return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function extractPagination(payload: unknown, itemCount: number): TripHistoryPaginationDto {
+	if (!isRecord(payload) || !isRecord(payload.pagination)) {
+		return {
+			page: 1,
+			limit: itemCount,
+			total: itemCount,
+			pages: itemCount > 0 ? 1 : 0,
+		};
+	}
+
+	const page = toNumber(payload.pagination.page, 1);
+	const limit = toNumber(payload.pagination.limit, itemCount || 20);
+	const total = toNumber(payload.pagination.total, itemCount);
+	const pages = toNumber(payload.pagination.pages, limit > 0 ? Math.ceil(total / limit) : 0);
+
+	return {
+		page,
+		limit,
+		total,
+		pages,
+	};
 }
 
 function mapTrip(raw: RawTrip): TripHistoryItemDto {
@@ -96,8 +135,17 @@ function mapTrip(raw: RawTrip): TripHistoryItemDto {
 }
 
 export async function getTripHistory(): Promise<TripHistoryItemDto[]> {
-	const payload = await apiClient.get<RawTripsListPayload>("/api/user/trips");
-	return pickTripArray(payload).map(mapTrip);
+	const result = await getTripHistoryPage();
+	return result.items;
+}
+
+export async function getTripHistoryPage(page = 1, limit = 20): Promise<TripHistoryPageDto> {
+	const payload = await apiClient.get<RawTripsListPayload>(`/api/user/trips?page=${page}&limit=${limit}`);
+	const items = pickTripArray(payload).map(mapTrip);
+	return {
+		items,
+		pagination: extractPagination(payload, items.length),
+	};
 }
 
 export async function getTripById(tripId: string): Promise<TripHistoryItemDto | null> {
