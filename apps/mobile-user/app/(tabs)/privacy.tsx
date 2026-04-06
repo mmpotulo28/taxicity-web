@@ -1,40 +1,9 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import {
-	getUserSettingsPreferences,
-	saveUserSettingsPreferences,
-	type UserSettingsPreferences,
-} from "../../src/features/settings/utils/preferences";
+import { useUserSettingsPreferences } from "../../src/features/settings/hooks/use-user-settings-preferences";
 
 export default function PrivacyScreen() {
-	const [preferences, setPreferences] = useState<UserSettingsPreferences | null>(null);
-	const [saveStatus, setSaveStatus] = useState<"idle" | "saved">("idle");
-
-	useEffect(() => {
-		let active = true;
-		getUserSettingsPreferences().then((stored) => {
-			if (active) {
-				setPreferences(stored);
-			}
-		});
-		return () => {
-			active = false;
-		};
-	}, []);
-
-	const togglePreference = async (key: "shareTripDataEnabled" | "locationTrackingEnabled") => {
-		if (!preferences) {
-			return;
-		}
-		const next: UserSettingsPreferences = {
-			...preferences,
-			[key]: !preferences[key],
-		};
-		setPreferences(next);
-		await saveUserSettingsPreferences(next);
-		setSaveStatus("saved");
-	};
+	const { preferences, saveStatus, togglePreference } = useUserSettingsPreferences();
 
 	return (
 		<View className='flex-1 justify-center bg-black px-6'>
@@ -59,7 +28,9 @@ export default function PrivacyScreen() {
 					</Pressable>
 				</View>
 			) : null}
+			{saveStatus === "saving" ? <Text className='mb-4 text-neutral-400'>Saving privacy controls...</Text> : null}
 			{saveStatus === "saved" ? <Text className='mb-4 text-brand'>Privacy controls saved.</Text> : null}
+			{saveStatus === "error" ? <Text className='mb-4 text-red-300'>Failed to save privacy controls. Try again.</Text> : null}
 			<Pressable className='rounded-md border border-neutral-700 px-5 py-4' onPress={() => router.push("/(tabs)/settings")}>
 				<Text className='text-white'>Return to Settings</Text>
 			</Pressable>
