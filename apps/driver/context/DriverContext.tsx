@@ -5,7 +5,7 @@ import { addToast } from "@heroui/toast";
 import { usePusher } from "@taxiciti/ui";
 import { useDriverLocation } from "../hooks/useDriverLocation";
 import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
-import type { RideAcceptedPayload, RideStatusPayload, WsAck } from "@taxiciti/utils";
+import type { RideAcceptedPayload, RideDeclinedPayload, RideStatusPayload, WsAck } from "@taxiciti/utils";
 import { apiGet, apiPatch, apiPost, ApiError } from "@/lib/api-client";
 
 export interface Driver {
@@ -89,7 +89,7 @@ interface DriverContextType {
 	startShift: (taxiId: string, routeId: string) => Promise<void>;
 	endShift: () => Promise<void>;
 	acceptRequest: (tripId: string) => Promise<void>;
-	declineRequest: (tripId: string) => void;
+	declineRequest: (tripId: string) => Promise<void>;
 	updatePassengerStatus: (tripId: string, status: string) => Promise<void>;
 	updateManualPassengers: (count: number) => Promise<void>;
 	refreshRequests: () => Promise<void>;
@@ -444,8 +444,17 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 		}
 	};
 
-	const declineRequest = (tripId: string) => {
-		setIncomingRequests((prev) => prev.filter((r) => r.id !== tripId));
+	const declineRequest = async (tripId: string) => {
+		try {
+			const payload: RideDeclinedPayload = {
+				requestId: tripId,
+			};
+			await emitWithAck<{ success: boolean; requestId: string }>(EVENTS.RIDE_DECLINED, payload);
+		} catch (error) {
+			console.error("Failed to decline trip via realtime:", error);
+		} finally {
+			setIncomingRequests((prev) => prev.filter((r) => r.id !== tripId));
+		}
 	};
 
 	const updatePassengerStatus = async (tripId: string, status: string) => {

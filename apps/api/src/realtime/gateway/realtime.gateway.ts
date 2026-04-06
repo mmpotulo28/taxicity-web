@@ -592,11 +592,16 @@ export class RealtimeGateway
     }
 
     try {
+      const result = await this.realtimeTripService.declineRideRequest(
+        userId,
+        data,
+      );
+
       return {
         success: true,
         data: {
           success: true,
-          requestId: data.requestId,
+          requestId: result.requestId,
         },
       };
     } catch (error) {

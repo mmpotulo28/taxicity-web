@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { prisma } from '@taxiciti/database';
+import { prisma, redis } from '@taxiciti/database';
 import type { PaymentMethod, TripStatus } from '@taxiciti/database/types';
 
 interface CreateRidePayload {
@@ -24,6 +24,10 @@ interface AcceptRidePayload {
 interface UpdateRideStatusPayload {
   rideId: string;
   status: TripStatus;
+}
+
+interface DeclineRidePayload {
+  requestId: string;
 }
 
 interface RealtimeTripRecord {
@@ -54,6 +58,10 @@ interface DriverTaxiRecord {
 
 @Injectable()
 export class RealtimeTripService {
+  private declinedRequestKey(driverUserId: string): string {
+    return `driver:${driverUserId}:declined_requests`;
+  }
+
   async getPendingRequestsForDriver(
     driverUserId: string,
   ): Promise<RealtimeTripRecord[]> {
@@ -109,7 +117,14 @@ export class RealtimeTripService {
       },
     });
 
-    return requests as RealtimeTripRecord[];
+    const declinedRequestIds = await redis.smembers<string[]>(
+      this.declinedRequestKey(driverUserId),
+    );
+    const declinedSet = new Set(declinedRequestIds ?? []);
+
+    return (requests as RealtimeTripRecord[]).filter(
+      (request) => !declinedSet.has(request.id),
+    );
   }
 
   async getUserTrips(userId: string): Promise<RealtimeTripRecord[]> {
@@ -210,6 +225,14 @@ export class RealtimeTripService {
       throw new WsException('Trip is not in requested state');
     }
 
+    const hasDeclined = await redis.sismember(
+      this.declinedRequestKey(driverUserId),
+      payload.requestId,
+    );
+    if (hasDeclined) {
+      throw new WsException('Trip was previously declined by this driver');
+    }
+
     let acceptingTaxiId: string | null = null;
     const driverTaxis = driver.taxis as unknown as DriverTaxiRecord[];
 
@@ -258,6 +281,59 @@ export class RealtimeTripService {
       driverId: driver.id,
       routeId: trip.routeId,
       userId: trip.userId,
+    };
+  }
+
+  async declineRideRequest(
+    driverUserId: string,
+    payload: DeclineRidePayload,
+  ): Promise<{ requestId: string }> {
+    const driver = await prisma.driver.findUnique({
+      where: { userId: driverUserId },
+      include: {
+        taxis: {
+          include: {
+            routes: {
+              where: { isActive: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!driver) {
+      throw new WsException('Driver profile not found');
+    }
+
+    const trip = await prisma.trip.findUnique({
+      where: { id: payload.requestId },
+    });
+
+    if (!trip) {
+      throw new WsException('Trip not found');
+    }
+
+    if (trip.status !== 'REQUESTED') {
+      throw new WsException('Trip is not in requested state');
+    }
+
+    const driverTaxis = driver.taxis as unknown as DriverTaxiRecord[];
+    const isEligibleForRoute = driverTaxis.some((taxi) =>
+      taxi.routes.some((route) => route.routeId === trip.routeId),
+    );
+    const isEligibleForAssignedTaxi =
+      !trip.taxiId || driverTaxis.some((taxi) => taxi.id === trip.taxiId);
+
+    if (!isEligibleForRoute || !isEligibleForAssignedTaxi) {
+      throw new WsException('Unauthorized for this trip');
+    }
+
+    const key = this.declinedRequestKey(driverUserId);
+    await redis.sadd(key, payload.requestId);
+    await redis.expire(key, 60 * 60 * 6);
+
+    return {
+      requestId: payload.requestId,
     };
   }
 
