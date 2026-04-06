@@ -13,20 +13,7 @@ import {
 } from "../services/requests.service";
 
 const TERMINAL_STATUSES = new Set<TripStatus>(["COMPLETED", "CANCELLED"]);
-
-function mergeById(existing: DriverRequest[], incoming: DriverRequest[]) {
-  const map = new Map<string, DriverRequest>();
-
-  for (const request of existing) {
-    map.set(request.id, request);
-  }
-
-  for (const request of incoming) {
-    map.set(request.id, request);
-  }
-
-  return Array.from(map.values());
-}
+const MAX_PROCESSED_TRANSITIONS = 1000;
 
 export function useRequests() {
   const [requests, setRequests] = useState<DriverRequest[]>([]);
@@ -99,6 +86,9 @@ export function useRequests() {
         }
 
         processedStatusTransitions.current.add(transitionKey);
+        if (processedStatusTransitions.current.size > MAX_PROCESSED_TRANSITIONS) {
+          processedStatusTransitions.current.clear();
+        }
 
         setRequests((prev) => {
           const existing = prev.find((request) => request.id === updatedRequest.id);
@@ -174,9 +164,6 @@ export function useRequests() {
     refresh,
     accept,
     decline,
-    transitionStatus,
-    setRequestsFromSnapshot: (snapshot: DriverRequest[]) => {
-      setRequests((prev) => mergeById(prev, snapshot));
-    }
+    transitionStatus
   };
 }
