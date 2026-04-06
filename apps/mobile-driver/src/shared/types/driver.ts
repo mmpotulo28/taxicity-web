@@ -1,12 +1,10 @@
-export type PaymentMethod = "CASH" | "QR_CODE" | "MOBILE_MONEY";
+import type {
+  DriverLocationMessage,
+  PaymentMethod,
+  TripStatus
+} from "@taxiciti/utils";
 
-export type TripStatus =
-  | "REQUESTED"
-  | "ACCEPTED"
-  | "ARRIVED_AT_PICKUP"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED";
+export type { PaymentMethod, TripStatus };
 
 export type DriverEligibilityStatus = "ACTIVE" | "PENDING" | "INACTIVE" | "REJECTED" | "UNKNOWN";
 
@@ -62,10 +60,4 @@ export interface ShiftStartInput {
   routeId: string;
 }
 
-export interface DriverLocationPayload {
-  taxiId: string;
-  lat: number;
-  lng: number;
-  heading?: number;
-  speed?: number;
-}
+export type DriverLocationPayload = DriverLocationMessage;

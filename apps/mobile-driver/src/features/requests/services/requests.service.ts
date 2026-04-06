@@ -1,9 +1,10 @@
 import { apiClient } from "../../../core/api/client";
+import { socketEvents } from "../../../core/socket/channels";
 import { emitWithAck } from "../../../core/socket/client";
 import type { DriverRequest } from "../../../shared/types/driver";
 
 export async function syncDriverRequests() {
-  return emitWithAck("driver-requests-sync", {});
+  return emitWithAck(socketEvents.requestsSync, {});
 }
 
 export async function syncDriverRequestsHttpFallback() {
@@ -12,7 +13,7 @@ export async function syncDriverRequestsHttpFallback() {
 
 export async function acceptDriverRequest(requestId: string) {
   try {
-    return await emitWithAck("ride-accepted", { requestId });
+    return await emitWithAck(socketEvents.rideAccepted, { requestId });
   } catch {
     return apiClient.post<DriverRequest, { requestId: string }>("/api/driver/requests/accept", {
       requestId
@@ -22,7 +23,7 @@ export async function acceptDriverRequest(requestId: string) {
 
 export async function declineDriverRequest(requestId: string) {
   try {
-    return await emitWithAck("ride-declined", { requestId });
+    return await emitWithAck(socketEvents.rideDeclined, { requestId });
   } catch {
     return { success: true, requestId };
   }
@@ -30,7 +31,7 @@ export async function declineDriverRequest(requestId: string) {
 
 export async function updatePassengerStatus(rideId: string, status: DriverRequest["status"]) {
   try {
-    return await emitWithAck("ride-status-update", { rideId, status });
+    return await emitWithAck(socketEvents.rideStatusUpdate, { rideId, status });
   } catch {
     return apiClient.patch<DriverRequest, { status: DriverRequest["status"] }>(`/api/driver/requests/${rideId}/status`, {
       status
