@@ -83,8 +83,8 @@ export const DRIVER_SOCKET_CHECKLIST: DriverSocketChecklist = {
     event: "ride-declined",
     payloadType: { requestId: "" },
     ackType: { success: true },
-    source: "apps/api/src/realtime/gateway/realtime.gateway.ts (ride-declined subscribe+ack), apps/mobile-driver/src/features/requests/services/requests.service.ts (socket decline with local fallback)",
-    todo: "TODO(contract): add explicit server-side decline state mutation/broadcast semantics if decline must affect other clients"
+    source: "apps/api/src/realtime/gateway/realtime.gateway.ts (ride-declined subscribe+ack + service persistence), apps/api/src/realtime/trips/realtime.trip.service.ts (driver-scoped declined request persistence/filter), apps/mobile-driver/src/features/requests/services/requests.service.ts (socket decline with local fallback), apps/driver/context/DriverContext.tsx (socket decline with local fallback)",
+    todo: "TODO(contract): define retention and cleanup policy for driver-scoped declined request sets beyond current TTL strategy"
   },
   statusUpdate: {
     event: "ride-status-update",

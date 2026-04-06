@@ -30,6 +30,6 @@ export interface DriverSocketContracts {
 }
 
 export const SOCKET_CONTRACT_TODOS = {
-  decline: "TODO(contract): backend ride-declined ack exists; align multi-client decline side effects if server-side state mutation is added",
+  decline: "TODO(contract): backend persists driver-scoped declines; define long-term retention/cleanup semantics if product requirements change",
   locationAck: "TODO(contract): backend driver-location handler is fire-and-forget (no ack callback), keep mobile publish as non-ack emit"
 } as const;
