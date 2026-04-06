@@ -7,15 +7,15 @@ export default function SettingsTabScreen() {
 	const { user } = useUser();
 
 	const handleSupport = () => {
-		router.push("/(tabs)/history");
+		router.push("/(tabs)/support");
 	};
 
 	const handleNotifications = () => {
-		router.push("/(tabs)");
+		router.push("/(tabs)/notifications");
 	};
 
 	const handlePrivacy = () => {
-		router.push("/(tabs)");
+		router.push("/(tabs)/privacy");
 	};
 
 	const handleSignOut = async () => {
@@ -29,7 +29,7 @@ export default function SettingsTabScreen() {
 			<Text className='mb-8 text-neutral-400'>{user?.primaryEmailAddress?.emailAddress || "Signed in user"}</Text>
 			<View className='gap-3'>
 				<Pressable className='rounded-md border border-neutral-700 px-5 py-4' onPress={handleSupport}>
-					<Text className='text-white'>Support (Trip History)</Text>
+					<Text className='text-white'>Support</Text>
 				</Pressable>
 				<Pressable className='rounded-md border border-neutral-700 px-5 py-4' onPress={handleNotifications}>
 					<Text className='text-white'>Notifications Preferences</Text>

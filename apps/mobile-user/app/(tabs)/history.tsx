@@ -34,6 +34,13 @@ export default function HistoryTabScreen() {
 			/>
 			{tripsQuery.isLoading ? (
 				<Text className='text-neutral-400'>Loading trip history...</Text>
+			) : tripsQuery.isError ? (
+				<View className='rounded-md border border-red-800 bg-red-950/40 p-4'>
+					<Text className='text-red-300'>Failed to load trip history.</Text>
+					<Pressable className='mt-3 rounded-md border border-red-700 px-4 py-2' onPress={() => tripsQuery.refetch()}>
+						<Text className='text-white'>Retry</Text>
+					</Pressable>
+				</View>
 			) : (
 				<ScrollView className='flex-1'>
 					{filteredTrips.length === 0 ? (

@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { getTripById, getTripHistory, submitTripRating } from "../services/trip-history.service";
 
 export function useTripHistory() {
@@ -13,6 +14,7 @@ export function useTripHistory() {
 }
 
 export function useTripDetails(tripId: string) {
+	const queryClient = useQueryClient();
 	const tripQuery = useQuery({
 		queryKey: ["mobile-user", "trip-details", tripId],
 		queryFn: () => getTripById(tripId),
@@ -21,6 +23,10 @@ export function useTripDetails(tripId: string) {
 
 	const rateTripMutation = useMutation({
 		mutationFn: (rating: number) => submitTripRating(tripId, { rating }),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: ["mobile-user", "trip-history"] });
+			await queryClient.invalidateQueries({ queryKey: ["mobile-user", "trip-details", tripId] });
+		},
 	});
 
 	return {
