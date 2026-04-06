@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getSentryExpoConfig } from "@sentry/react-native/metro";
+import { getSentryExpoConfig } from "@sentry/react-native/metro.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
