@@ -15,6 +15,14 @@
 		"TaxiCiti API Installation": {
 			"type": "http",
 			"url": "https://mcp.scalar.com/mcp/b5eabd26-75ee-47df-b227-2c5a23a8a348"
+		},
+		"heroui-native": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@heroui/native-mcp@latest"
+			]
 		}
 	},
 	"inputs": []
