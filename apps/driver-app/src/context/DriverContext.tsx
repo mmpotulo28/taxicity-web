@@ -6,7 +6,7 @@ import { usePusher } from "@taxiciti/ui";
 import { useDriverLocation } from "../hooks/useDriverLocation";
 import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
 import type { RideAcceptedPayload, RideDeclinedPayload, RideStatusPayload, WsAck } from "@taxiciti/utils";
-import { apiGet, apiPatch, apiPost, ApiError } from "@/lib/api-client";
+import { apiGet, apiPatch, apiPost, ApiError } from "../lib/api-client";
 
 export interface Driver {
 	id: string;

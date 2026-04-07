@@ -18,8 +18,14 @@ interface ApiRequestOptions extends Omit<RequestInit, "body"> {
 
 const DEFAULT_API_ORIGIN = "http://localhost:3006";
 
+let authTokenGetter: (() => Promise<string | null>) | null = null;
+
+export function setApiAuthTokenGetter(getter: (() => Promise<string | null>) | null) {
+	authTokenGetter = getter;
+}
+
 function getApiOrigin() {
-	const configured = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || DEFAULT_API_ORIGIN;
+	const configured = process.env.EXPO_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || DEFAULT_API_ORIGIN;
 	return configured.replace(/\/$/, "");
 }
 
@@ -37,6 +43,14 @@ function resolveApiUrl(url: string) {
 }
 
 async function getClerkToken(): Promise<string | null> {
+	if (authTokenGetter) {
+		try {
+			return await authTokenGetter();
+		} catch {
+			return null;
+		}
+	}
+
 	if (globalThis.window === undefined) {
 		return null;
 	}

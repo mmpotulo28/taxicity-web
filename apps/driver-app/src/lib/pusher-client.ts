@@ -1,14 +1,16 @@
 import { io, Socket } from "socket.io-client";
 
 // use same env variable as frontend for consistency
-const WS_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+const WS_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3006";
 
 class SocketPusherClient {
-	private socket: Socket;
+	private readonly socket: Socket;
 
 	constructor() {
 		this.socket = io(WS_URL, {
 			autoConnect: false,
+			transports: ["websocket"],
+			upgrade: false,
 		});
 	}
 
