@@ -1,98 +1,89 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text } from "react-native";
+import { Spinner } from "heroui-native/spinner";
+import { Button } from "heroui-native/button";
+import { Feather } from "@expo/vector-icons";
+import { useDriver } from "@context/DriverContext";
+import { DriverConsole } from "@components/DriverConsole";
+import { VehicleRegistration } from "@components/VehicleRegistration";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { useUser } from "@clerk/expo";
+import { router } from "expo-router";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function DriverPage() {
+	const { driver, isLoading, refreshDriver } = useDriver();
+	const { user, isLoaded } = useUser();
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+	if (isLoaded && !user) {
+		return (
+			<View className='flex-1 justify-center items-center bg-default-50 p-4'>
+				<Animated.View entering={FadeInDown} className='items-center max-w-md space-y-4'>
+					<View className='w-20 h-20 bg-danger/10 rounded-full flex items-center justify-center mb-4'>
+						<Feather name='alert-circle' size={40} color='#f31260' />
+					</View>
+					<Text className='text-2xl font-bold text-default-900 text-center'>Not Signed In</Text>
+					<Text className='text-default-500 text-center mb-4'>You need to be signed in to access the driver console. Please sign in or create an account.</Text>
+					<View className='flex-row gap-3 justify-center pt-2'>
+						<Button onPress={() => router.push("/sign-in")} variant='primary'>
+							<Feather name='log-in' size={20} color='white' />
+							<Button.Label>Sign In</Button.Label>
+						</Button>
+						<Button onPress={() => router.push("/sign-up")} variant='outline'>
+							<Feather name='user-plus' size={20} color='#666' />
+							<Button.Label>Create Account</Button.Label>
+						</Button>
+					</View>
+				</Animated.View>
+			</View>
+		);
+	}
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+	if (isLoading) {
+		return (
+			<View className='flex-1 justify-center items-center bg-default-50 gap-4'>
+				<Spinner size='lg' color='primary' />
+				<Text className='text-default-500'>Loading driver profile...</Text>
+			</View>
+		);
+	}
+
+	if (!driver) {
+		return (
+			<View className='flex-1 justify-center items-center bg-default-50 p-4'>
+				<Animated.View entering={FadeInDown} className='items-center max-w-md space-y-4'>
+					<View className='w-20 h-20 bg-danger/10 rounded-full flex items-center justify-center mb-4'>
+						<Feather name='alert-circle' size={40} color='#f31260' />
+					</View>
+					<Text className='text-2xl font-bold text-default-900 text-center'>Profile Not Found</Text>
+					<Text className='text-default-500 text-center mb-4'>We couldn&apos;t find your driver profile. If you haven&apos;t applied yet, please submit an application.</Text>
+					<View className='flex-row gap-3 justify-center pt-2'>
+						<Button onPress={() => router.push("/apply")} variant='primary'>
+							<Feather name='file-text' size={20} color='white' />
+							<Button.Label>Apply Now</Button.Label>
+						</Button>
+						<Button onPress={() => router.push("/support")} variant='outline'>
+							<Feather name='help-circle' size={20} color='#666' />
+							<Button.Label>Contact Support</Button.Label>
+						</Button>
+					</View>
+				</Animated.View>
+			</View>
+		);
+	}
+
+	// Step 1: Vehicle Registration
+	if (driver.taxis?.length === 0) {
+		return (
+			<View className='flex-1 bg-default-50 justify-center p-4'>
+				<VehicleRegistration onComplete={refreshDriver} />
+			</View>
+		);
+	}
+
+	// Step 2: Driver Console (Handles Shift Start & Active Shift)
+	return (
+		<View className='flex-1 overflow-hidden relative'>
+			<DriverConsole />
+		</View>
+	);
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

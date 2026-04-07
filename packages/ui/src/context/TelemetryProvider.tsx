@@ -1,8 +1,7 @@
 "use client";
 
-import React, { createContext, useEffect, useRef, useContext } from "react";
-import { getWebInstrumentations, initializeFaro, Faro, ReactIntegration } from "@grafana/faro-react";
-import { TracingInstrumentation } from "@grafana/faro-web-tracing";
+import React, { createContext, useContext } from "react";
+import { Faro } from "@grafana/faro-react";
 
 const TelemetryContext = createContext<Faro | null>(null);
 

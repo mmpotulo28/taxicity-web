@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/expo";
 
 interface PusherContextType {
 	pusher: Socket | null;
