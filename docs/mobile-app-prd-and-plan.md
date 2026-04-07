@@ -1,116 +1,98 @@
-# Mobile Application PRD & Implementation Plan
+# Mobile Application PRD and Implementation Plan
 
-## 1. Product Requirements Document (PRD)
+## 1. Overview
 
-### 1.1 Overview
+TaxiCity mobile has moved from the initial WebView-wrapper strategy to a native Expo Router foundation for the driver experience. This document reflects the current direction and hardening plan.
 
-The goal is to expand the TaxiCity platform to mobile devices (iOS and Android) by wrapping the existing Next.js web applications (Driver and User portals) into native mobile applications using React Native and Expo 53. This "Hybrid WebView" approach allows for rapid deployment, code reusability, and instant updates for web-content changes.
+## 2. Product Scope
 
-### 1.2 Product Components
+### 2.1 Mobile User App
 
-1.  **TaxiCity User App** (Consumer facing)
-    - Wraps `apps/user`
-    - Target Launch: Android Play Store, Apple App Store
-2.  **TaxiCity Driver App** (Service provider facing)
-    - Wraps `apps/driver`
-    - Target Launch: Android Play Store, Apple App Store
+- Location: [apps/mobile-user](../apps/mobile-user)
+- Status: foundational app shell, lower feature depth than driver app.
 
-### 1.3 Key Features & Requirements
+### 2.2 Mobile Driver App
 
-#### Core WebView Functionality
+- Location: [apps/mobile-driver](../apps/mobile-driver)
+- Status: native foundation with auth, onboarding, shift lifecycle, requests, socket sync, and location publishing.
 
-- **Full-Screen WebView**: The app must render the responsive web application as the primary interface.
-- **State Persistence**: Cookies and LocalStorage must persist between app sessions to keep users logged in (via Clerk).
-- **Loading States**: A native loading spinner/shimmer must appear while the web content initializes.
-- **Error Handling**: A native "No Internet Connection" or "Server Error" screen with a retry button.
+## 3. Current Architecture
 
-#### Native Integrations (Phase 1)
+- Framework: Expo SDK 54 + React Native 0.81 + Expo Router.
+- Language: TypeScript.
+- Monorepo orchestration: pnpm + turbo.
+- Auth: Clerk via [apps/mobile-driver/src/core/auth](../apps/mobile-driver/src/core/auth).
+- API layer: centralized client/interceptors under [apps/mobile-driver/src/core/api](../apps/mobile-driver/src/core/api).
+- Realtime: Socket.IO contracts and client under [apps/mobile-driver/src/core/socket](../apps/mobile-driver/src/core/socket).
+- Location: adaptive tracking and publisher under [apps/mobile-driver/src/core/location](../apps/mobile-driver/src/core/location) and [apps/mobile-driver/src/shared/utils/location-publisher.ts](../apps/mobile-driver/src/shared/utils/location-publisher.ts).
+- Telemetry: initialized at provider level in [apps/mobile-driver/src/shared/ui/app-providers.tsx](../apps/mobile-driver/src/shared/ui/app-providers.tsx).
 
-- **Geolocation**: Request native location permissions and pass coordinates to the web view if native-level precision is required, or allow the WebView to request standard HTML5 Geolocation permissions.
-- **Deep Linking**: Handle universal links (e.g., `taxiciti.com/trip/123`) to open the app directly to the correct page.
-- **Safe Area Handling**: Ensure content does not overlap with status bars or standard device notches (using `react-native-safe-area-context`).
+## 4. Implemented Feature Baseline
 
-#### Native Integrations (Phase 2 - Future)
+- Driver request sync with socket and HTTP fallback.
+- Request accept, decline, and status transitions.
+- Active shift controls with location publishing and end-shift flow.
+- Earnings summary screen backed by API.
+- Editable profile screen backed by API.
+- End-shift summary screen using closeout route params.
+- FlowPush SDK integration for push registration, identify, and unregister tied to auth lifecycle.
 
-- **Push Notifications**: Integrate Expo Notifications to receive alerts for trip updates, driver arrivals, etc.
-- **Biometrics**: Native FaceID/Fingerprint for quicker re-authentication.
+## 5. Remaining Gaps
 
-### 1.4 Technical Constraints
+- Notifications screen is blocked pending backend notifications endpoint and contract.
+- QA baseline is incomplete: mobile-driver tests are not yet implemented.
+- CI lane for mobile build/test quality gate is not yet in workflow.
 
-- **Framework**: Expo SDK 53
-- **Language**: TypeScript
-- **Monorepo Integration**: Must live within the existing `apps/` directory and work with Turborepo and pnpm.
+## 6. Phase Plan (Current)
 
----
+### Phase A: Monorepo Compliance
 
-## 2. Implementation Plan
+- Done: workspace dependency declarations and tsconfig/script alignment.
 
-### 2.1 Directory Structure
+### Phase B: Reliability
 
-We will create two new directories in the `apps/` folder:
+- Done: socket ack parsing hardening.
+- Done: reconnect, app foreground refresh, and pending-request action guards.
+- Done: app-state-aware location cadence restart.
 
-- `apps/mobile-user`: The React Native Expo app for users.
-- `apps/mobile-driver`: The React Native Expo app for drivers.
+### Phase C: Product Surface Completion
 
-### 2.2 Tech Stack
+- Done: earnings.
+- Done: profile.
+- Done: end-shift summary.
+- Blocked: notifications endpoint/contract.
 
-- **Exopo SDK**: 53 (Latest stable)
-- **React Native**: 0.74+
-- **WebView Component**: `react-native-webview`
-- **Navigation**: `expo-router` (Lightweight file-based routing) or standard `react-navigation`.
+### Phase D: Quality, Observability, and Ops
 
-### 2.3 Step-by-Step Execution
+- In progress: telemetry initialization strategy complete in app providers.
+- Done: FlowPush integration wiring in root layout auth lifecycle and push service module.
+- Pending: test suite baseline.
+- Pending: mobile CI pipeline lane.
 
-#### Step 1: Workspace Preparation
+## 7. Push Notification Configuration
 
-1.  Verify `pnpm-workspace.yaml` includes `apps/*` (Already verified).
-2.  Create new Expo projects using the bare minimum template or managed workflow.
+- Integration package: `@flowpush/app-sdk` in mobile-driver dependencies.
+- Registration lifecycle:
+    - Register and identify on authenticated session.
+    - Unregister on sign-out.
+- Required environment variables:
+    - `EXPO_PUBLIC_FLOWPUSH_APP_KEY` (required)
+    - `EXPO_PUBLIC_FLOWPUSH_API_URL` (optional; defaults to SDK default)
+- Integration touchpoints:
+    - [apps/mobile-driver/src/core/push/flowpush.ts](../apps/mobile-driver/src/core/push/flowpush.ts)
+    - [apps/mobile-driver/src/core/push/use-flowpush-registration.ts](../apps/mobile-driver/src/core/push/use-flowpush-registration.ts)
+    - [apps/mobile-driver/app/\_layout.tsx](../apps/mobile-driver/app/_layout.tsx)
 
-#### Step 2: Project Initialization
+## 8. Verification and Release Criteria
 
-Run the initialization commands for both apps.
-_Note: Since we are in a monorepo, we need to configure Metro bundler to look for dependencies in the root `node_modules`._
+1. `pnpm --filter mobile-driver check` passes.
+2. Critical tabs (`requests`, `earnings`, `profile`) are functional and non-placeholder.
+3. Shift lifecycle (`start`, `active`, `end-summary`) is stable.
+4. Realtime sync remains consistent after reconnect and app state transitions.
+5. Test and CI gates are enabled before production store rollout.
+6. Push registration and identify/unregister behavior is validated on sign-in and sign-out.
 
-#### Step 3: Shared Configuration
+## 9. Related Docs
 
-Create a `metro.config.js` in each mobile app that extends the default Expo config to handle the monorepo structure (resolving symlinks and workspace packages).
-
-#### Step 4: WebView Implementation
-
-Implement the primary screen in `App.tsx` (or `app/index.tsx` if using Expo Router).
-
-```typescript
-import { WebView } from 'react-native-webview';
-
-export default function App() {
-  return (
-    <WebView
-      source={{ uri: 'https://staging.taxiciti.com' }} // Env var dependent
-      style={{ flex: 1 }}
-    />
-  );
-}
-```
-
-#### Step 5: Turbo Integration
-
-Update `turbo.json` (if necessary) or ensure the `package.json` scripts in mobile apps match the global usage (e.g., `dev`, `build`, `lint`).
-
-#### Step 6: Environment Variables
-
-Configure `expo-constants` to inject the correct target URL (Localhost for dev, Vercel URL for prod) into the app.
-
----
-
-## 3. Deployment Strategy
-
-- **Development**: Use Expo Go for quick testing.
-- **Staging**: Build `.apk` and `.ipa` using EAS Build pointing to the Staging Web URL.
-- **Production**: Submit binaries to stores pointing to the Production Web URL.
-
-## 4. Immediate Next Actions
-
-1.  Generate the `apps/mobile-user` and `apps/mobile-driver` skeletons.
-2.  Install `react-native-webview`.
-3.  Configure monorepo resolution (Metro Config).
-4.  Commit and push changes.
+- Audit: [docs/mobile-driver-migration-audit.md](mobile-driver-migration-audit.md)
+- Tracker: [docs/mobile-driver-hardening-tracker.md](mobile-driver-hardening-tracker.md)

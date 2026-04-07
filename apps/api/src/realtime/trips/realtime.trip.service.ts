@@ -117,7 +117,7 @@ export class RealtimeTripService {
       },
     });
 
-    const declinedRequestIds = await redis.smembers<string[]>(
+    const declinedRequestIds = await redis.smembers(
       this.declinedRequestKey(driverUserId),
     );
     const declinedSet = new Set(declinedRequestIds ?? []);
