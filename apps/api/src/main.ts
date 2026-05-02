@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { apiReference } from '@scalar/nestjs-api-reference';
 import { AppModule } from './app.module';
 import { isAllowedCorsOrigin } from './realtime/config/realtime.config';
 
@@ -90,24 +89,11 @@ Most protected REST endpoints require a Bearer token in the \`Authorization\` he
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
-  app.use(
-    '/reference',
-    apiReference({
-      content: document,
-      pageTitle: 'TaxiCiti API Reference',
-      theme: 'default',
-    }),
-  );
-
-  app.use(
-    '/api/docs',
-    apiReference({
-      content: document,
-      pageTitle: 'TaxiCiti API Reference',
-      theme: 'default',
-    }),
-  );
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3006);
 }
