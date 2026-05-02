@@ -3,11 +3,117 @@
 import React, { createContext, useContext, useState } from "react";
 import { addToast } from "@heroui/toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { apiClient } from "../lib/api-client";
 
 import { iTrip, iRoute, iRank, iTaxi, iSavedLocation } from "../types";
 import { useMap } from "./MapContext";
 import { usePusher } from "./PusherContext";
+import { CHANNELS, EVENTS } from "@taxiciti/utils";
+import type { RideRequestPayload, RideStatusPayload, WsAck } from "@taxiciti/utils";
+
+interface RouteApiItem {
+	id: string;
+	name: string;
+	sourceRankId: string;
+	destRankId: string;
+	estimatedDuration: number | string;
+	baseFare: number | string;
+	distance: number | string;
+	status: string;
+	polyline?: string;
+	popularLocations?: unknown[];
+}
+
+interface RankApiItem {
+	id: string;
+	name: string;
+	lat: number;
+	lng: number;
+	address: string;
+	phone?: string;
+	region: string;
+}
+
+interface TaxiApiItem {
+	id: string;
+	driver?: {
+		fullName?: string;
+		firstName?: string;
+		lastName?: string;
+		phone?: string;
+	};
+	make?: string;
+	model?: string;
+	licensePlate: string;
+	capacity: number;
+	status: string;
+	currentLocation?: { lat: number; lng: number };
+	routes?: Array<{ routeId?: string }>;
+}
+
+interface PassengerApiItem {
+	status?: string;
+}
+
+interface TripApiItem {
+	id: string;
+	status?: string;
+	requestTime: string;
+	pickupAddress: string;
+	dropoffAddress: string;
+	fare: number | string;
+	paymentMethod?: string;
+	taxiId?: string;
+	rating?: { rating?: number };
+	route?: { name?: string };
+	taxi?: {
+		driver?: {
+			fullName?: string;
+			firstName?: string;
+			lastName?: string;
+		};
+		make?: string;
+		model?: string;
+		licensePlate?: string;
+	};
+	vehicleTrip?: {
+		passengers?: PassengerApiItem[];
+	};
+}
+
+interface RideRequestResponse {
+	id: string;
+	requestTime: string;
+	pickupAddress: string;
+	dropoffAddress: string;
+	fare: number | string;
+	taxiId?: string;
+}
+
+type TripSyncPayload = WsAck<TripApiItem[]> | { success?: boolean; trips?: TripApiItem[]; message?: string };
+
+const toRouteStatus = (status: string): iRoute["status"] => {
+	const normalized = status.toLowerCase();
+	if (normalized === "active" || normalized === "inactive" || normalized === "busy") {
+		return normalized;
+	}
+	return "inactive";
+};
+
+const toTaxiStatus = (status: string): iTaxi["status"] => {
+	const normalized = status.toLowerCase();
+	if (normalized === "available" || normalized === "busy" || normalized === "offline") {
+		return normalized;
+	}
+	return "offline";
+};
+
+const toTripStatus = (status: string): iTrip["status"] => {
+	if (status === "completed" || status === "cancelled" || status === "in-progress" || status === "requested" || status === "driver-arrived" || status === "accepted") {
+		return status;
+	}
+	return "requested";
+};
 
 interface RideContextType {
 	tripHistory: iTrip[];
@@ -53,8 +159,8 @@ const RideContext = createContext<RideContextType | undefined>(undefined);
 
 // API Fetch Functions
 const fetchRoutes = async (): Promise<iRoute[]> => {
-	const { data } = await axios.get("/api/routes");
-	return data.routes.map((r: any) => ({
+	const { data } = await apiClient.get("/api/user/routes");
+	return (data.routes as RouteApiItem[]).map((r) => ({
 		id: r.id,
 		name: r.name,
 		rankId: r.sourceRankId,
@@ -62,70 +168,50 @@ const fetchRoutes = async (): Promise<iRoute[]> => {
 		estimatedDuration: `${r.estimatedDuration} min`,
 		estimatedFare: `R${r.baseFare}`,
 		distance: `${r.distance} km`,
-		status: r.status.toLowerCase(),
-		popularLocations: r.popularLocations
+		status: toRouteStatus(r.status),
+		polyline: r.polyline,
+		popularLocations: r.popularLocations as iRoute["popularLocations"],
 	}));
 };
 
 const fetchRanks = async (): Promise<iRank[]> => {
-	const { data } = await axios.get("/api/ranks");
-	return data.ranks.map((r: any) => ({
+	const { data } = await apiClient.get("/api/user/ranks");
+	return (data.ranks as RankApiItem[]).map((r) => ({
 		id: r.id,
 		name: r.name,
 		coordinates: { lat: r.lat, lng: r.lng },
 		address: r.address,
 		phone: r.phone || "",
-		region: r.region
+		region: r.region,
 	}));
 };
 
 const fetchTaxis = async (): Promise<iTaxi[]> => {
-	const { data } = await axios.get("/api/taxis");
-	return data.taxis.map((t: any) => ({
+	const { data } = await apiClient.get("/api/user/taxis");
+	return (data.taxis as TaxiApiItem[]).map((t) => ({
 		id: t.id,
-		driver: t.driver ? (t.driver.fullName || `${t.driver.firstName} ${t.driver.lastName}`) : "Unknown",
-		model: t.make && t.model ? `${t.make} ${t.model}` : t.model,
+		driver: t.driver ? t.driver.fullName || `${t.driver.firstName || ""} ${t.driver.lastName || ""}`.trim() || "Unknown" : "Unknown",
+		model: t.make && t.model ? `${t.make} ${t.model}` : t.model || "Unknown Model",
 		licensePlate: t.licensePlate,
 		capacity: t.capacity,
 		rating: 4.5, // Placeholder
-		status: t.status.toLowerCase(),
+		status: toTaxiStatus(t.status),
 		location: t.currentLocation ? { lat: t.currentLocation.lat, lng: t.currentLocation.lng } : undefined,
 		eta: "5 min", // Placeholder
 		routeId: t.routes?.[0]?.routeId,
-		phone: t.driver?.phone
-	}));
-};
-
-const fetchTrips = async (): Promise<iTrip[]> => {
-	const { data } = await axios.get("/api/trips");
-	return data.map((t: any) => ({
-		id: t.id,
-		route: t.route?.name || "Unknown Route",
-		date: new Date(t.requestTime).toISOString().split('T')[0],
-		time: new Date(t.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-		pickup: t.pickupAddress,
-		dropoff: t.dropoffAddress,
-		driver: t.taxi?.driver
-			? (t.taxi.driver.fullName || `${t.taxi.driver.firstName} ${t.taxi.driver.lastName}`)
-			: "Unknown",
-		vehicle: t.taxi ? (t.taxi.make && t.taxi.model ? `${t.taxi.make} ${t.taxi.model}` : t.taxi.model) : "Unknown",
-		licensePlate: t.taxi?.licensePlate || "Unknown",
-		fare: `R${t.fare}`,
-		status: t.status.toLowerCase(),
-		paymentMethod: t.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
-		rating: t.rating?.rating
+		phone: t.driver?.phone,
 	}));
 };
 
 const fetchSavedLocations = async (): Promise<iSavedLocation[]> => {
-	const { data } = await axios.get("/api/users/saved-locations");
+	const { data } = await apiClient.get("/api/user/users/saved-locations");
 	return data;
 };
 
 export function RideProvider({ children }: { children: React.ReactNode }) {
 	const queryClient = useQueryClient();
 	const { pickupMarker, dropoffMarker } = useMap();
-	const { subscribe, unsubscribe } = usePusher();
+	const { subscribe, unsubscribe, pusher } = usePusher();
 
 	// State
 	const [activeTrip, setActiveTrip] = useState<iTrip | null>(null);
@@ -135,6 +221,36 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	const [dropoffLocation, setDropoffLocation] = useState<string>("");
 	const [ratingTrip, setRatingTrip] = useState<iTrip | null>(null);
 	const [isRestoring, setIsRestoring] = useState(true);
+	const shouldFetchTaxis = Boolean(selectedRoute || activeTrip);
+
+	const mapTripToUiTrip = React.useCallback((trip: TripApiItem): iTrip => {
+		let mappedStatus = trip.status?.toLowerCase?.() || "requested";
+		if (mappedStatus === "arrived_at_pickup") mappedStatus = "driver-arrived";
+		if (mappedStatus === "in_progress") mappedStatus = "in-progress";
+
+		const passengerCount = trip.vehicleTrip?.passengers?.filter((p) => ["ACCEPTED", "IN_PROGRESS", "COMPLETED"].includes(p.status ?? "")).length || 0;
+
+		return {
+			id: trip.id,
+			route: trip.route?.name || "Unknown Route",
+			date: new Date(trip.requestTime).toISOString().split("T")[0],
+			time: new Date(trip.requestTime).toLocaleTimeString([], {
+				hour: "2-digit",
+				minute: "2-digit",
+			}),
+			pickup: trip.pickupAddress,
+			dropoff: trip.dropoffAddress,
+			driver: trip.taxi?.driver ? trip.taxi.driver.fullName || `${trip.taxi.driver.firstName} ${trip.taxi.driver.lastName}` : "Pending Assignment",
+			vehicle: trip.taxi ? (trip.taxi.make && trip.taxi.model ? `${trip.taxi.make} ${trip.taxi.model}` : trip.taxi.model || "Pending Assignment") : "Pending Assignment",
+			licensePlate: trip.taxi?.licensePlate || "Pending Assignment",
+			fare: `R${trip.fare}`,
+			status: toTripStatus(mappedStatus),
+			paymentMethod: trip.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
+			rating: trip.rating?.rating,
+			taxiId: trip.taxiId,
+			passengerCount,
+		};
+	}, []);
 
 	// Restore state from local storage
 	React.useEffect(() => {
@@ -165,7 +281,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	React.useEffect(() => {
 		if (isRestoring) return;
 		// Don't persist completed trips to allow for fresh start on reload
-		if (activeTrip && activeTrip.status !== 'completed') {
+		if (activeTrip && activeTrip.status !== "completed") {
 			localStorage.setItem("activeTrip", JSON.stringify(activeTrip));
 		} else {
 			localStorage.removeItem("activeTrip");
@@ -199,199 +315,116 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	// Queries
 	const { data: routes = [], isLoading: isLoadingRoutes } = useQuery({
 		queryKey: ["routes"],
-		queryFn: fetchRoutes
+		queryFn: fetchRoutes,
 	});
 
 	const { data: ranks = [], isLoading: isLoadingRanks } = useQuery({
 		queryKey: ["ranks"],
-		queryFn: fetchRanks
+		queryFn: fetchRanks,
 	});
 
-	const { data: taxis = [], isLoading: isLoadingTaxis } = useQuery({
+	const { data: taxis = [] } = useQuery({
 		queryKey: ["taxis"],
 		queryFn: fetchTaxis,
-		refetchInterval: 5000, // Poll every 5 seconds for live location updates
+		enabled: shouldFetchTaxis,
+		refetchInterval: shouldFetchTaxis ? 5000 : false, // Poll only while user is in ride-selection/tracking flow
 	});
 
-	const { data: tripHistory = [], isLoading: isLoadingTrips } = useQuery({
+	const { data: tripHistory = [] } = useQuery({
 		queryKey: ["trips"],
-		queryFn: fetchTrips
+		queryFn: async () => {
+			if (!pusher) {
+				return [] as iTrip[];
+			}
+
+			const response = await new Promise<TripApiItem[]>((resolve, reject) => {
+				pusher.emit(EVENTS.USER_TRIPS_SYNC, {}, (payload: TripSyncPayload) => {
+					if (payload?.success) {
+						if ("data" in payload) {
+							resolve(payload.data ?? []);
+							return;
+						}
+
+						resolve(payload.trips ?? []);
+						return;
+					}
+					reject(new Error(payload?.message ?? "Failed to sync trips"));
+				});
+			});
+
+			return response.map(mapTripToUiTrip);
+		},
+		enabled: Boolean(pusher),
 	});
 
 	const { data: savedLocations = [], isLoading: isLoadingSavedLocations } = useQuery({
 		queryKey: ["savedLocations"],
-		queryFn: fetchSavedLocations
+		queryFn: fetchSavedLocations,
 	});
 
-	// Poll for active trip updates
-	const { data: polledTrip } = useQuery({
-		queryKey: ["activeTrip", activeTrip?.id],
-		queryFn: async () => {
-			if (!activeTrip?.id) return null;
-			const { data } = await axios.get(`/api/trips/${activeTrip.id}`);
-			return data;
-		},
-		enabled: !!activeTrip?.id && ["requested", "accepted", "driver-arrived", "arrived_at_pickup", "in-progress", "in_progress"].includes(activeTrip.status),
-		refetchOnWindowFocus: false,
-	});
-
-	// Helper to determine status precedence
-	const getStatusWeight = (status: string) => {
-		switch (status.toLowerCase()) {
-			case 'requested': return 1;
-			case 'accepted': return 2;
-			case 'driver-arrived': return 3;
-			case 'in-progress': return 4;
-			case 'completed': return 5;
-			case 'cancelled': return 6;
-			default: return 0;
-		}
-	};
-
-	// Sync polled trip data with activeTrip state
-	React.useEffect(() => {
-		if (polledTrip && activeTrip) {
-			const driverName = polledTrip.taxi?.driver
-				? (polledTrip.taxi.driver.fullName || `${polledTrip.taxi.driver.firstName} ${polledTrip.taxi.driver.lastName}`)
-				: "Pending Assignment";
-
-			// Map backend status to frontend status
-			let mappedStatus = polledTrip.status.toLowerCase();
-			if (mappedStatus === 'arrived_at_pickup') mappedStatus = 'driver-arrived';
-			if (mappedStatus === 'in_progress') mappedStatus = 'in-progress';
-
-			// Calculate passenger count from vehicle trip
-			const passengerCount = polledTrip.vehicleTrip?.passengers?.filter((p: any) =>
-				['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(p.status)
-			).length || 0;
-
-			const updatedTrip: iTrip = {
-				id: polledTrip.id,
-				route: polledTrip.route?.name || "Unknown Route",
-				date: new Date(polledTrip.requestTime).toISOString().split('T')[0],
-				time: new Date(polledTrip.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-				pickup: polledTrip.pickupAddress,
-				dropoff: polledTrip.dropoffAddress,
-				driver: driverName,
-				vehicle: polledTrip.taxi ? (polledTrip.taxi.make && polledTrip.taxi.model ? `${polledTrip.taxi.make} ${polledTrip.taxi.model}` : polledTrip.taxi.model) : "Pending Assignment",
-				licensePlate: polledTrip.taxi?.licensePlate || "Pending Assignment",
-				fare: `R${polledTrip.fare}`,
-				status: mappedStatus,
-				paymentMethod: polledTrip.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
-				rating: polledTrip.rating?.rating,
-				taxiId: polledTrip.taxiId,
-				passengerCount: passengerCount
-			};
-
-			// Check if status changed or driver was assigned
-			const statusChanged = updatedTrip.status !== activeTrip.status;
-			const driverAssigned = activeTrip.driver === "Pending Assignment" && updatedTrip.driver !== "Pending Assignment";
-			const passengersChanged = updatedTrip.passengerCount !== activeTrip.passengerCount;
-
-			// Prevent backward status transitions (race condition fix)
-			const currentWeight = getStatusWeight(activeTrip.status);
-			const newWeight = getStatusWeight(updatedTrip.status);
-
-			if (statusChanged && newWeight < currentWeight && activeTrip.status !== 'cancelled') {
-				// Ignore backward transition (e.g. polling says 'driver-arrived' but we are 'in-progress')
-				return;
-			}
-
-			if (statusChanged || driverAssigned || passengersChanged) {
-				setActiveTrip(updatedTrip);
-
-				if (statusChanged && updatedTrip.status === 'accepted') {
-					addToast({
-						title: "Ride Accepted",
-						description: `${updatedTrip.driver} is on their way!`,
-						color: "success",
-					});
-				} else if (statusChanged && updatedTrip.status === 'driver-arrived') {
-					addToast({
-						title: "Driver Arrived",
-						description: "Your taxi has arrived at the pickup location.",
-						color: "primary",
-					});
-				} else if (statusChanged && updatedTrip.status === 'in-progress') {
-					addToast({
-						title: "Ride Started",
-						description: "You are on your way to the destination.",
-						color: "success",
-					});
-				} else if (statusChanged && updatedTrip.status === 'completed') {
-					addToast({
-						title: "Ride Completed",
-						description: "You have arrived at your destination.",
-						color: "success",
-					});
+	const emitWithAck = React.useCallback(
+		<TResponse,>(event: string, payload: unknown) =>
+			new Promise<TResponse>((resolve, reject) => {
+				if (!pusher) {
+					reject(new Error("Realtime socket is not connected"));
+					return;
 				}
-			}
-		}
-	}, [polledTrip, activeTrip]);
+
+				pusher.emit(event, payload, (response: WsAck<TResponse> | ({ success?: boolean; trip?: TResponse; message?: string } & Record<string, unknown>)) => {
+					if (response?.success) {
+						if ("data" in response) {
+							resolve(response.data as TResponse);
+							return;
+						}
+
+						resolve((response.trip as TResponse) ?? (response as TResponse));
+						return;
+					}
+
+					reject(new Error(response?.message ?? "Realtime operation failed"));
+				});
+			}),
+		[pusher],
+	);
 
 	// Subscribe to Pusher updates for active trip
 	React.useEffect(() => {
 		if (!activeTrip?.id) return;
 
-		const channelName = `trip-${activeTrip.id}`;
+		const channelName = CHANNELS.TRIP(activeTrip.id);
 
-		const handleTripUpdate = (updatedTrip: any) => {
-			// Logic duplicated from polling effect - strictly this should be a shared function
-			const driverName = updatedTrip.taxi?.driver
-				? (updatedTrip.taxi.driver.fullName || `${updatedTrip.taxi.driver.firstName} ${updatedTrip.taxi.driver.lastName}`)
-				: "Pending Assignment";
-
-			let mappedStatus = updatedTrip.status.toLowerCase();
-			if (mappedStatus === 'arrived_at_pickup') mappedStatus = 'driver-arrived';
-			if (mappedStatus === 'in_progress') mappedStatus = 'in-progress';
-
-			const passengerCount = updatedTrip.vehicleTrip?.passengers?.filter((p: any) =>
-				['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(p.status)
-			).length || 0;
-
-			const newTripState: iTrip = {
-				id: updatedTrip.id,
-				route: updatedTrip.route?.name || "Unknown Route",
-				date: new Date(updatedTrip.requestTime).toISOString().split('T')[0],
-				time: new Date(updatedTrip.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-				pickup: updatedTrip.pickupAddress,
-				dropoff: updatedTrip.dropoffAddress,
-				driver: driverName,
-				vehicle: updatedTrip.taxi ? (updatedTrip.taxi.make && updatedTrip.taxi.model ? `${updatedTrip.taxi.make} ${updatedTrip.taxi.model}` : updatedTrip.taxi.model) : "Pending Assignment",
-				licensePlate: updatedTrip.taxi?.licensePlate || "Pending Assignment",
-				fare: `R${updatedTrip.fare}`,
-				status: mappedStatus,
-				paymentMethod: updatedTrip.paymentMethod === "QR_CODE" ? "QR Code" : "Cash",
-				rating: updatedTrip.rating?.rating,
-				taxiId: updatedTrip.taxiId,
-				passengerCount: passengerCount
-			};
+		const handleTripUpdate = (updatedTrip: TripApiItem) => {
+			const newTripState = mapTripToUiTrip(updatedTrip);
 
 			// Check for changes (ignoring race cons somewhat as Pusher should be latest)
 			const statusChanged = newTripState.status !== activeTrip.status;
 
 			setActiveTrip(newTripState);
+			queryClient.setQueryData<iTrip[]>(["trips"], (previous = []) => {
+				const others = previous.filter((trip) => trip.id !== newTripState.id);
+				return [newTripState, ...others];
+			});
 
 			if (statusChanged) {
-				if (newTripState.status === 'accepted') {
+				if (newTripState.status === "accepted") {
 					addToast({
 						title: "Ride Accepted",
 						description: `${newTripState.driver} is on their way!`,
 						color: "success",
 					});
-				} else if (newTripState.status === 'driver-arrived') {
+				} else if (newTripState.status === "driver-arrived") {
 					addToast({
 						title: "Driver Arrived",
 						description: "Your taxi has arrived at the pickup location.",
 						color: "primary",
 					});
-				} else if (newTripState.status === 'in-progress') {
+				} else if (newTripState.status === "in-progress") {
 					addToast({
 						title: "Ride Started",
 						description: "You are on your way to the destination.",
 						color: "success",
 					});
-				} else if (newTripState.status === 'completed') {
+				} else if (newTripState.status === "completed") {
 					addToast({
 						title: "Ride Completed",
 						description: "You have arrived at your destination.",
@@ -403,90 +436,45 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			}
 		};
 
-		subscribe(channelName, "trip-updated", handleTripUpdate);
+		subscribe(channelName, EVENTS.TRIP_UPDATED, handleTripUpdate);
 
 		return () => unsubscribe(channelName);
-	}, [activeTrip?.id, activeTrip?.status, subscribe, unsubscribe, queryClient]);
-
-	// Mutations
-	const createTripMutation = useMutation({
-		mutationFn: async (tripData: any) => {
-			const { data } = await axios.post("/api/trips", tripData);
-			return data;
-		},
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["trips"] });
-
-			// Find the taxi used for this trip (if assigned)
-			const taxi = data.taxiId ? taxis.find(t => t.id === data.taxiId) : null;
-
-			const newTrip: iTrip = {
-				id: data.id,
-				route: selectedRoute?.name || "Unknown",
-				date: new Date(data.requestTime).toISOString().split('T')[0],
-				time: new Date(data.requestTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-				pickup: data.pickupAddress,
-				dropoff: data.dropoffAddress,
-				driver: taxi?.driver || "Pending Assignment",
-				vehicle: taxi?.model || "Pending Assignment",
-				licensePlate: taxi?.licensePlate || "Pending Assignment",
-				fare: `R${data.fare}`,
-				status: "requested",
-				paymentMethod: "Cash",
-				taxiId: data.taxiId
-			};
-
-			setActiveTrip(newTrip);
-			addToast({
-				title: "Ride Requested",
-				description: "Your request has been sent to nearby drivers.",
-				color: "success",
-			});
-		},
-		onError: (error) => {
-			console.error("Error requesting ride:", error);
-			addToast({
-				title: "Error",
-				description: "Failed to request ride. Please try again.",
-				color: "danger",
-			});
-		}
-	});
+	}, [activeTrip?.id, activeTrip?.status, subscribe, unsubscribe, queryClient, mapTripToUiTrip]);
 
 	// Saved Location Mutations
 	const saveLocationMutation = useMutation({
 		mutationFn: async (location: Omit<iSavedLocation, "id">) => {
-			const { data } = await axios.post("/api/users/saved-locations", location);
+			const { data } = await apiClient.post("/api/user/users/saved-locations", location);
 			return data;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
 			addToast({ title: "Location Saved", description: "Location saved successfully.", color: "success" });
 		},
-		onError: () => addToast({ title: "Error", description: "Failed to save location.", color: "danger" })
+		onError: () => addToast({ title: "Error", description: "Failed to save location.", color: "danger" }),
 	});
 
 	const updateLocationMutation = useMutation({
-		mutationFn: async ({ id, location }: { id: string, location: Partial<iSavedLocation> }) => {
-			const { data } = await axios.put(`/api/users/saved-locations/${id}`, location);
+		mutationFn: async ({ id, location }: { id: string; location: Partial<iSavedLocation> }) => {
+			const { data } = await apiClient.put(`/api/user/users/saved-locations/${id}`, location);
 			return data;
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
 			addToast({ title: "Location Updated", description: "Location updated successfully.", color: "success" });
 		},
-		onError: () => addToast({ title: "Error", description: "Failed to update location.", color: "danger" })
+		onError: () => addToast({ title: "Error", description: "Failed to update location.", color: "danger" }),
 	});
 
 	const deleteLocationMutation = useMutation({
 		mutationFn: async (id: string) => {
-			await axios.delete(`/api/users/saved-locations/${id}`);
+			await apiClient.delete(`/api/user/users/saved-locations/${id}`);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
 			addToast({ title: "Location Deleted", description: "Location removed successfully.", color: "success" });
 		},
-		onError: () => addToast({ title: "Error", description: "Failed to delete location.", color: "danger" })
+		onError: () => addToast({ title: "Error", description: "Failed to delete location.", color: "danger" }),
 	});
 
 	// Actions wrappers
@@ -510,8 +498,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			console.error("Cannot request ride: missing required information");
 			addToast({
 				title: "Missing Information",
-				description:
-					"Please ensure you have selected a route, pickup, and drop-off locations.",
+				description: "Please ensure you have selected a route, pickup, and drop-off locations.",
 				color: "danger",
 			});
 			return;
@@ -544,9 +531,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		}
 
 		try {
-			await createTripMutation.mutateAsync({
+			const payload: RideRequestPayload = {
 				routeId: selectedRoute.id,
-				// taxiId is optional now, we don't pass it for broadcast requests
 				rankId: rank.id,
 				pickupAddress: pickupLocation,
 				pickupLat: pickupLat,
@@ -555,11 +541,42 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				dropoffLat: dropoffLat,
 				dropoffLng: dropoffLng,
 				fare: parseFloat(selectedRoute.estimatedFare.replace("R", "")),
-				paymentMethod: "CASH"
+				paymentMethod: "CASH",
+			};
+			const createdTrip = await emitWithAck<RideRequestResponse>(EVENTS.RIDE_REQUEST, payload);
+
+			queryClient.invalidateQueries({ queryKey: ["trips"] });
+
+			const taxi = createdTrip.taxiId ? taxis.find((t) => t.id === createdTrip.taxiId) : null;
+			const newTrip: iTrip = {
+				id: createdTrip.id,
+				route: selectedRoute.name,
+				date: new Date(createdTrip.requestTime).toISOString().split("T")[0],
+				time: new Date(createdTrip.requestTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+				pickup: createdTrip.pickupAddress,
+				dropoff: createdTrip.dropoffAddress,
+				driver: taxi?.driver || "Pending Assignment",
+				vehicle: taxi?.model || "Pending Assignment",
+				licensePlate: taxi?.licensePlate || "Pending Assignment",
+				fare: `R${createdTrip.fare}`,
+				status: "requested",
+				paymentMethod: "Cash",
+				taxiId: createdTrip.taxiId,
+			};
+
+			setActiveTrip(newTrip);
+			addToast({
+				title: "Ride Requested",
+				description: "Your request has been sent to nearby drivers.",
+				color: "success",
 			});
 		} catch (error) {
-			// Error handling is already done in onError callback of mutation
 			console.error("Failed to create trip", error);
+			addToast({
+				title: "Error",
+				description: "Failed to request ride. Please try again.",
+				color: "danger",
+			});
 		}
 	};
 
@@ -567,7 +584,11 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 	const updateTripStatus = async (status: string) => {
 		if (!activeTrip) return;
 		try {
-			await axios.patch(`/api/trips/${activeTrip.id}/status`, { status });
+			const payload: RideStatusPayload = {
+				rideId: activeTrip.id,
+				status: status as RideStatusPayload["status"],
+			};
+			await emitWithAck(EVENTS.RIDE_STATUS_UPDATE, payload);
 			// Invalidate trips query to update history
 			queryClient.invalidateQueries({ queryKey: ["trips"] });
 		} catch (error) {
@@ -595,7 +616,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				description: "Your taxi has arrived at the pickup location.",
 				color: "primary",
 			});
-		} catch (error) {
+		} catch {
 			// Error handled in helper
 		}
 	};
@@ -651,13 +672,6 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		// Clear SessionStorage
 		sessionStorage.clear();
 
-		// Clear Cookies (simple implementation for non-HttpOnly cookies)
-		document.cookie.split(";").forEach((c) => {
-			document.cookie = c
-				.replace(/^ +/, "")
-				.replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-		});
-
 		// Reload to ensure fresh state
 		window.location.href = "/";
 	};
@@ -674,7 +688,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				description: "Your ride has been cancelled.",
 				color: "default",
 			});
-		} catch (error) {
+		} catch {
 			// Error handled in helper
 		}
 	};
@@ -688,8 +702,8 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 			const updatedTrip = { ...activeTrip, status: "completed" as const };
 			setActiveTrip(updatedTrip);
 
-			// Trigger rating modal
-			setRatingTrip(updatedTrip);
+			// Trigger rating modal - REMOVED strictly to favour the Full Page Details view
+			// setRatingTrip(updatedTrip);
 
 			// Clear other state, but keep activeTrip for the receipt view until user dismisses or rates
 			setSelectedRoute(null);
@@ -702,7 +716,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 				description: "You have arrived at your destination.",
 				color: "success",
 			});
-		} catch (error) {
+		} catch {
 			// Error handled in helper
 		}
 	};
@@ -712,9 +726,9 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		if (!activeTrip) return;
 
 		const shareData = {
-			title: 'Track my TaxiCity Ride',
+			title: "Track my TaxiCity Ride",
 			text: `I'm on my way to ${activeTrip.dropoff}. Track my ride here:`,
-			url: `${window.location.origin}/ride/track?trip=${activeTrip.id}`
+			url: `${window.location.origin}/ride/track?trip=${activeTrip.id}`,
 		};
 
 		try {
@@ -748,7 +762,7 @@ export function RideProvider({ children }: { children: React.ReactNode }) {
 		isLoadingSavedLocations,
 		isSavingLocation: saveLocationMutation.isPending,
 		isDeletingLocation: deleteLocationMutation.isPending,
-		isLoading: isLoadingRoutes || isLoadingRanks || isLoadingTaxis || isLoadingTrips,
+		isLoading: isLoadingRoutes || isLoadingRanks,
 		isRestoring,
 
 		setActiveTrip,
@@ -781,4 +795,8 @@ export function useRide() {
 	}
 
 	return context;
+}
+
+export function useOptionalRide() {
+	return useContext(RideContext);
 }

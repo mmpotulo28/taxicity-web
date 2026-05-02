@@ -5,7 +5,7 @@ import { Button } from "@heroui/button";
 import { Icon } from "@iconify/react";
 import { Card, CardBody } from "@heroui/card";
 
-import { useRide, MapView } from "@taxyciti/ui";
+import { useRide, MapView } from "@taxiciti/ui";
 
 
 const TaxiList: React.FC = () => {

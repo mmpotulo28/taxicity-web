@@ -31,6 +31,7 @@ export interface iRoute {
 	estimatedFare: string;
 	distance: string;
 	status: "active" | "inactive" | "busy";
+	polyline?: string;
 	popularLocations?: iPopularLocation[];
 }
 

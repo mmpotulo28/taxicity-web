@@ -22,60 +22,26 @@ import {
 } from "recharts";
 
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useDashboardCharts } from "@/hooks/useDashboardCharts";
 import { useTrips } from "@/hooks/useTrips";
+import { DashboardStatsGrid, DashboardStatProps } from "@/components/dashboard/DashboardStats";
+import { TripActivityChart, RevenueBreakdownChart } from "@/components/dashboard/Charts";
 
 export default function Dashboard() {
 	const router = useRouter();
 
 
 	// Use the real data hook
-	const { stats, isLoading: isStatsLoading, refetch } = useDashboardStats();
+	const { stats, isLoading: isStatsLoading, refetch: refetchStats } = useDashboardStats();
+	const { charts, isLoading: isChartsLoading, refetch: refetchCharts } = useDashboardCharts();
 	const { trips: recentTrips, isLoading: isTripsLoading } = useTrips();
 	const [isRefreshing, setIsRefreshing] = useState(false);
 
-	const isLoading = isStatsLoading || isRefreshing;
+	const isLoading = isStatsLoading || isChartsLoading || isRefreshing;
 
 	const [timeRange, setTimeRange] = useState("today");
-	const [tripActivityData, setTripActivityData] = useState<
-		{
-			name: string;
-			trips: number;
-			revenue: number;
-		}[]
-	>([]);
-	const [revenueBreakdownData, setRevenueBreakdownData] = useState<
-		{
-			name: string;
-			value: number;
-			color: string;
-		}[]
-	>([]);
 
-	useEffect(() => {
-		// Only chart data is simulated now
-		const generateChartData = () => {
-			// Generate trip activity data for the chart
-			const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-			const activityData = daysOfWeek.map((day) => ({
-				name: day,
-				trips: Math.floor(Math.random() * 80) + 20,
-				revenue: Math.floor(Math.random() * 5000) + 1000,
-			}));
-
-			setTripActivityData(activityData);
-
-			// Generate revenue breakdown data for pie chart
-			const breakdownData = [
-				{ name: "Cash", value: 45, color: "#0070F3" },
-				{ name: "QR Code", value: 35, color: "#10B981" },
-				{ name: "Mobile", value: 20, color: "#F59E0B" },
-			];
-
-			setRevenueBreakdownData(breakdownData);
-		};
-
-		generateChartData();
-	}, []);
+	// Removed local simulation of chart data
 
 	// Default values if data is loading or undefined
 	const activeTrips = stats?.activeTrips || 0;
@@ -83,54 +49,16 @@ export default function Dashboard() {
 	const availableTaxis = stats?.availableTaxis || 0;
 	const todayRevenue = stats?.todayRevenue ? `R${Number(stats.todayRevenue).toFixed(2)}` : "R0.00";
 
-	const StatCard = ({
-		title,
-		value,
-		icon,
-		color,
-		change,
-		loading = isLoading,
-	}: {
-		title: string;
-		value: string | number;
-		icon: string;
-		color: string;
-		change?: string;
-		loading?: boolean;
-	}) => (
-		<Card className="shadow-sm">
-			<CardBody className="p-4">
-				<div className="flex items-center justify-between">
-					<div>
-						<p className="text-sm text-default-500">{title}</p>
-						{loading ? (
-							<div className="h-8 w-24 bg-default-100 rounded-md animate-pulse mt-1" />
-						) : (
-							<p className="text-2xl font-bold mt-1">{value}</p>
-						)}
-						{!loading && change && (
-							<p
-								className={`text-xs flex items-center gap-1 mt-1 ${change.startsWith("+") ? "text-success-600" : "text-danger-600"
-									}`}>
-								<Icon
-									icon={
-										change.startsWith("+")
-											? "lucide:trending-up"
-											: "lucide:trending-down"
-									}
-								/>
-								{change} from yesterday
-							</p>
-						)}
-					</div>
-					<div
-						className={`w-12 h-12 rounded-full bg-${color}/20 flex items-center justify-center`}>
-						<Icon className={`text-${color} text-2xl`} icon={icon} />
-					</div>
-				</div>
-			</CardBody>
-		</Card>
-	);
+	// Use real chart data from the hook
+	const tripActivityData = charts?.activity || [];
+	const revenueBreakdownData = charts?.revenueBreakdown || [];
+
+	const dashboardStats: DashboardStatProps[] = [
+		{ title: "Active Trips", value: activeTrips, icon: "lucide:car", color: "primary", change: "+12.5%" },
+		{ title: "Available Taxis", value: availableTaxis, icon: "lucide:check-circle", color: "success", change: "+5.3%" },
+		{ title: "Today's Revenue", value: todayRevenue, icon: "lucide:dollar-sign", color: "warning", change: "+8.1%" },
+		{ title: "Pending Approvals", value: pendingApprovals, icon: "lucide:alert-circle", color: "danger", change: "-2.4%" },
+	];
 
 	return (
 		<div className="space-y-6">
@@ -151,7 +79,7 @@ export default function Dashboard() {
 						variant="flat"
 						onPress={() => {
 							setIsRefreshing(true);
-							refetch().finally(() => {
+							Promise.all([refetchStats(), refetchCharts()]).finally(() => {
 								setTimeout(() => setIsRefreshing(false), 800);
 							});
 						}}>
@@ -184,36 +112,7 @@ export default function Dashboard() {
 			</div>
 
 			{/* Stats Cards */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-				<StatCard
-					change="+12.5%"
-					color="primary"
-					icon="lucide:car"
-					title="Active Trips"
-					value={activeTrips}
-				/>
-				<StatCard
-					change="+5.3%"
-					color="success"
-					icon="lucide:check-circle"
-					title="Available Taxis"
-					value={availableTaxis}
-				/>
-				<StatCard
-					change="+8.1%"
-					color="warning"
-					icon="lucide:dollar-sign"
-					title="Today's Revenue"
-					value={todayRevenue}
-				/>
-				<StatCard
-					change="-2.4%"
-					color="danger"
-					icon="lucide:alert-circle"
-					title="Pending Approvals"
-					value={pendingApprovals}
-				/>
-			</div>
+			<DashboardStatsGrid stats={dashboardStats} isLoading={isLoading} />
 
 			{/* Time Range Selector */}
 			<div className="flex justify-end">
@@ -259,37 +158,7 @@ export default function Dashboard() {
 							</div>
 						) : (
 							<div className="h-64">
-								<ResponsiveContainer height="100%" width="100%">
-									<BarChart
-										data={tripActivityData}
-										margin={{
-											top: 10,
-											right: 30,
-											left: 0,
-											bottom: 0,
-										}}>
-										<CartesianGrid
-											opacity={0.1}
-											strokeDasharray="3 3"
-											vertical={false}
-										/>
-										<XAxis dataKey="name" />
-										<YAxis />
-										<Tooltip
-											contentStyle={{
-												backgroundColor: "var(--background)",
-												borderColor: "var(--divider)",
-											}}
-										/>
-										<Legend />
-										<Bar
-											dataKey="trips"
-											fill="#0070F3"
-											name="Trip Count"
-											radius={[4, 4, 0, 0]}
-										/>
-									</BarChart>
-								</ResponsiveContainer>
+								<TripActivityChart data={tripActivityData} />
 							</div>
 						)}
 					</CardBody>
@@ -310,37 +179,7 @@ export default function Dashboard() {
 							</div>
 						) : (
 							<div className="h-64">
-								<ResponsiveContainer height="100%" width="100%">
-									<PieChart>
-										<Pie
-											cx="50%"
-											cy="45%"
-											data={revenueBreakdownData}
-											dataKey="value"
-											fill="#8884d8"
-											innerRadius={60}
-											label={({ name, percent }) =>
-												`${name} ${(percent * 100).toFixed(0)}%`
-											}
-											outerRadius={80}
-											paddingAngle={5}>
-											{revenueBreakdownData.map((entry, index) => (
-												<Cell key={`cell-${index}`} fill={entry.color} />
-											))}
-										</Pie>
-										<Tooltip
-											contentStyle={{
-												backgroundColor: "var(--background)",
-												borderColor: "var(--divider)",
-											}}
-										/>
-										<Legend
-											align="center"
-											layout="horizontal"
-											verticalAlign="bottom"
-										/>
-									</PieChart>
-								</ResponsiveContainer>
+								<RevenueBreakdownChart data={revenueBreakdownData} />
 							</div>
 						)}
 					</CardBody>

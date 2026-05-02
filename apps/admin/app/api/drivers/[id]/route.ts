@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@taxyciti/database";
+import { prisma } from "@taxiciti/database";
 import { auth } from "@clerk/nextjs/server";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -52,10 +52,10 @@ export const siteConfig = {
 		},
 	],
 	links: {
-		github: "https://github.com/taxyciti/taxyciti-app",
-		twitter: "https://twitter.com/taxyciti_za",
-		docs: "https://docs.taxyciti.co.za",
-		discord: "https://discord.gg/taxyciti",
-		sponsor: "https://taxyciti.co.za/sponsor",
+		github: "https://github.com/taxiciti/taxiciti-app",
+		twitter: "https://twitter.com/taxiciti_za",
+		docs: "https://docs.taxiciti.co.za",
+		discord: "https://discord.gg/taxiciti",
+		sponsor: "https://taxiciti.co.za/sponsor",
 	},
 };

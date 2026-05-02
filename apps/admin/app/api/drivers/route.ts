@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@taxyciti/database";
+import { prisma } from "@taxiciti/database";
 import { auth } from "@clerk/nextjs/server";
 
 export async function GET(_req: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 		}
 
 		const body = await req.json();
-		const { firstName, lastName, phone, licenseNumber, licenseExpiry, email, password } = body;
+		const { firstName, lastName, phone, licenseNumber, licenseExpiry, email } = body;
 
 		// Basic validation
 		if (!firstName || !lastName || !phone || !licenseNumber || !licenseExpiry) {

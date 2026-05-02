@@ -30,7 +30,7 @@ COPY --from=pruner /app/out/full/packages/database/prisma ./packages/database/pr
 COPY --from=pruner /app/out/full/packages/database/prisma.config.ts ./packages/database/prisma.config.ts
 
 # Set dummy DATABASE_URL to allow prisma generate to run during install
-ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taxyciti"
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taxiciti"
 
 RUN pnpm install --frozen-lockfile
 

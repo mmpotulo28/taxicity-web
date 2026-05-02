@@ -1,4 +1,4 @@
-import "@taxyciti/ui/styles/global.css";
+import "@taxiciti/ui/styles/global.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 
@@ -7,7 +7,7 @@ import { Main } from "./Main";
 
 import { fontSans } from "@/lib/config/fonts";
 import { siteConfig } from "@/lib/config/site";
-import { MobileTabs, GlobalModals } from "@taxyciti/ui";
+import { MobileTabs, GlobalModals } from "@taxiciti/ui";
 
 export const metadata: Metadata = {
 	title: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "en_ZA",
-		url: "https://taxyciti.co.za",
+		url: "https://taxiciti.co.za",
 		title: siteConfig.name,
 		description: siteConfig.description,
 		siteName: siteConfig.name,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 		card: "summary_large_image",
 		title: siteConfig.name,
 		description: siteConfig.description,
-		creator: "@taxyciti_za",
+		creator: "@taxiciti_za",
 	},
 	icons: {
 		icon: "/favicon.ico",
@@ -51,26 +51,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				{/* Manually load fonts to bypass build-time fetch errors in Docker */}
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-				<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inter:wght@100..900&display=swap" rel="stylesheet" />
-				<style>{`
-                  :root {
-                    --font-sans: 'Inter', sans-serif;
-                    --font-mono: 'Fira Code', monospace;
-                  }
-                `}</style>
 			</head>
 			<body
 				className={clsx(
-					"max-h-screen text-foreground bg-background font-sans antialiased max-w-lg",
+					"max-h-screen text-foreground bg-background antialiased max-w-lg",
 					fontSans.variable,
 				)}>
 				<Providers
 					themeProps={{
 						attribute: "class",
-						defaultTheme: "light",
+						defaultTheme: "dark",
 						enableColorScheme: true,
 						enableSystem: true,
-						storageKey: "taxyciti_theme",
+						storageKey: "taxiciti_theme",
 						themes: ["light", "dark"],
 					}}>
 					<div className="flex flex-col h-screen mx-auto text-foreground bg-background">

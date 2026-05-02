@@ -1,16 +1,42 @@
-import Pusher from "pusher";
+// Replacement for Pusher server-side client using our custom WebSocket Server
 
-// Ensure existing instance prevents multiple connections in dev (though Pusher is HTTP based, so less issue than DB)
-const globalForPusher = globalThis as unknown as { pusher: Pusher };
+const WS_URL = process.env.WEBSOCKET_URL || "http://localhost:3006";
+const WS_KEY = process.env.WS_INTERNAL_API_KEY || "taxicity-secret-key";
 
-export const pusherServer =
-	globalForPusher.pusher ||
-	new Pusher({
-		appId: process.env.PUSHER_APP_ID || "",
-		key: process.env.PUSHER_KEY || "",
-		secret: process.env.PUSHER_SECRET || "",
-		cluster: process.env.PUSHER_CLUSTER || "mt1",
-		useTLS: true,
-	});
+class WebSocketServerClient {
+	async trigger(channel: string | string[], event: string, data: any) {
+		const channels = Array.isArray(channel) ? channel : [channel];
 
-if (process.env.NODE_ENV !== "production") globalForPusher.pusher = pusherServer;
+		const promises = channels.map(async (ch) => {
+			try {
+				const response = await fetch(`${WS_URL}/trigger`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"x-api-key": WS_KEY,
+					},
+					body: JSON.stringify({ channel: ch, event, data }),
+				});
+
+				if (!response.ok) {
+					console.error(`Failed to trigger event on ${WS_URL}: ${response.statusText}`);
+					const text = await response.text();
+					console.error("Response body:", text);
+				} else {
+					console.log(`Successfully triggered ${event} on ${ch} to ${WS_URL}`);
+				}
+			} catch (error) {
+				console.error("Error triggering websocket event:", error);
+			}
+		});
+
+		await Promise.all(promises);
+	}
+}
+
+// Preserve the singleton pattern if desired, though less critical for this HTTP client
+const globalForWs = globalThis as unknown as { websocketClient: WebSocketServerClient };
+
+export const pusherServer = globalForWs.websocketClient || new WebSocketServerClient();
+
+if (process.env.NODE_ENV !== "production") globalForWs.websocketClient = pusherServer;

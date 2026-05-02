@@ -27,7 +27,7 @@ The goal is to expand the TaxiCity platform to mobile devices (iOS and Android) 
 #### Native Integrations (Phase 1)
 
 - **Geolocation**: Request native location permissions and pass coordinates to the web view if native-level precision is required, or allow the WebView to request standard HTML5 Geolocation permissions.
-- **Deep Linking**: Handle universal links (e.g., `taxyciti.com/trip/123`) to open the app directly to the correct page.
+- **Deep Linking**: Handle universal links (e.g., `taxiciti.com/trip/123`) to open the app directly to the correct page.
 - **Safe Area Handling**: Ensure content does not overlap with status bars or standard device notches (using `react-native-safe-area-context`).
 
 #### Native Integrations (Phase 2 - Future)
@@ -85,7 +85,7 @@ import { WebView } from 'react-native-webview';
 export default function App() {
   return (
     <WebView
-      source={{ uri: 'https://staging.taxyciti.com' }} // Env var dependent
+      source={{ uri: 'https://staging.taxiciti.com' }} // Env var dependent
       style={{ flex: 1 }}
     />
   );

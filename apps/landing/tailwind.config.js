@@ -1,4 +1,4 @@
-import sharedConfig from "@taxyciti/ui/tailwind.config";
+import sharedConfig from "@taxiciti/ui/tailwind.config";
 
 /** @type {import('tailwindcss').Config} */
 const config = {

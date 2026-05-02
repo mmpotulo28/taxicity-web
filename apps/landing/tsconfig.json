@@ -1,5 +1,5 @@
 {
- "extends": "@taxyciti/configs/tsconfig",
+ "extends": "@taxiciti/configs/tsconfig",
  "compilerOptions": {
   "jsx": "react",
   "paths": {

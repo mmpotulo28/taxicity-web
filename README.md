@@ -85,7 +85,7 @@ Create a `.env` file in the root (or specific app folders) with the following ke
 
 ```bash
 # Database
-DATABASE_URL="postgresql://user:password@host:5432/taxyciti"
+DATABASE_URL="postgresql://user:password@host:5432/taxiciti"
 
 # Auth (Clerk)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
@@ -105,6 +105,21 @@ KV_REST_API_TOKEN=...
 
 # Maps
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
+
+# Driver <-> API routing
+NEXT_PUBLIC_API_URL=http://localhost:3006
+API_URL=http://localhost:3006
+
+# API auth verification (set one strategy)
+CLERK_JWT_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
+# OR
+JWT_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
+# OR
+JWT_SECRET=replace-with-strong-random-secret
+
+# Upload service
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
+UPLOAD_MAX_FILE_BYTES=10485760
 ```
 
 ### 2. Installation
@@ -166,15 +181,29 @@ Run these from the **root** of the monorepo to ensure the build context includes
 **User App:**
 
 ```bash
-docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxyciti-user:latest .
-docker push mmpotulo28/taxyciti-user:latest
+docker build --platform linux/amd64 -f apps/user/Dockerfile -t mmpotulo28/taxiciti-user:latest .
+docker push mmpotulo28/taxiciti-user:latest
 ```
 
 **Driver App:**
 
 ```bash
-docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxyciti-driver:latest .
-docker push mmpotulo28/taxyciti-driver:latest
+docker build --platform linux/amd64 -f apps/driver/Dockerfile -t mmpotulo28/taxiciti-driver:latest .
+docker push mmpotulo28/taxiciti-driver:latest
+```
+
+**API App (ECS/App Runner):**
+
+```bash
+docker build --platform linux/amd64 -f apps/api/Dockerfile -t mmpotulo28/taxiciti-api:latest .
+docker push mmpotulo28/taxiciti-api:latest
+```
+
+**Websocket Server:**
+
+```bash
+docker build --platform linux/amd64 -f apps/websocket/Dockerfile -t mmpotulo28/taxiciti-websocket:latest .
+docker push mmpotulo28/taxiciti-websocket:latest
 ```
 
 **Push to Production Server:**
@@ -194,14 +223,15 @@ docker compose up -d --force-recreate
 
 Unlike standard ride-hailing (Uber/Bolt), TaxiCity uses a **Shared Vehicle** model:
 
-1.  **Driver** starts a `VehicleTrip` on a specific `Route` (e.g., "Sandton to Soweto").
-2.  **User** requests a `Trip` (seat) on an active `VehicleTrip`.
-3.  **Queueing:** Users are added to a waiting queue.
-4.  **Dispatch:** When the vehicle is full (or driver departs), the status updates to `IN_PROGRESS`.
+1. **Driver** starts a `VehicleTrip` on a specific `Route` (e.g., "Sandton to Soweto").
+2. **User** requests a `Trip` (seat) on an active `VehicleTrip`.
+3. **Queueing:** Users are added to a waiting queue.
+4. **Dispatch:** When the vehicle is full (or driver departs), the status updates to `IN_PROGRESS`.
 
 ### Runtime Configuration
 
 - **Authentication:** All requests are validated via Clerk Middleware.
+- **Driver API access:** The driver web app calls the standalone API directly using `NEXT_PUBLIC_API_URL` (or `API_URL`) and includes bearer auth tokens.
 - **State Management:**
     - **Frontend:** React Query for server state, React Context for local UI state.
     - **Backend:** Redis/Upstash is used for real-time location caching and rapid queue management before persisting to PostgreSQL.

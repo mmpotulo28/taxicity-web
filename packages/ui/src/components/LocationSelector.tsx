@@ -11,6 +11,7 @@ import MapSelectionModal from "./MapSelectionModal";
 
 import { useMap } from "../context/MapContext";
 import { useRide } from "../context/RideContext";
+import { addToast } from "@heroui/toast";
 
 interface LocationSelectorProps {
 	type: "pickup" | "dropoff";
@@ -92,6 +93,55 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 			} else {
 				setDropoffMarker(userLocation);
 			}
+		} else {
+			const handleSuccess = async (position: GeolocationPosition) => {
+				const coords = {
+					lat: position.coords.latitude,
+					lng: position.coords.longitude
+				};
+				const address = await getAddressFromLatLng(coords);
+
+				setInputValue(address);
+				onSelect(address);
+
+				if (type === "pickup") {
+					setPickupMarker(coords);
+				} else {
+					setDropoffMarker(coords);
+				}
+			};
+
+			const handleError = (error: GeolocationPositionError) => {
+				console.error("User location is unavailable:", error.message);
+				addToast({
+					title: "Location Unavailable",
+					description: `Unable to retrieve your current location: ${error.message}. Please try again later.`,
+					color: "warning" as const
+				});
+			};
+
+			// Try high accuracy first
+			navigator.geolocation.getCurrentPosition(
+				handleSuccess,
+				(error) => {
+					console.warn("High accuracy location failed, retrying with low accuracy...", error.message);
+					// Retry with low accuracy
+					navigator.geolocation.getCurrentPosition(
+						handleSuccess,
+						handleError,
+						{
+							enableHighAccuracy: false,
+							timeout: 10000,
+							maximumAge: 0,
+						}
+					);
+				},
+				{
+					enableHighAccuracy: true,
+					timeout: 5000,
+					maximumAge: 0,
+				}
+			);
 		}
 	};
 
@@ -157,6 +207,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 		onClose();
 	};
 
+	const getIcon = (name: string) => {
+		const lowerName = name.toLowerCase();
+		if (lowerName === "home") return "lucide:home";
+		if (lowerName === "work") return "lucide:briefcase";
+		return "lucide:map-pin";
+	};
+
 	return (
 		<div className="mb-4">
 			<div className="flex items-center gap-2 mb-2">
@@ -206,13 +263,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ type, onSelect, val
 							variant="solid" // Solid to stand out
 							startContent={
 								<Icon
-									icon={
-										location.name.toLowerCase() === "home"
-											? "lucide:home"
-											: location.name.toLowerCase() === "work"
-												? "lucide:briefcase"
-												: "lucide:map-pin"
-									}
+									icon={getIcon(location.name)}
 									className="text-xs"
 								/>
 							}

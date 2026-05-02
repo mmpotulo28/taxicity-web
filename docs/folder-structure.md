@@ -1,5 +1,5 @@
 ```
-└── 📁taxyciti-web
+└── 📁taxiciti-web
     └── 📁app
         └── 📁api
             └── 📁driver (Driver operations: vehicle trips, requests)

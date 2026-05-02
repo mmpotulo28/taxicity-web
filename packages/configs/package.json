@@ -1,12 +1,14 @@
 {
-	"name": "@taxyciti/configs",
+	"name": "@taxiciti/configs",
 	"version": "0.0.1",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"exports": {
 		"./eslint": "./eslint.config.mts",
 		"./tsconfig": "./base.json",
-		"./clerk": "./src/clerk.ts"
+		"./clerk": "./src/clerk.ts",
+		"./telemetry": "./src/telemetry.ts",
+		"./telemetry-mobile": "./src/telemetry-mobile.ts"
 	},
 	"files": [
 		"dist",
@@ -14,10 +16,9 @@
 		"eslint.config.mts"
 	],
 	"scripts": {
-		"build": "tsc",
 		"dev": "tsc -w",
 		"check": "tsc --noEmit",
-		"lint": "eslint ."
+		"lint": "eslint . --fix"
 	},
 	"devDependencies": {
 		"@clerk/nextjs": "^6.36.8",

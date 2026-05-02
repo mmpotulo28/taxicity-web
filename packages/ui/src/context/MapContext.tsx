@@ -1,41 +1,52 @@
 "use client";
-import React, { createContext, useContext, useState, useRef } from "react";
+import React, { createContext, useContext, useState, useRef, useCallback, useMemo } from "react";
+
+export interface LatLng {
+	lat: number;
+	lng: number;
+}
+
+// Mocking the Google Maps event interface that MapView is asserting
+interface MapMouseEvent {
+	latLng: {
+		lat: () => number;
+		lng: () => number;
+	} | null;
+}
 
 type MapContextType = {
-	mapRef: React.MutableRefObject<any>;
+	mapRef: React.RefObject<any>;
 	isMapLoaded: boolean;
-	selectedLocation: google.maps.LatLngLiteral | null;
+	selectedLocation: LatLng | null;
 	selectionMode: "pickup" | "dropoff" | null;
-	userLocation: google.maps.LatLngLiteral | null;
-	pickupMarker: google.maps.LatLngLiteral | null;
-	dropoffMarker: google.maps.LatLngLiteral | null;
+	userLocation: LatLng | null;
+	pickupMarker: LatLng | null;
+	dropoffMarker: LatLng | null;
 
 	// Actions
 	setIsMapLoaded: (loaded: boolean) => void;
-	setSelectedLocation: (location: google.maps.LatLngLiteral | null) => void;
+	setSelectedLocation: (location: LatLng | null) => void;
 	setSelectionMode: (mode: "pickup" | "dropoff" | null) => void;
-	setUserLocation: (location: google.maps.LatLngLiteral | null) => void;
-	setPickupMarker: (location: google.maps.LatLngLiteral | null) => void;
-	setDropoffMarker: (location: google.maps.LatLngLiteral | null) => void;
-	handleMapClick: (e: google.maps.MapMouseEvent) => void;
-	getAddressFromLatLng: (latLng: google.maps.LatLngLiteral) => Promise<string>;
+	setUserLocation: (location: LatLng | null) => void;
+	setPickupMarker: (location: LatLng | null) => void;
+	setDropoffMarker: (location: LatLng | null) => void;
+	handleMapClick: (e: MapMouseEvent) => void;
+	getAddressFromLatLng: (latLng: LatLng) => Promise<string>;
 };
 
 const MapContext = createContext<MapContextType | undefined>(undefined);
 
-export function MapProvider({ children }: { children: React.ReactNode }) {
+export function MapProvider({ children }: Readonly<{ children: React.ReactNode }>) {
 	const mapRef = useRef<any>(null);
 	const [isMapLoaded, setIsMapLoaded] = useState(false);
-	const [selectedLocation, setSelectedLocation] = useState<google.maps.LatLngLiteral | null>(
-		null,
-	);
+	const [selectedLocation, setSelectedLocation] = useState<LatLng | null>(null);
 	const [selectionMode, setSelectionMode] = useState<"pickup" | "dropoff" | null>(null);
-	const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
-	const [pickupMarker, setPickupMarker] = useState<google.maps.LatLngLiteral | null>(null);
-	const [dropoffMarker, setDropoffMarker] = useState<google.maps.LatLngLiteral | null>(null);
+	const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+	const [pickupMarker, setPickupMarker] = useState<LatLng | null>(null);
+	const [dropoffMarker, setDropoffMarker] = useState<LatLng | null>(null);
 
 	// Handle map clicks based on selection mode
-	const handleMapClick = (e: google.maps.MapMouseEvent) => {
+	const handleMapClick = useCallback((e: MapMouseEvent) => {
 		if (!e.latLng || !selectionMode) return;
 
 		console.log("Map clicked in mode:", selectionMode);
@@ -54,37 +65,37 @@ export function MapProvider({ children }: { children: React.ReactNode }) {
 			console.log("Setting dropoff marker to:", clickedLocation);
 			setDropoffMarker(clickedLocation);
 		}
-	};
+	}, [selectionMode]);
 
-	// Reverse geocoding to get address from coordinates
-	const getAddressFromLatLng = async (latLng: google.maps.LatLngLiteral): Promise<string> => {
-		if (typeof window === "undefined" || !window.google) {
+	// Reverse geocoding using Google Maps API
+	const getAddressFromLatLng = useCallback(async (latLng: LatLng): Promise<string> => {
+		const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+		if (!apiKey) {
+			console.warn("Google Maps API key missing for geocoding");
 			return "Location selected";
 		}
 
 		try {
-			const geocoder = new google.maps.Geocoder();
-			const response = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
-				geocoder.geocode({ location: latLng }, (results, status) => {
-					if (status === "OK" && results && results.length > 0) {
-						resolve(results);
-					} else {
-						reject(status);
-					}
-				});
-			});
+			const response = await fetch(
+				`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latLng.lat},${latLng.lng}&key=${apiKey}`
+			);
 
-			if (response[0]) {
-				return response[0].formatted_address;
+			if (!response.ok) {
+				throw new Error(`Geocoding failed: ${response.statusText}`);
+			}
+
+			const data = await response.json();
+			if (data.results && data.results.length > 0) {
+				return data.results[0].formatted_address;
 			}
 		} catch (error) {
 			console.error("Error getting address:", error);
 		}
 
 		return "Selected location";
-	};
+	}, []);
 
-	const value = {
+	const value = useMemo(() => ({
 		mapRef,
 		isMapLoaded,
 		selectedLocation,
@@ -101,7 +112,16 @@ export function MapProvider({ children }: { children: React.ReactNode }) {
 		setDropoffMarker,
 		handleMapClick,
 		getAddressFromLatLng,
-	};
+	}), [
+		isMapLoaded,
+		selectedLocation,
+		selectionMode,
+		userLocation,
+		pickupMarker,
+		dropoffMarker,
+		handleMapClick,
+		getAddressFromLatLng
+	]);
 
 	return <MapContext.Provider value={value}>{children}</MapContext.Provider>;
 }

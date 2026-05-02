@@ -1,4 +1,4 @@
-import sharedConfig from "@taxyciti/configs/eslint";
+import sharedConfig from "@taxiciti/configs/eslint";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 

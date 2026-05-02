@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { usePusher } from "@taxyciti/ui";
+import { usePusher } from "@taxiciti/ui";
+import { CHANNELS, EVENTS } from "@taxiciti/utils";
 
 interface VehicleLocation {
 	lat: number;
@@ -16,14 +17,15 @@ export const useVehicleTracker = (vehicleId: string | null) => {
 	useEffect(() => {
 		if (!vehicleId) return;
 
-		const channelName = `vehicle-${vehicleId}`;
+		const channelName = CHANNELS.VEHICLE(vehicleId);
 
 		// Subscribe to specific event on the channel
-		subscribe<VehicleLocation>(channelName, "location-update", (data) => {
+		const cleanup = subscribe(channelName, EVENTS.LOCATION_UPDATE, (data: VehicleLocation) => {
 			setLocation(data);
 		});
 
 		return () => {
+			cleanup();
 			unsubscribe(channelName);
 		};
 	}, [vehicleId, subscribe, unsubscribe]);

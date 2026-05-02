@@ -1,39 +1,37 @@
 services:
   user-app:
-    image: mmpotulo28/taxyciti-user:latest
-    container_name: taxyciti-user
+    image: mmpotulo28/taxiciti-user:latest
+    container_name: taxiciti-user
     restart: always
     ports:
       - "127.0.0.1:3000:3000"
     env_file:
       - .env.production
     networks:
-      - taxyciti-net
+      - taxiciti-net
 
   driver-app:
-    image: mmpotulo28/taxyciti-driver:latest
-    container_name: taxyciti-driver
+    image: mmpotulo28/taxiciti-driver:latest
+    container_name: taxiciti-driver
     restart: always
     ports:
-      - "127.0.0.1:3001:3000"
+      - "127.0.0.1:3001:3001"
     env_file:
       - .env.production
     networks:
-      - taxyciti-net
+      - taxiciti-net
 
   websocket-server:
-    build:
-      context: ./apps/websocket-server
-      dockerfile: Dockerfile
-    container_name: taxyciti-websocket
+    image: mmpotulo28/taxiciti-websocket:latest
+    container_name: taxiciti-websocket
     restart: always
     ports:
-      - "127.0.0.1:3002:3002"
+      - "127.0.0.1:3006:3006"
     env_file:
       - .env.production
     networks:
-      - taxyciti-net
+      - taxiciti-net
 
 networks:
-  taxyciti-net:
+  taxiciti-net:
     driver: bridge

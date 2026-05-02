@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	transpilePackages: ["@taxyciti/ui", "@taxyciti/configs"],
+	transpilePackages: ["@taxiciti/ui", "@taxiciti/configs"],
+	experimental: {
+		turbopackUseSystemTlsCerts: true,
+	},
 };
 
 export default nextConfig;
