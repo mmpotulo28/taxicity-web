@@ -1,10 +1,14 @@
 {
 	"name": "@taxiciti/database",
 	"version": "0.0.1",
-	"main": "dist/index.js",
-	"types": "index.ts",
+	"main": "dist/index.cjs",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"exports": {
-		".": "./dist/index.js",
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
 		"./types": "./types.ts"
 	},
 	"type": "module",
@@ -16,7 +20,7 @@
 		"studio": "prisma studio",
 		"check": "tsc --noEmit",
 		"db:seed": "node prisma/seed.ts",
-		"build": "tsup index.ts --format esm --clean"
+		"build": "tsup index.ts --format cjs,esm --clean && tsc -p tsconfig.json --declaration --emitDeclarationOnly"
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^6.37.3",
