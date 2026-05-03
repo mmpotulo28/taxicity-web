@@ -18,12 +18,12 @@ class WebSocketServerClient {
 					body: JSON.stringify({ channel: ch, event, data }),
 				});
 
-				if (!response.ok) {
+				if (response.ok) {
+					console.log(`Successfully triggered ${event} on ${ch} to ${WS_URL}`);
+				} else {
 					console.error(`Failed to trigger event on ${WS_URL}: ${response.statusText}`);
 					const text = await response.text();
 					console.error("Response body:", text);
-				} else {
-					console.log(`Successfully triggered ${event} on ${ch} to ${WS_URL}`);
 				}
 			} catch (error) {
 				console.error("Error triggering websocket event:", error);
