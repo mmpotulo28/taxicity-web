@@ -109,13 +109,10 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
 # Driver <-> API routing
 NEXT_PUBLIC_API_URL=http://localhost:3006
 API_URL=http://localhost:3006
+NEXT_PUBLIC_WEBSOCKET_URL=http://localhost:3006
 
-# API auth verification (set one strategy)
-CLERK_JWT_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
-# OR
-JWT_PUBLIC_KEY=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
-# OR
-JWT_SECRET=replace-with-strong-random-secret
+# API auth verification
+CLERK_SECRET_KEY=sk_test_...
 
 # Upload service
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...

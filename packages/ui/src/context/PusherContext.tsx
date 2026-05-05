@@ -12,6 +12,8 @@ interface PusherContextType {
 
 type SocketRole = "user" | "driver" | "admin";
 
+const CLERK_TOKEN_TEMPLATE = "taxiciti_api";
+
 const PusherContext = createContext<PusherContextType | undefined>(undefined);
 
 export const PusherProvider = ({ children, role = "user" }: { children: React.ReactNode; role?: SocketRole }) => {
@@ -26,9 +28,9 @@ export const PusherProvider = ({ children, role = "user" }: { children: React.Re
 			if (!userId) return;
 
 			try {
-				const token = await getToken();
+				const token = await getToken({ template: CLERK_TOKEN_TEMPLATE });
 				// use same env variable as frontend for consistency
-				const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+				const url = process.env.NEXT_PUBLIC_WEBSOCKET_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
 
 				console.log("Initializing WebSocket connection to:", url);
 
@@ -53,7 +55,7 @@ export const PusherProvider = ({ children, role = "user" }: { children: React.Re
 						console.log("Attempting to refresh token...");
 						try {
 							// Force refresh token
-							const newToken = await getToken({ skipCache: true });
+							const newToken = await getToken({ template: CLERK_TOKEN_TEMPLATE, skipCache: true });
 							if (newToken) {
 								socketInstance.auth = { token: newToken };
 								socketInstance.connect();

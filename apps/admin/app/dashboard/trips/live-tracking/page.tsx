@@ -12,6 +12,8 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { io, Socket } from "socket.io-client";
 
+const CLERK_TOKEN_TEMPLATE = "taxiciti_api";
+
 interface ActiveTrip {
 	id: string;
 	status: string;
@@ -71,7 +73,7 @@ function LiveTrackingContent() {
 
 	const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 	const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID";
-	const wsUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
+	const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
 
 	const [activeTrips, setActiveTrips] = useState<ActiveTrip[]>([]);
 	const [selectedTrip, setSelectedTrip] = useState<ActiveTrip | null>(null);
@@ -127,7 +129,7 @@ function LiveTrackingContent() {
 
 		const setupWebSocket = async () => {
 			try {
-				const token = await getToken();
+				const token = await getToken({ template: CLERK_TOKEN_TEMPLATE });
 				if (!token) {
 					console.error("No auth token available");
 					return;

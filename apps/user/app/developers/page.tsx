@@ -103,8 +103,8 @@ export default function DeveloperPage() {
 							<div className='bg-default-100 rounded-lg p-4 font-mono text-sm overflow-x-auto'>
 								<pre>{`import { useAuth } from '@clerk/nextjs';
 
-const { getToken } = useAuth();
-const token = await getToken();`}</pre>
+		const { getToken } = useAuth();
+		const token = await getToken({ template: 'taxiciti_api' });`}</pre>
 							</div>
 						</div>
 						<div>

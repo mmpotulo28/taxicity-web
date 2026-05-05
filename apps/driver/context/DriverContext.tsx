@@ -8,6 +8,8 @@ import { CHANNELS, EVENTS, logger } from "@taxiciti/utils";
 import type { RideAcceptedPayload, RideStatusPayload, WsAck } from "@taxiciti/utils";
 import { apiGet, apiPatch, apiPost, ApiError, setApiTokenResolver } from "@/lib/api-client";
 
+const CLERK_TOKEN_TEMPLATE = "taxiciti_api";
+
 export interface Driver {
 	id: string;
 	firstName: string;
@@ -146,7 +148,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
 	useEffect(() => {
 		setApiTokenResolver(async () => {
-			const token = await getToken();
+			const token = await getToken({ template: CLERK_TOKEN_TEMPLATE });
 			return token ?? null;
 		});
 
@@ -156,7 +158,7 @@ export const DriverProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 	}, [getToken]);
 
 	const getAuthHeaders = React.useCallback(async (): Promise<HeadersInit | undefined> => {
-		const token = await getToken();
+		const token = await getToken({ template: CLERK_TOKEN_TEMPLATE });
 		if (!token) {
 			return undefined;
 		}

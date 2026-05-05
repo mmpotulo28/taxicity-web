@@ -33,8 +33,8 @@
 			"ClerkAuth": {
 				"type": "http",
 				"scheme": "bearer",
-				"bearerFormat": "JWT",
-				"description": "Clerk JWT authentication token"
+				"bearerFormat": "Clerk",
+				"description": "Clerk session authentication token"
 			}
 		},
 		"schemas": {

@@ -14,11 +14,11 @@ The system uses a dedicated WebSocket Server (Socket.IO) to handle real-time eve
 
 ### Client Connection (User/Driver App)
 
-Clients authenticate using their Clerk Session JWT.
+Clients authenticate using a Clerk session token.
 
 1. **Client** connects to `WSS_URL`.
-2. **Handshake**: Sends `token` (Clerk JWT) and `role` ("user" | "driver") in auth payload/query.
-3. **Server** verifies JWT.
+2. **Handshake**: Sends `token` (Clerk session token) and `role` ("user" | "driver") in auth payload/query.
+3. **Server** verifies the token with Clerk.
     - If valid: Extracts `userId`.
     - Joins `user-{userId}` private room.
     - Joins `role` room (e.g., "driver" or "user"). (Note: "driver" room is used to broadcast new requests).

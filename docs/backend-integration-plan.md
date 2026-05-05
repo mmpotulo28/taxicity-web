@@ -69,7 +69,7 @@ This document outlines the recommended structure and best practices for integrat
 ## 4. Clerk Authentication & Authorization
 
 - **Protect all API routes** using Clerk middleware.
-- **Use Clerk JWTs** to identify the user in API requests.
+- **Use Clerk session tokens** to identify the user in API requests.
 - **Enforce roles/permissions** (e.g., only drivers can update taxi status, only admins can manage routes).
 - **Map Clerk user IDs** to your `User` model in the DB.
 - **Sync user profile data** (name, email) from Clerk to your DB as needed.

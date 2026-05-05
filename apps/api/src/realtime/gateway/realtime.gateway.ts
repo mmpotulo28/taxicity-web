@@ -22,9 +22,9 @@ import {
   type RideStatusPayload,
   type WsAck,
 } from '@taxiciti/utils';
-import jwt from 'jsonwebtoken';
 import type Redis from 'ioredis';
 import { Server, Socket } from 'socket.io';
+import { verifyClerkToken } from '../../common/clerk-auth';
 import { isAllowedCorsOrigin } from '../config/realtime.config';
 import { RealtimeRedisService } from '../infra/realtime.redis.service';
 import { LocationQueueService } from '../location/location-queue.service';
@@ -122,7 +122,9 @@ export class RealtimeGateway
 
     server.adapter(createAdapter(this.adapterPubClient, this.adapterSubClient));
 
-    server.use((socket, next) => this.authenticateSocket(socket, next));
+    server.use((socket, next) => {
+      void this.authenticateSocket(socket, next);
+    });
 
     logger.info('Realtime gateway initialized');
   }
@@ -709,7 +711,7 @@ export class RealtimeGateway
     }
   }
 
-  private authenticateSocket(
+  private async authenticateSocket(
     socket: Socket,
     next: (err?: Error) => void,
   ): void {
@@ -721,12 +723,7 @@ export class RealtimeGateway
     }
 
     try {
-      const decoded = jwt.decode(token) as { sub?: string } | null;
-
-      if (!decoded?.sub) {
-        next(new Error('Authentication error: Invalid token structure'));
-        return;
-      }
+      const decoded = await verifyClerkToken(token);
 
       const roleQuery = socket.handshake.query.role;
       const role = Array.isArray(roleQuery)

@@ -36,11 +36,7 @@ We chose AWS App Runner because:
     - **Port:** `3006`
 5.  **Environment Variables:**
     - `DATABASE_URL`
-    - One token verification strategy:
-        - `CLERK_JWT_PUBLIC_KEY`, or
-        - `JWT_PUBLIC_KEY`, or
-        - `JWT_SECRET`
-    - `INTERNAL_PROXY_SECRET` (optional, only if using trusted proxy header forwarding)
+    - `CLERK_SECRET_KEY`
     - `BLOB_READ_WRITE_TOKEN`
     - `UPLOAD_MAX_FILE_BYTES` (optional)
     - `REDIS_URL` (or equivalent Upstash URL variables used in your environment)

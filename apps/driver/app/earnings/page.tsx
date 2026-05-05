@@ -12,6 +12,8 @@ import { Divider } from "@heroui/divider";
 import { useAuth } from "@clerk/nextjs";
 import { apiGet } from "@/lib/api-client";
 
+const CLERK_TOKEN_TEMPLATE = "taxiciti_api";
+
 interface Trip {
 	id: string;
 	startTime: string;
@@ -42,7 +44,7 @@ export default function DriverEarningsPage() {
 
 	const fetchEarnings = useCallback(async () => {
 		try {
-			const token = await getToken();
+			const token = await getToken({ template: CLERK_TOKEN_TEMPLATE });
 			const headers: HeadersInit | undefined = token ? { Authorization: `Bearer ${token}` } : undefined;
 			const data = await apiGet<EarningStats>("/api/driver/earnings", { headers });
 			setStats(data);

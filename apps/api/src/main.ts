@@ -31,11 +31,10 @@ TaxiCiti backend APIs for user, driver, and realtime operations.
 
 ## Authentication
 
-Most protected REST endpoints require a Bearer token in the \`Authorization\` header.
+All REST endpoints require a Clerk session token in the \`Authorization\` header.
 
-1. Obtain a Clerk session/JWT token on the client.
-2. Send \`Authorization: Bearer <token>\`.
-3. For internal trigger endpoint, send \`x-api-key\`.
+1. Obtain a Clerk session token on the client (template: \`taxiciti_api\`).
+2. Send \`Authorization: Bearer <token>\` with every request.
 
 ## Realtime
 
@@ -62,7 +61,7 @@ Most protected REST endpoints require a Bearer token in the \`Authorization\` he
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'Clerk JWT bearer token',
+        description: 'Clerk session bearer token (template: taxiciti_api)',
       },
       'bearerAuth',
     )

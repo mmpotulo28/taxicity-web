@@ -1,9 +1,15 @@
 import axios from "axios";
 
 const DEFAULT_API_ORIGIN = "http://localhost:3006";
+const CLERK_TOKEN_TEMPLATE = "taxiciti_api";
+
+interface ClerkTokenOptions {
+	template?: string;
+	skipCache?: boolean;
+}
 
 interface ClerkSession {
-	getToken?: () => Promise<string | null>;
+	getToken?: (options?: ClerkTokenOptions) => Promise<string | null>;
 }
 
 interface ClerkClient {
@@ -43,7 +49,7 @@ async function getClerkToken() {
 			return null;
 		}
 
-		return await clerk.session.getToken();
+		return await clerk.session.getToken({ template: CLERK_TOKEN_TEMPLATE });
 	} catch {
 		return null;
 	}

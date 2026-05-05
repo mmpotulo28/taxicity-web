@@ -18,10 +18,10 @@ The OpenAPI 3.0 specification is available at:
 
 ## 🔐 Authentication
 
-All API endpoints require authentication using Clerk JWT tokens. Include the token in the Authorization header:
+All API endpoints require authentication using a Clerk session token. Include the token in the Authorization header:
 
 ```
-Authorization: Bearer <your-clerk-jwt-token>
+Authorization: Bearer <your-clerk-session-token>
 ```
 
 ## 📊 API Overview
@@ -53,13 +53,13 @@ Authorization: Bearer <your-clerk-jwt-token>
 
 ### 1. Authentication Setup
 
-First, authenticate with Clerk and obtain a JWT token:
+First, authenticate with Clerk and obtain a session token (template: `taxiciti_api`):
 
 ```javascript
 import { useAuth } from "@clerk/nextjs";
 
 const { getToken } = useAuth();
-const token = await getToken();
+const token = await getToken({ template: "taxiciti_api" });
 ```
 
 ### 2. Making API Requests
@@ -203,7 +203,7 @@ Use tools like:
 
 ```bash
 curl -X GET "http://localhost:3000/api/taxis" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+	-H "Authorization: Bearer YOUR_CLERK_SESSION_TOKEN" \
   -H "Content-Type: application/json"
 ```
 

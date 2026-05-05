@@ -16,9 +16,10 @@ interface ApiRequestOptions extends Omit<RequestInit, "body"> {
 	retries?: number;
 }
 
-type ApiTokenResolver = () => Promise<string | null>;
+type ApiTokenResolver = (options?: { template?: string; skipCache?: boolean }) => Promise<string | null>;
 
 const DEFAULT_API_ORIGIN = "http://localhost:3006";
+const CLERK_TOKEN_TEMPLATE = "taxiciti_api";
 let tokenResolver: ApiTokenResolver | null = null;
 
 export function setApiTokenResolver(resolver: ApiTokenResolver | null) {
@@ -60,12 +61,12 @@ async function getClerkToken(): Promise<string | null> {
 	}
 
 	try {
-		const clerk = (globalThis as typeof globalThis & { Clerk?: { session?: { getToken?: () => Promise<string | null> } } }).Clerk;
+		const clerk = (globalThis as typeof globalThis & { Clerk?: { session?: { getToken?: (options?: { template?: string; skipCache?: boolean }) => Promise<string | null> } } }).Clerk;
 		if (!clerk?.session?.getToken) {
 			return null;
 		}
 
-		return await clerk.session.getToken();
+		return await clerk.session.getToken({ template: CLERK_TOKEN_TEMPLATE });
 	} catch {
 		return null;
 	}
