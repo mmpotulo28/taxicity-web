@@ -714,7 +714,7 @@ export class RealtimeGateway
   private async authenticateSocket(
     socket: Socket,
     next: (err?: Error) => void,
-  ): void {
+  ): Promise<void> {
     const token = socket.handshake.auth.token as string | undefined;
 
     if (!token) {
