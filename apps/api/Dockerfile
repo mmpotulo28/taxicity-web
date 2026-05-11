@@ -33,14 +33,13 @@ COPY --from=pruner /app/out/full/ ./
 RUN pnpm --filter @taxiciti/database generate
 
 # Build API and workspace deps.
-RUN pnpm turbo build --filter=api...
+RUN pnpm turbo build --filter=api
 
 FROM node:20-alpine AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
 RUN apk add --no-cache openssl ca-certificates
-
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
