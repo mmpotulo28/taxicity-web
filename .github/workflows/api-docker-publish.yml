@@ -13,15 +13,14 @@ on:
  workflow_dispatch:
 
 env:
- REGISTRY: ghcr.io
- IMAGE_NAME: ${{ github.repository }}-api
+ REGISTRY: docker.io
+ IMAGE_NAME: mmpotulo28/taxiciti-api # Based on your docker build command
 
 jobs:
  build-and-push:
   runs-on: ubuntu-latest
   permissions:
    contents: read
-   packages: write
 
   steps:
    - name: Checkout repository
@@ -33,9 +32,9 @@ jobs:
    - name: Log in to the Container registry
      uses: docker/login-action@v3
      with:
-      registry: ${{ env.REGISTRY }}
-      username: ${{ github.actor }}
-      password: ${{ secrets.GITHUB_TOKEN }}
+      registry: ${{ env.REGISTRY }} # This will be docker.io
+      username: mmpotulo28 # Your Docker Hub username
+      password: ${{ secrets.DOCKER_HUB_TOKEN }} # Use a dedicated Docker Hub token
 
    - name: Extract metadata (tags, labels) for Docker
      id: meta
