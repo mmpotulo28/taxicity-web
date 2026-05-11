@@ -51,7 +51,7 @@ export const PusherProvider = ({ children, role = "user" }: { children: React.Re
 				// socketInstance.on("connect_error", (err) => console.error("Socket connection error:", err));
 				socketInstance.on("connect_error", async (err) => {
 					console.error("Socket connection error:", err);
-					if (err.message === "Authentication error" || err.message.includes("jwt")) {
+					if (err.message.startsWith("Authentication error") || err.message.includes("jwt")) {
 						console.log("Attempting to refresh token...");
 						try {
 							// Force refresh token

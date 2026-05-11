@@ -8,6 +8,7 @@ import {
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Public } from './common/public.decorator';
 import { realtimeConfig } from './realtime/config/realtime.config';
 import {
   REALTIME_EMITTER,
@@ -28,6 +29,7 @@ export class AppController {
   ) {}
 
   @Get('health')
+  @Public()
   getHealth() {
     return {
       status: 'ok',

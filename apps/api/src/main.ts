@@ -5,6 +5,10 @@ import { AppModule } from './app.module';
 import { isAllowedCorsOrigin } from './realtime/config/realtime.config';
 
 async function bootstrap() {
+  if (!process.env.CLERK_SECRET_KEY) {
+    throw new Error('CLERK_SECRET_KEY is required to start the API');
+  }
+
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: (origin, callback) => {

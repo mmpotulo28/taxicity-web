@@ -1,4 +1,5 @@
 import { Controller, Get, Header } from '@nestjs/common';
+import { Public } from '../../common/public.decorator';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -13,6 +14,7 @@ export class UserSystemController {
   constructor(private readonly userSystemService: UserSystemService) {}
 
   @Get('status')
+  @Public()
   @ApiOperation({
     summary: 'Get API status',
     description:
@@ -27,6 +29,7 @@ export class UserSystemController {
   }
 
   @Get('openapi')
+  @Public()
   @ApiOperation({
     summary: 'Get OpenAPI document',
     description:
