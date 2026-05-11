@@ -30,7 +30,7 @@ export const PusherProvider = ({ children, role = "user" }: { children: React.Re
 			try {
 				const token = await getToken({ template: CLERK_TOKEN_TEMPLATE });
 				// use same env variable as frontend for consistency
-				const url = process.env.NEXT_PUBLIC_WEBSOCKET_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+				const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
 
 				console.log("Initializing WebSocket connection to:", url);
 

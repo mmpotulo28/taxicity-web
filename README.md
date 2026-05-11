@@ -109,7 +109,6 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
 # Driver <-> API routing
 NEXT_PUBLIC_API_URL=http://localhost:3006
 API_URL=http://localhost:3006
-NEXT_PUBLIC_WEBSOCKET_URL=http://localhost:3006
 
 # API auth verification
 CLERK_SECRET_KEY=sk_test_...
