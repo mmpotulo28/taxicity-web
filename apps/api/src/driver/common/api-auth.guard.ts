@@ -59,16 +59,18 @@ export class ApiAuthGuard implements CanActivate {
     }
 
     const token = authorization.slice(7).trim();
-    const decoded = await verifyClerkToken(token).catch(() => {
-      this.logAuthFailure('token verification failed', request);
+    try {
+      const decoded = await verifyClerkToken(token);
+      request.user = {
+        userId: decoded.sub,
+      };
+      return true;
+    } catch (error) {
+      this.logAuthFailure('token verification failed', request, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       throw new UnauthorizedException('Unauthorized');
-    });
-
-    request.user = {
-      userId: decoded.sub,
-    };
-
-    return true;
+    }
   }
 
   private getHeader(request: AuthenticatedRequest, key: string): string | null {

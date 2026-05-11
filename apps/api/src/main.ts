@@ -20,6 +20,13 @@ async function bootstrap() {
       callback(new Error(`CORS blocked for origin: ${origin ?? 'unknown'}`));
     },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+    ],
     credentials: true,
   });
 

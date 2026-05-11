@@ -66,7 +66,8 @@ async function getClerkToken(): Promise<string | null> {
 		}
 
 		return await clerk.session.getToken({ template: CLERK_TOKEN_TEMPLATE });
-	} catch {
+	} catch (e) {
+		console.error("error getting clerk token", e);
 		return null;
 	}
 }
@@ -104,8 +105,10 @@ async function executeRequest<T>(url: string, options: ApiRequestOptions): Promi
 		const rawBody = options.body;
 		const resolvedUrl = resolveApiUrl(url);
 
-		if (token && !headers.has("Authorization")) {
+		if (token) {
 			headers.set("Authorization", `Bearer ${token}`);
+		} else {
+			console.error("missing clerk token", headers);
 		}
 
 		if (rawBody instanceof FormData || rawBody instanceof URLSearchParams || rawBody instanceof Blob || rawBody instanceof ArrayBuffer || typeof rawBody === "string") {
