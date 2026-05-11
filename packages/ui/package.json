@@ -18,7 +18,7 @@
 		"build": "tsc"
 	},
 	"dependencies": {
-		"@clerk/nextjs": "^6.36.8",
+		"@clerk/nextjs": "^7.0.0",
 		"@grafana/faro-react": "^2.1.0",
 		"@grafana/faro-web-sdk": "^2.1.0",
 		"@grafana/faro-web-tracing": "^2.1.0",
@@ -69,7 +69,7 @@
 		"@tanstack/react-query": "^5.90.16",
 		"@taxiciti/utils": "workspace:*",
 		"@vis.gl/react-google-maps": "^1.7.1",
-		"axios": "^1.13.2",
+		"axios": "^1.15.2",
 		"clsx": "2.1.1",
 		"framer-motion": "^11.18.2",
 		"lucide-react": "^0.545.0",
