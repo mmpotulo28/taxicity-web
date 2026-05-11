@@ -23,7 +23,7 @@
 		"build": "tsup index.ts --format cjs,esm --clean && tsc -p tsconfig.json --declaration --emitDeclarationOnly"
 	},
 	"dependencies": {
-		"@clerk/nextjs": "^6.37.3",
+		"@clerk/nextjs": "^7.0.0",
 		"@prisma/adapter-pg": "^7.3.0",
 		"@prisma/client": "^7.3.0",
 		"@prisma/extension-accelerate": "^2.0.2",
