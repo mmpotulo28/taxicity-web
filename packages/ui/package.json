@@ -18,7 +18,7 @@
 		"build": "tsc"
 	},
 	"dependencies": {
-		"@clerk/nextjs": "^6.36.8",
+		"@clerk/nextjs": "^7.0.0",
 		"@grafana/faro-react": "^2.1.0",
 		"@grafana/faro-web-sdk": "^2.1.0",
 		"@grafana/faro-web-tracing": "^2.1.0",
